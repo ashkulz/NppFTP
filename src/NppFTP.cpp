@@ -33,6 +33,11 @@ NppFTP::NppFTP() :
 	m_activeSession(false),
 	m_configStore(NULL)
 {
+	PathMap globalPathmap;
+	globalPathmap.localpath = SU::DupString(TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%"));
+	globalPathmap.externalpath = SU::strdup("/");
+	m_globalCache.Clear();
+	m_globalCache.AddPathMap(globalPathmap);
 }
 
 NppFTP::~NppFTP() {

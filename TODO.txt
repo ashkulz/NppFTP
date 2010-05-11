@@ -1,0 +1,11 @@
+Crash trying FTP on SFTP (?)
+Crash Connecting failed  (?)
+
+Timeout makes UI lock.   (?)
+FTP output reset func
+
+printf, vprintf etc not really nicely used (no size checking/expanding buffers)
+
+StringUtils: inefficient when using tchar+CP_ACP
+
+delete opened files on disconnecting or on exiting

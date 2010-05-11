@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="UTCP" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="..\..\lib\libUTCPD" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Debug\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DUNICODE" />
+					<Add option="-D_UNICODE" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="..\..\lib\libUTCP" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Release\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Os" />
+					<Add option="-O3" />
+					<Add option="-DUNICODE" />
+					<Add option="-D_UNICODE" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="ReleaseANSI">
+				<Option output="..\..\lib\libUTCPA" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\ReleaseA\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Os" />
+					<Add option="-O3" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="..\Include" />
+			<Add directory="..\..\include" />
+		</Compiler>
+		<Unit filename="..\Include\UTDataSource.h" />
+		<Unit filename="..\Include\UTExtErr.h" />
+		<Unit filename="..\Include\UT_AccessControl.h" />
+		<Unit filename="..\Include\UT_CriticalSection.h" />
+		<Unit filename="..\Include\UT_Queue.h" />
+		<Unit filename="..\Include\ftp_c.h" />
+		<Unit filename="..\Include\stdafx.h" />
+		<Unit filename="..\Include\stdutfx.h" />
+		<Unit filename="..\Include\uh_ctrl.h" />
+		<Unit filename="..\Include\ut_clnt.h" />
+		<Unit filename="..\Include\ut_strop.h" />
+		<Unit filename="..\Include\uterr.h" />
+		<Unit filename="..\Include\utfile.h" />
+		<Unit filename="..\Include\utstrlst.h" />
+		<Unit filename="..\source\UTDataSource.cpp" />
+		<Unit filename="..\source\UT_Queue.cpp" />
+		<Unit filename="..\source\UT_StrOp.cpp" />
+		<Unit filename="..\source\ftp_c.cpp" />
+		<Unit filename="..\source\uh_ctrl.cpp" />
+		<Unit filename="..\source\ut_clnt.cpp" />
+		<Unit filename="..\source\utfile.cpp" />
+		<Unit filename="..\source\utstrlst.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<envvars />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

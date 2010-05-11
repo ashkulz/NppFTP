@@ -1,0 +1,202 @@
+/*
+    NppFTP: FTP/SFTP functionality for Notepad++
+    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include <windows.h>
+#include "resource.h"
+#include "symbols.h"
+
+//
+// Icon resources
+//
+IDI_ICON_FOLDERS   ICON           "bitmaps\\icon_folder.ico"
+IDI_ICON_MESSAGES  ICON           "bitmaps\\icon_messages.ico"
+
+//
+// Bitmap resources
+//
+IDB_BITMAP_ABORT   BITMAP         "bitmaps\\toolbar_abort.bmp"
+IDB_BITMAP_CONNECT BITMAP         "bitmaps\\toolbar_connected.bmp"
+IDB_BITMAP_DISCONNECT BITMAP      "bitmaps\\toolbar_disconnected.bmp"
+IDB_BITMAP_DOWNLOAD BITMAP        "bitmaps\\toolbar_download.bmp"
+IDB_BITMAP_FOLDERS BITMAP         "bitmaps\\maintoolbar_folder.bmp"
+IDB_BITMAP_MESSAGES BITMAP        "bitmaps\\toolbar_messages.bmp"
+IDB_BITMAP_RAWCOMMAND BITMAP      "bitmaps\\toolbar_rawcommand.bmp"
+IDB_BITMAP_REFRESH BITMAP         "bitmaps\\toolbar_refresh.bmp"
+IDB_BITMAP_SETTINGS BITMAP        "bitmaps\\toolbar_settings.bmp"
+IDB_BITMAP_TREEICONS BITMAP       "bitmaps\\icons_treeview.bmp"
+IDB_BITMAP_TREEICONS_MASK BITMAP  "bitmaps\\icons_treeview_mask.bmp"
+IDB_BITMAP_UPLOAD  BITMAP         "bitmaps\\toolbar_upload.bmp"
+
+//
+// Dialog resources
+//
+IDD_DIALOG_PROFILES DIALOGEX 0, 0, 350, 244
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_SYSMENU
+CAPTION "Profile settings"
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    LTEXT           "Profiles:", IDC_STATIC, 12, 4, 27, 8, SS_LEFT
+    LISTBOX         IDC_LIST_PROFILES, 16, 16, 108, 188, WS_TABSTOP | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY
+    PUSHBUTTON      "Add new", IDC_BUTTON_PROFILE_ADD, 16, 208, 36, 14
+    PUSHBUTTON      "Rename", IDC_BUTTON_PROFILE_RENAME, 56, 208, 36, 14, WS_DISABLED
+    PUSHBUTTON      "Delete", IDC_BUTTON_PROFILE_DELETE, 96, 208, 28, 14, WS_DISABLED
+    CONTROL         "", IDC_TAB_PROFILEPAGE, WC_TABCONTROL, 0, 136, 4, 210, 220
+    DEFPUSHBUTTON   "Close", IDC_BUTTON_CLOSE, 300, 228, 44, 14
+END
+
+IDD_DIALOG_PROFILESCONNECTION DIALOGEX 140, 24, 200, 192
+STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | DS_CONTROL
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    LTEXT           "Hostname:", IDC_STATIC, 0, 0, 36, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_HOSTNAME, 4, 8, 78, 14, ES_AUTOHSCROLL
+    LTEXT           "Connection type:", IDC_STATIC, 92, 0, 56, 8, SS_LEFT
+    COMBOBOX        IDC_COMBO_SECURITY, 96, 8, 64, 30, WS_TABSTOP | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS
+    LTEXT           "Port:", IDC_STATIC, 0, 28, 17, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_PORT, 4, 36, 36, 14, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Username:", IDC_STATIC, 0, 56, 36, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_USERNAME, 4, 64, 78, 14, ES_AUTOHSCROLL
+    LTEXT           "Password:", IDC_STATIC, 0, 84, 34, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_PASSWORD, 4, 92, 78, 14, ES_AUTOHSCROLL
+    LTEXT           "Timeout (seconds):", IDC_STATIC, 0, 116, 62, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_TIMEOUT, 4, 124, 36, 14, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Initial directory:", IDC_STATIC, 0, 148, 52, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_INITDIR, 4, 160, 140, 14, ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_PROFILESTRANSFERS DIALOGEX 140, 24, 200, 192
+STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | DS_CONTROL
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    GROUPBOX        "Connection mode", IDC_STATIC, 0, 0, 72, 44
+    RADIOBUTTON     "Active", IDC_RADIO_ACTIVE, 4, 16, 36, 10, WS_GROUP
+    RADIOBUTTON     "Passive", IDC_RADIO_PASSIVE, 4, 28, 40, 10
+    GROUPBOX        "Transfer mode", IDC_STATIC, 84, 0, 72, 44
+    RADIOBUTTON     "ASCII", IDC_RADIO_ASCII, 88, 16, 35, 10, WS_GROUP
+    RADIOBUTTON     "Binary", IDC_RADIO_BINARY, 88, 28, 36, 10
+    LTEXT           "ASCII types:", IDC_STATIC, 0, 56, 42, 8, SS_LEFT
+    LISTBOX         IDC_LIST_ASCII, 0, 68, 76, 51, WS_TABSTOP | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY
+    LTEXT           "Binary types:", IDC_STATIC, 84, 56, 44, 8, SS_LEFT
+    LISTBOX         IDC_LIST_BINARY, 84, 68, 76, 51, WS_TABSTOP | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY
+    LTEXT           "Add ASCII:", IDC_STATIC, 0, 120, 37, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_ASCII, 0, 128, 76, 14, ES_AUTOHSCROLL
+    LTEXT           "Add Binary:", IDC_STATIC, 84, 120, 38, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_BINARY, 84, 128, 76, 14, ES_AUTOHSCROLL
+    LTEXT           "Note: These settings do not affect SFTP connections.", IDC_STATIC, 0, 148, 140, 16, SS_LEFT
+END
+
+IDD_DIALOG_PROFILESCACHE DIALOGEX 140, 24, 200, 192
+STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | DS_CONTROL
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    LTEXT           "Profile cache maps:", IDC_STATIC, 0, 0, 63, 8, SS_LEFT
+    CONTROL         "", IDC_LIST_CACHE, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | LVS_SINGLESEL | LVS_REPORT, 0, 8, 154, 112
+    CONTROL         "", IDC_SPIN_CACHE, UPDOWN_CLASS, WS_DISABLED | UDS_ARROWKEYS, 156, 52, 11, 20
+    LTEXT           "Local path:", IDC_STATIC, 0, 128, 36, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_CACHELOCAL, 0, 136, 156, 14, ES_AUTOHSCROLL
+    LTEXT           "External path:", IDC_STATIC, 0, 152, 47, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_CACHEEXTERNAL, 0, 160, 156, 14, ES_AUTOHSCROLL
+    PUSHBUTTON      "Add new", IDC_BUTTON_CACHE_ADD, 164, 132, 36, 14, WS_DISABLED
+    PUSHBUTTON      "Edit", IDC_BUTTON_CACHE_EDIT, 164, 148, 36, 14, WS_DISABLED
+    PUSHBUTTON      "Delete", IDC_BUTTON_CACHE_DELETE, 164, 164, 36, 14, WS_DISABLED
+END
+
+IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 95
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
+CAPTION "Global settings"
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    LTEXT           "Global cache:", IDC_STATIC, 4, 4, 44, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_CACHE, 8, 12, 160, 14, ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Close", IDC_BUTTON_CLOSE, 132, 72, 48, 14
+END
+
+IDD_DIALOG_GENERIC DIALOGEX 0, 0, 10, 10
+STYLE DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_BORDER | WS_CAPTION | WS_CHILDWINDOW | WS_DLGFRAME | WS_SYSMENU
+CAPTION "NppFTPDlg"
+FONT 8, "MS Shell Dlg", 0, 0, 1
+BEGIN
+END
+
+IDD_DIALOG_INPUT DIALOGEX 0, 0, 150, 64
+STYLE DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
+CAPTION "Input"
+FONT 8, "MS Shell Dlg", 400, 0, 1
+BEGIN
+    LTEXT           "Input required:", IDC_STATIC_COMMENT, 6, 6, 138, 18, SS_LEFT
+    EDITTEXT        IDC_EDIT_INPUT, 12, 26, 132, 14, ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK", IDB_BUTTON_OK, 44, 44, 50, 14
+    PUSHBUTTON      "Cancel", IDB_BUTTON_CANCEL, 96, 44, 50, 14
+END
+
+IDD_DIALOG_MESSAGE DIALOGEX 0, 0, 150, 48
+STYLE DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
+CAPTION "Input"
+FONT 8, "MS Shell Dlg", 400, 0, 1
+BEGIN
+    LTEXT           "Message", IDC_STATIC_MESSAGE, 6, 6, 138, 18, SS_LEFT
+    DEFPUSHBUTTON   "No", IDB_BUTTON_NO, 96, 28, 50, 14
+    PUSHBUTTON      "Yes", IDB_BUTTON_YES, 44, 28, 50, 14
+END
+
+IDD_DIALOG_ABOUT DIALOGEX 0, 0, 200, 232
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_FIXEDSYS | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
+CAPTION "About NppFTP"
+FONT 8, "Ms Shell Dlg 2", 400, 0, 1
+BEGIN
+    EDITTEXT        IDC_EDIT_ABOUTMSG, 4, 4, 192, 160, NOT WS_BORDER |/* ES_AUTOHSCROLL |*/ ES_MULTILINE | ES_READONLY | WS_DISABLED
+    LTEXT           "libssh version:", IDC_STATIC, 4, 172, 46, 8, SS_LEFT
+    LTEXT           "OpenSSL version:", IDC_STATIC, 4, 184, 58, 8, SS_LEFT
+    LTEXT           "NppFTP version:", IDC_STATIC, 4, 196, 54, 8, SS_LEFT
+    DEFPUSHBUTTON   "Close", IDC_BUTTON_CLOSE, 144, 212, 48, 14
+    RTEXT           "0", IDC_STATIC_SSHVERSION, 68, 172, 128, 8, SS_LEFT
+    RTEXT           "0", IDC_STATIC_SSLVERSION, 68, 184, 128, 8, SS_LEFT
+    RTEXT           "0", IDC_STATIC_NPPFTPVERSION, 68, 196, 128, 8, SS_LEFT
+    PUSHBUTTON      "Visit NppFTP site", IDC_BUTTON_VISIT, 4, 212, 58, 14
+END
+
+//
+// Version Information resources
+//
+VS_VERSION_INFO VERSIONINFO
+    FILEVERSION     IDT_VERSION_NUM
+    PRODUCTVERSION  IDT_VERSION_NUM
+    FILEOS          VOS__WINDOWS32
+    FILETYPE        VFT_DLL
+    FILESUBTYPE     VFT2_UNKNOWN
+    FILEFLAGSMASK   0x00000017
+    FILEFLAGS       0x00000002
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "FileDescription", "FTP Plugin for Notepad++, a free (GNU) source code editor"
+            VALUE "FileVersion", IDT_VERSION_TEXT
+            VALUE "InternalName", "NppFTP"
+            VALUE "LegalCopyright", "Copyright (C) 2010"
+            VALUE "OriginalFilename", "NppFTP.dll"
+            VALUE "ProductName", "NppFTP"
+            VALUE "ProductVersion", IDT_VERSION_TEXT
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0000, 0x04B0
+    END
+END

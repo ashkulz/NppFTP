@@ -36,6 +36,7 @@ FTPWindow::FTPWindow() :
 	m_treeimagelist(m_hInstance),
 	m_outputShown(false),
 	m_currentSelection(NULL),
+	m_localFileExists(false),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
 	m_globalCache(NULL),
@@ -109,6 +110,13 @@ int FTPWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 	m_rebar.Show(true);
 	m_treeview.Show(true);
 	m_queueWindow.Show(true);
+
+	TCHAR source[MAX_PATH];
+	res = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
+	if (res == TRUE) {
+		OnActivateLocalFile(source);
+	}
+	SetToolbarState();
 
 	return 0;
 }
@@ -187,6 +195,24 @@ int FTPWindow::OnProfileChange() {
 	}
 
 	m_toolbar.SetMenu(IDB_BUTTON_TOOLBAR_CONNECT, m_popupProfile);
+
+	SetToolbarState();
+
+	return 0;
+}
+
+int FTPWindow::OnActivateLocalFile(const TCHAR* filename) {
+	m_localFileExists = false;
+	if (!filename) {
+		SetToolbarState();
+		return -1;
+	}
+
+	BOOL exist = PathFileExists(filename);
+	if (exist == TRUE) {
+		BOOL isdir = PathIsDirectory(filename);	//Cannot upload directories
+		m_localFileExists = (isdir == FALSE);
+	}
 
 	SetToolbarState();
 
@@ -277,7 +303,11 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					TCHAR source[MAX_PATH];
 					BOOL res = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
 					if (res == TRUE) {
-						m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
+						if (m_currentSelection->isDir()) {
+							m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
+						} else {
+							m_ftpSession->UploadFile(source, m_currentSelection->GetParent()->GetPath(), true);
+						}
 					}
 					result = TRUE;
 					break;}
@@ -582,7 +612,7 @@ int FTPWindow::CreateMenus() {
 }
 
 int FTPWindow::SetToolbarState() {
-	if (m_vProfiles->size() > 0 && !m_connecting) {
+	if (m_vProfiles && m_vProfiles->size() > 0 && !m_connecting) {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_CONNECT, true);
 	} else {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_CONNECT, false);
@@ -598,7 +628,7 @@ int FTPWindow::SetToolbarState() {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, false);
 	} else {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_DOWNLOAD, !m_currentSelection->isDir());
-		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, m_currentSelection->isDir());
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, m_localFileExists);	//m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, m_currentSelection->isDir());
 	}
 
@@ -826,6 +856,8 @@ int FTPWindow::OnConnect(int code) {
 	}
 
 	m_treeview.EnsureObjectVisible(last);
+	TreeView_Select(m_treeview.GetHWND(), last->GetData(), TVGN_CARET);
+	m_ftpSession->GetDirectory(last->GetPath());
 
 	SetToolbarState();
 

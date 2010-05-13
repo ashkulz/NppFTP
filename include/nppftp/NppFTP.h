@@ -37,6 +37,7 @@ public:
 	int						ShowAboutDialog();
 
 	int						OnSave(const TCHAR* path);
+	int						OnActivateLocalFile(const TCHAR* path);
 
 	static int				InitAll(HINSTANCE hInst);
 private:

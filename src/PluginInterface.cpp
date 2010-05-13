@@ -118,6 +118,16 @@ void beNotified(SCNotification * scNotification) {
 			nppFTP.OnSave(path);
 			delete [] path;
 			break; }
+		case NPPN_BUFFERACTIVATED: {
+			BufferID buf = (BufferID)scNotification->nmhdr.idFrom;
+			int size = ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, NULL);
+			if (size == -1)
+				break;
+			TCHAR * path = new TCHAR[size+1];
+			::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, (LPARAM)path);
+			nppFTP.OnActivateLocalFile(path);
+			delete [] path;
+			break; }
 	}
 }
 

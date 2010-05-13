@@ -296,10 +296,13 @@ TCHAR* FTPCache::ExpandPath(const TCHAR * path) {
 
 	TCHAR * expanded = new TCHAR[MAX_PATH];
 	BOOL res = PathSearchAndQualify(replacestring.c_str(), expanded, MAX_PATH);
+
 	if (res == FALSE) {
 		delete [] expanded;
 		return NULL;
 	}
+
+	PathRemoveBackslash(expanded);
 
 	//OutMsg("Expanded %T to %T", path, expanded);
 

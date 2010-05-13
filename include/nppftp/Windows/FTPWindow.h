@@ -49,6 +49,7 @@ public:
 
 	virtual int				OnSize(int newWidth, int newHeight);
 	virtual int				OnProfileChange();
+	virtual int				OnActivateLocalFile(const TCHAR* filename);
 
 	static int				RegisterClass();
 
@@ -90,6 +91,7 @@ protected:
 	HBRUSH					m_backgroundBrush;
 
 	FileObject*				m_currentSelection;
+	bool					m_localFileExists;
 
 	HMENU					m_popupProfile;
 	HMENU					m_popupSettings;

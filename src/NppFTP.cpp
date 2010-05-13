@@ -146,7 +146,7 @@ int NppFTP::ShowAboutDialog() {
 }
 
 int NppFTP::OnSave(const TCHAR* path) {
-	if (!path)
+	if (!path || !m_ftpSession)
 		return -1;
 
 	if (m_ftpSession->IsConnected()) {
@@ -154,6 +154,13 @@ int NppFTP::OnSave(const TCHAR* path) {
 	}
 
 	return 0;
+}
+
+int NppFTP::OnActivateLocalFile(const TCHAR* path) {
+	if (!path || !m_ftpWindow)
+		return -1;
+
+	return m_ftpWindow->OnActivateLocalFile(path);
 }
 
 int NppFTP::InitAll(HINSTANCE hInst) {

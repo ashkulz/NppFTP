@@ -24,15 +24,15 @@
 
 class FTPQueue;
 
-const int NotifyMessageMIN = 		WM_USER + 500;
+const int NotifyMessageMIN               = WM_USER + 500;
 
-const int NotifyMessageStart = 		WM_USER + 500;
-const int NotifyMessageEnd = 		WM_USER + 501;
-const int NotifyMessageAdd = 		WM_USER + 502;
-const int NotifyMessageRemove = 	WM_USER + 503;
-const int NotifyMessageProgress = 	WM_USER + 504;
+const unsigned int NotifyMessageStart    = WM_USER + 500;
+const unsigned int NotifyMessageEnd      = WM_USER + 501;
+const unsigned int NotifyMessageAdd      = WM_USER + 502;
+const unsigned int NotifyMessageRemove   = WM_USER + 503;
+const unsigned int NotifyMessageProgress = WM_USER + 504;
 
-const int NotifyMessageMAX =	 	WM_USER + 506;
+const unsigned int NotifyMessageMAX      = WM_USER + 504;
 
 /*
 Queue will delete/free data gathered during operations, but not given at constructor time
@@ -48,7 +48,7 @@ public:
 	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote
 	               };
 
-	enum QueueEvent { QueueEventStart, QueueEventEnd, QueueEventAdd, QueueEventRemove, QueueEventProgress };
+	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
 public:
 							QueueOperation(QueueType type, HWND hNotify, int notifyCode = 0, void * notifyData = NULL);
 	virtual					~QueueOperation();
@@ -87,6 +87,7 @@ protected:
 	int						m_result;
 	void*					m_data;
 	float					m_progress;	//0.0-100.0
+	unsigned int			m_notifSent;
 
 	bool					m_running;
 

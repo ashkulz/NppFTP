@@ -53,9 +53,11 @@ protected:
 	FTPWindow*				m_ftpWindow;
 
 	ChildDialog				m_pageConnection;
+	ChildDialog				m_pageAuthentication;
 	ChildDialog				m_pageTransfer;
 	ChildDialog				m_pageCache;
 	HWND					m_hPageConnection;
+	HWND					m_hPageAuthentication;
 	HWND					m_hPageTransfer;
 	HWND					m_hPageCache;
 };

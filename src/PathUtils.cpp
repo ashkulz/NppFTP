@@ -220,13 +220,16 @@ int PU::CreateLocalDirFile(const TCHAR * file) {
 	return CreateLocalDir(path);
 }
 
-int PU::GetOpenFilename(TCHAR * buffer, int bufSize) {
+int PU::GetOpenFilename(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (!buffer || bufSize == 0)
 		return -1;
 
+	if (!hOwner)
+		hOwner = _MainOutputWindow;
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(ofn);	//not NT4.0 compatible
-	ofn.hwndOwner = _MainOutputWindow;
+	ofn.hwndOwner = hOwner;
 	ofn.lpstrFilter = NULL;	//accept everything
 	ofn.lpstrCustomFilter = NULL;
 	ofn.nFilterIndex = 1;
@@ -245,13 +248,16 @@ int PU::GetOpenFilename(TCHAR * buffer, int bufSize) {
 	return 0;
 }
 
-int PU::GetSaveFilename(TCHAR * buffer, int bufSize) {
+int PU::GetSaveFilename(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (!buffer || bufSize == 0)
 		return -1;
 
+	if (!hOwner)
+		hOwner = _MainOutputWindow;
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(ofn);	//not NT4.0 compatible
-	ofn.hwndOwner = _MainOutputWindow;
+	ofn.hwndOwner = hOwner;
 	ofn.lpstrFilter = NULL;	//accept everything
 	ofn.lpstrCustomFilter = NULL;
 	ofn.nFilterIndex = 1;
@@ -268,6 +274,33 @@ int PU::GetSaveFilename(TCHAR * buffer, int bufSize) {
 	if (res == FALSE)
 		return -1;
 	return 0;
+
+	return 0;
+}
+
+int PU::BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner) {
+	if (bufSize < MAX_PATH)
+		return -1;
+
+	if (!hOwner)
+		hOwner = _MainOutputWindow;
+	//TODO: detect Vista+ and use IFileDialog
+	BROWSEINFO bi;
+	bi.hwndOwner = hOwner;
+	bi.pidlRoot = NULL;	//desktop
+	bi.pszDisplayName = buffer;
+	bi.lpszTitle = TEXT("Please pick a location");
+	bi.ulFlags = 0;
+	bi.lpfn = NULL;
+	bi.lParam = NULL;
+	bi.iImage = 0;
+
+	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+	if (!pidl)
+		return -1;
+
+	BOOL bResult = SHGetPathFromIDList(pidl, buffer);
+	CoTaskMemFree(pidl);
 
 	return 0;
 }

@@ -21,6 +21,7 @@
 				<Linker>
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXMLD" />
 					<Add library="UTCPD" />
@@ -56,6 +57,7 @@
 					<Add option="-s" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXML" />
 					<Add library="UTCP" />
@@ -87,6 +89,7 @@
 					<Add option="-s" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXML" />
 					<Add library="UTCPA" />
@@ -163,6 +166,7 @@
 		<Unit filename="..\include\nppftp\Windows\DockableWindow.h" />
 		<Unit filename="..\include\nppftp\Windows\FTPWindow.h" />
 		<Unit filename="..\include\nppftp\Windows\InputDialog.h" />
+		<Unit filename="..\include\nppftp\Windows\KBIntDialog.h" />
 		<Unit filename="..\include\nppftp\Windows\MessageDialog.h" />
 		<Unit filename="..\include\nppftp\Windows\OutputWindow.h" />
 		<Unit filename="..\include\nppftp\Windows\ProfilesDialog.h" />
@@ -204,6 +208,7 @@
 		<Unit filename="..\src\Windows\DockableWindow.cpp" />
 		<Unit filename="..\src\Windows\FTPWindow.cpp" />
 		<Unit filename="..\src\Windows\InputDialog.cpp" />
+		<Unit filename="..\src\Windows\KBIntDialog.cpp" />
 		<Unit filename="..\src\Windows\MessageDialog.cpp" />
 		<Unit filename="..\src\Windows\NppFTP.rc">
 			<Option compilerVar="WINDRES" />

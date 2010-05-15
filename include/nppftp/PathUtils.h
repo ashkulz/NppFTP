@@ -41,8 +41,9 @@ public:
 	static int				CreateLocalDir(const TCHAR * local);
 	static int				CreateLocalDirFile(const TCHAR * file);
 
-	static int				GetOpenFilename(TCHAR * buffer, int bufSize);	//if buffer[0] != 0, buffer contains initial name
-	static int				GetSaveFilename(TCHAR * buffer, int bufSize);	//if buffer[0] != 0, buffer contains initial name
+	static int				GetOpenFilename(TCHAR * buffer, int bufSize, HWND hOwner);	//if buffer[0] != 0, buffer contains initial name
+	static int				GetSaveFilename(TCHAR * buffer, int bufSize, HWND hOwner);	//if buffer[0] != 0, buffer contains initial name
+	static int				BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner);
 private:
 	static bool				IsValidLocalChar(const TCHAR localchar);
 };

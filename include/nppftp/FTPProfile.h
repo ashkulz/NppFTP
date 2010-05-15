@@ -70,6 +70,15 @@ public:
 	const char*				GetInitialDir() const;
 	int						SetInitialDir(const char * dir);
 
+	const TCHAR*			GetKeyFile() const;
+	int						SetKeyFile(const TCHAR * keyFile);
+	const char*				GetPassphrase() const;
+	int						SetPassphrase(const char * passphrase);
+	bool					GetUseAgent() const;
+	int						SetUseAgent(bool useAgent);
+	AuthenticationMethods	GetAcceptedMethods() const;
+	int						SetAcceptedMethods(AuthenticationMethods acceptedMethods);
+
 	int						SetCacheParent(FTPCache * parentCache);
 
 	//other functions
@@ -121,6 +130,11 @@ private:
 
 	vString					m_asciiTypes;
 	vString					m_binTypes;
+
+	TCHAR*					m_keyFile;
+	char*					m_passphrase;
+	bool					m_useAgent;
+	AuthenticationMethods	m_acceptedMethods;
 };
 
 #endif //FTPPROFILE_H

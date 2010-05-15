@@ -33,6 +33,7 @@ QueueOperation::QueueOperation(QueueType type, HWND hNotify, int notifyCode, voi
 	m_result(-1),	//error by default
 	m_data(NULL),
 	m_progress(0.0f),
+	m_notifSent(0),
 	m_running(false),
 	m_ackMonitor(QueueConditionCount),
 	m_terminating(false)
@@ -80,6 +81,11 @@ bool QueueOperation::GetRunning() {
 
 int QueueOperation::SendNotification(QueueEvent event) {
 	UINT msg = 0;
+	if (event != QueueEventProgress && (m_notifSent & event) != 0)
+		return 0;		//do not send duplicate notifications, except for progress
+
+	m_notifSent |= event;
+
 	switch(event) {
 		case QueueEventStart:
 			msg = NotifyMessageStart;

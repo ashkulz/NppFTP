@@ -31,6 +31,7 @@ enum Client_Type { Client_SSL, Client_SSH };
 enum Security_Mode {Mode_FTP = 0, Mode_FTPES = 1, Mode_FTPS = 2, Mode_SFTP = 3, Mode_SecurityMax = 4};
 enum Connection_Mode {Mode_Passive = 0, Mode_Active = 1, Mode_ConnectionMax = 2};
 enum Transfer_Mode {Mode_Binary = 0, Mode_ASCII = 1, Mode_TransferMax = 2};
+enum AuthenticationMethods {Method_Password=0x01, Method_Key=0x02, Method_Interactive=0x04, Method_All=0x07};
 
 class FtpSSLWrapper : public CUT_FTPClient {
 public:
@@ -148,17 +149,31 @@ public:
 	virtual int				DeleteFile(const char * path);
 
 	virtual bool			IsConnected();
+
+	//Class specific operations
+	virtual int				SetKeyFile(const TCHAR * keyFile);
+	virtual int				SetPassphrase(const char * passphrase);
+	virtual int				SetUseAgent(bool useAgent);
+	virtual int				SetAcceptedMethods(AuthenticationMethods acceptedMethods);
 protected:
 	ssh_session				m_sshsession;
 	sftp_session			m_sftpsession;
 
 	int						connect_ssh();
+	int 					authenticate(ssh_session session);
+	int 					authenticate_key(ssh_session session);
 	int 					authenticate_password(ssh_session session);
+	int 					authenticate_kbinteractive(ssh_session session);
 	int						verify_knownhost(ssh_session session);
 	int						disconnect();
 
 	HANDLE					OpenFile(const TCHAR* file, bool write);
 	FILETIME				ConvertFiletime(uint32_t nTime, uint32_t nNanosecs);
+
+	TCHAR*					m_keyFile;
+	char*					m_passphrase;
+	bool					m_useAgent;
+	unsigned int			m_acceptedMethods;
 };
 
 class FTPClientWrapperSSL : public FTPClientWrapper {

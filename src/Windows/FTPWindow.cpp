@@ -290,7 +290,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case IDM_POPUP_DLDTOLOCATION: {
 					TCHAR target[MAX_PATH];
 					lstrcpy(target, m_currentSelection->GetLocalName());
-					int res = PU::GetSaveFilename(target, MAX_PATH);
+					int res = PU::GetSaveFilename(target, MAX_PATH, m_hwnd);
 					if (res == 0) {
 						m_ftpSession->DownloadFile(m_currentSelection->GetPath(), target, false);
 					}
@@ -314,7 +314,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case IDM_POPUP_UPLOADOTHERFILE: {
 					TCHAR source[MAX_PATH];
 					source[0] = 0;
-					int res = PU::GetOpenFilename(source, MAX_PATH);
+					int res = PU::GetOpenFilename(source, MAX_PATH, m_hwnd);
 					if (res == 0) {
 						m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
 					}

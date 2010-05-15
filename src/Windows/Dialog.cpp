@@ -46,7 +46,10 @@ int Dialog::Create(HWND hParent, bool isModal, const TCHAR * title) {
 
 	if (m_title)
 		SU::FreeTChar(m_title);
-	m_title = SU::DupString(title);
+	if (title)
+		m_title = SU::DupString(title);
+	else
+		m_title = NULL;
 
 	if (isModal) {
 		INT_PTR res = DialogBoxParam(m_hInstance, MAKEINTRESOURCE(m_dialogResource), m_hParent, &Dialog::DialogProc, (LPARAM)this);
@@ -107,7 +110,9 @@ INT_PTR Dialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 INT_PTR Dialog::OnInitDialog() {
-	::SetWindowText(m_hwnd, m_title);
+	if (m_title != NULL)
+		::SetWindowText(m_hwnd, m_title);
+
 	return TRUE;	//Allow focus to be set
 }
 

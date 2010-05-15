@@ -28,9 +28,10 @@ ProfilesDialog::ProfilesDialog() :
 	Dialog(IDD_DIALOG_PROFILES),
 	m_profiles(NULL),
 	m_currentProfile(NULL),
-	m_ftpWindow(NULL),
 	m_globalCache(NULL),
+	m_ftpWindow(NULL),
 	m_pageConnection(IDD_DIALOG_PROFILESCONNECTION),
+	m_pageAuthentication(IDD_DIALOG_PROFILESAUTHENTICATION),
 	m_pageTransfer(IDD_DIALOG_PROFILESTRANSFERS),
 	m_pageCache(IDD_DIALOG_PROFILESCACHE),
 	m_hPageConnection(NULL),
@@ -46,7 +47,7 @@ int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profi
 	m_ftpWindow = ftpWindow;
 	m_profiles = profileVect;
 	m_globalCache = globalCache;
-	return Dialog::Create(hParent, true, TEXT("Profile settings"));
+	return Dialog::Create(hParent, true, NULL);
 }
 
 INT_PTR ProfilesDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -172,6 +173,52 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			break; }
 
+		case IDC_EDIT_KEYFILE: {
+			if (notifCode == EN_KEYPRESS) {
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetKeyFile(TTextBuffer);
+			}
+			break; }
+		case IDC_EDIT_PASSPHRASE: {
+			if (notifCode == EN_KEYPRESS) {
+				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
+				m_currentProfile->SetPassphrase(aTextBuffer);
+			}
+			break; }
+		case IDC_CHECK_AGENT: {
+			if (notifCode == BN_CLICKED) {
+				LRESULT checked = Button_GetCheck(idHwnd);
+				m_currentProfile->SetUseAgent(checked == BST_CHECKED);
+			}
+			break; }
+		case IDC_BUTTON_KEYBROWSE: {
+			TTextBuffer[0] = 0;
+			int res = PU::GetOpenFilename(TTextBuffer, MAX_PATH, m_hwnd);
+			if (res != -1) {
+				SetDlgItemText(m_hPageAuthentication, IDC_EDIT_KEYFILE, TTextBuffer);
+				m_currentProfile->SetKeyFile(TTextBuffer);
+			}
+			break; }
+		case IDC_CHECK_PASSWORD:
+		case IDC_CHECK_KEY:
+		case IDC_CHECK_INTERACTIVE: {
+			if (notifCode == BN_CLICKED) {
+				int methods = 0;
+				LRESULT checked;
+				checked = Button_GetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_PASSWORD));
+				if (checked == BST_CHECKED)
+					methods |= Method_Password;
+				checked = Button_GetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_KEY));
+				if (checked == BST_CHECKED)
+					methods |= Method_Key;
+				checked = Button_GetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE));
+				if (checked == BST_CHECKED)
+					methods |= Method_Interactive;
+
+				m_currentProfile->SetAcceptedMethods((AuthenticationMethods)methods);
+			}
+			break; }
+
 		case IDC_RADIO_ACTIVE: {
 			if (notifCode == BN_CLICKED) {
 				CheckRadioButton(m_hPageTransfer, IDC_RADIO_ACTIVE, IDC_RADIO_PASSIVE, IDC_RADIO_ACTIVE);
@@ -285,6 +332,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				LoadCacheMaps();
 			}
 			break; }
+		case IDC_BUTTON_CACHEBROWSE: {
+			int res = PU::BrowseDirectory(TTextBuffer, MAX_PATH, m_hwnd);
+			if (res != -1) {
+				SetDlgItemText(m_hPageCache, IDC_EDIT_CACHELOCAL, TTextBuffer);
+				EnableCacheMapUI();
+			}
+			break; }
 	}
 
 	return TRUE;
@@ -304,8 +358,9 @@ INT_PTR ProfilesDialog::OnNotify(NMHDR * pnmh) {
 		if (pnmh->code == TCN_SELCHANGE) {
 			int index = TabCtrl_GetCurSel(pnmh->hwndFrom);
 			m_pageConnection.Show(index == 0);
-			m_pageTransfer.Show(index == 1);
-			m_pageCache.Show(index == 2);
+			m_pageAuthentication.Show(index == 1);
+			m_pageTransfer.Show(index == 2);
+			m_pageCache.Show(index == 3);
 		}
 	}
 
@@ -321,21 +376,26 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	tci.mask = TCIF_TEXT;
 
 	tci.pszText = (TCHAR*)TEXT("Connection");
-	int index = TabCtrl_InsertItem(hTab, 0, &tci);
+	TabCtrl_InsertItem(hTab, 0, &tci);
+
+	tci.pszText = (TCHAR*)TEXT("Authentication");
+	TabCtrl_InsertItem(hTab, 2, &tci);
 
 	tci.pszText = (TCHAR*)TEXT("Transfers");
-	TabCtrl_InsertItem(hTab, 1, &tci);
+	TabCtrl_InsertItem(hTab, 3, &tci);
 
 	tci.pszText = (TCHAR*)TEXT("Cache");
-	TabCtrl_InsertItem(hTab, 2, &tci);
+	TabCtrl_InsertItem(hTab, 4, &tci);
 
 	TabCtrl_SetCurSel(hTab, 0);
 
 	m_pageConnection.Create(m_hwnd, TEXT(""));
+	m_pageAuthentication.Create(m_hwnd, TEXT(""));
 	m_pageTransfer.Create(m_hwnd, TEXT(""));
 	m_pageCache.Create(m_hwnd, TEXT(""));
 
 	m_hPageConnection = m_pageConnection.GetHWND();
+	m_hPageAuthentication = m_pageAuthentication.GetHWND();
 	m_hPageTransfer= m_pageTransfer.GetHWND();
 	m_hPageCache = m_pageCache.GetHWND();
 
@@ -347,6 +407,9 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+
+	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_KEYFILE), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_ASCII), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
@@ -414,7 +477,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	if (profile == m_currentProfile && profile != NULL)
 		return 0;
 
-	BOOL prevEnable = (m_currentProfile!=NULL)?TRUE:FALSE;
+	//BOOL prevEnable = (m_currentProfile!=NULL)?TRUE:FALSE;
 	if (m_currentProfile)
 		m_currentProfile->Release();
 	m_currentProfile = profile;
@@ -470,6 +533,15 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_INITDIR, m_currentProfile->GetInitialDir());
 
+
+	AuthenticationMethods methods = m_currentProfile->GetAcceptedMethods();
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_PASSWORD), (methods&Method_Password)?TRUE:FALSE);
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_KEY), (methods&Method_Key)?TRUE:FALSE);
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE), (methods&Method_Interactive)?TRUE:FALSE);
+	::SetDlgItemText(m_hPageAuthentication, IDC_EDIT_KEYFILE, m_currentProfile->GetKeyFile());
+	::SetDlgItemTextA(m_hPageAuthentication, IDC_EDIT_PASSPHRASE, m_currentProfile->GetPassphrase());
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_AGENT), m_currentProfile->GetUseAgent()?TRUE:FALSE);
+
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);
 	ComboBox_SetCurSel(hCombobox, (int)m_currentProfile->GetSecurityMode());
 
@@ -497,6 +569,13 @@ int ProfilesDialog::Clear() {
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_TIMEOUT, 0, FALSE);
 
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_INITDIR, "");
+
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_PASSWORD), FALSE);
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_KEY), FALSE);
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE), FALSE);
+	::SetDlgItemText(m_hPageAuthentication, IDC_EDIT_KEYFILE, TEXT(""));
+	::SetDlgItemTextA(m_hPageAuthentication, IDC_EDIT_PASSPHRASE, "");
+	//Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_AGENT), FALSE);
 
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);
 	ComboBox_SetCurSel(hCombobox, 0);

@@ -35,7 +35,10 @@ FTPProfile::FTPProfile() :
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
-	m_initialDir(NULL)
+	m_initialDir(NULL),
+	m_keyFile(NULL),
+	m_passphrase(NULL),
+	m_useAgent(false)
 {
 }
 
@@ -47,7 +50,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_keepAliveTransfer(90),
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
-	m_connectionMode(Mode_Passive)
+	m_connectionMode(Mode_Passive),
+	m_useAgent(false)
 {
 	m_cache = new FTPCache();
 
@@ -56,6 +60,9 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_username = SU::strdup("");
 	m_password = SU::strdup("");
 	m_initialDir = SU::strdup("");
+
+	m_keyFile = SU::DupString(TEXT(""));
+	m_passphrase = SU::strdup("");
 
 	m_cache->SetEnvironment(m_hostname, m_username);
 }
@@ -104,6 +111,10 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 	switch(m_securityMode) {
 		case Mode_SFTP:
 			wrapper = new FTPClientWrapperSSH(m_hostname, m_port, m_username, m_password);
+			((FTPClientWrapperSSH*)wrapper)->SetKeyFile(m_keyFile);
+			((FTPClientWrapperSSH*)wrapper)->SetPassphrase(m_passphrase);
+			((FTPClientWrapperSSH*)wrapper)->SetUseAgent(m_useAgent);
+			((FTPClientWrapperSSH*)wrapper)->SetAcceptedMethods(m_acceptedMethods);
 			break;
 		case Mode_FTP:
 			wrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
@@ -280,6 +291,44 @@ int FTPProfile::SetInitialDir(const char * dir) {
 	return 0;
 }
 
+const TCHAR* FTPProfile::GetKeyFile() const {
+	return m_keyFile;
+}
+
+int FTPProfile::SetKeyFile(const TCHAR * keyFile) {
+	SU::FreeTChar(m_keyFile);
+	m_keyFile = SU::DupString(keyFile);
+	return 0;
+}
+
+const char* FTPProfile::GetPassphrase() const {
+	return m_passphrase;
+}
+
+int FTPProfile::SetPassphrase(const char * passphrase) {
+	free(m_passphrase);
+	m_passphrase = SU::strdup(passphrase);
+	return 0;
+}
+
+bool FTPProfile::GetUseAgent() const {
+	return m_useAgent;
+}
+
+int FTPProfile::SetUseAgent(bool useAgent) {
+	m_useAgent = useAgent;
+	return 0;
+}
+
+AuthenticationMethods FTPProfile::GetAcceptedMethods() const {
+	return m_acceptedMethods;
+}
+
+int FTPProfile::SetAcceptedMethods(AuthenticationMethods acceptedMethods) {
+	m_acceptedMethods = acceptedMethods;
+	return 0;
+}
+
 int FTPProfile::SetCacheParent(FTPCache * parentCache) {
 	if (!m_cache)
 		return -1;
@@ -440,20 +489,23 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 
 		attrstr = profileElem->Attribute("hostname");
 		if (!attrstr)
-			break;
-		profile->m_hostname = SU::strdup(attrstr);
+			profile->m_hostname = SU::strdup("");
+		else
+			profile->m_hostname = SU::strdup(attrstr);
 
 		profileElem->Attribute("port", &profile->m_port);
 
 		attrstr = profileElem->Attribute("username");
 		if (!attrstr)
-			break;
-		profile->m_username = SU::strdup(attrstr);
+			profile->m_username = SU::strdup("");
+		else
+			profile->m_username = SU::strdup(attrstr);
 
 		attrstr = profileElem->Attribute("password");	//password may be empty, but not missing
 		if (!attrstr)
-			break;
-		profile->m_password = SU::strdup(attrstr);
+			profile->m_password = SU::strdup("");
+		else
+			profile->m_password = SU::strdup(attrstr);
 
 		profileElem->Attribute("askPassword", (int*)(&profile->m_askPassword));
 		profileElem->Attribute("timeout", &profile->m_timeout);
@@ -473,12 +525,26 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 		if (!profile->m_cache)
 			break;
 
-		//TODO: enforce root
-
 		attrstr = profileElem->Attribute("initialDir");
 		if (!attrstr)
-			break;
-		profile->m_initialDir = SU::strdup(attrstr);
+			profile->m_initialDir = SU::strdup("");
+		else
+			profile->m_initialDir = SU::strdup(attrstr);
+
+		attrstr = profileElem->Attribute("keyFile");
+		if (!attrstr)
+			profile->m_keyFile = SU::DupString(TEXT(""));
+		else
+			profile->m_keyFile = SU::Utf8ToTChar(attrstr);
+
+		attrstr = profileElem->Attribute("passphrase");
+		if (!attrstr)
+			profile->m_passphrase = SU::strdup("");
+		else
+			profile->m_passphrase = SU::strdup(attrstr);
+
+		profileElem->Attribute("useAgent", (int*)(&profile->m_useAgent));
+		profileElem->Attribute("acceptedMethods", (int*)(&profile->m_acceptedMethods));
 
 		const TiXmlElement * typesElem = profileElem->FirstChildElement("FileTypes");
 		if (!typesElem)
@@ -532,6 +598,13 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 
 	profileElem->SetAttribute("initialDir", m_initialDir);
 
+	char * utf8keyfile = SU::TCharToUtf8(m_keyFile);
+	profileElem->SetAttribute("keyFile", utf8keyfile);
+	SU::FreeUtf8(utf8keyfile);
+	profileElem->SetAttribute("passphrase", m_passphrase);
+	profileElem->SetAttribute("useAgent", m_useAgent?1:0);
+	profileElem->SetAttribute("acceptedMethods", (int)m_acceptedMethods);
+
 	TiXmlElement * cacheElem = FTPCache::SaveCache(m_cache);
 	if (!cacheElem) {
 		delete profileElem;
@@ -579,6 +652,8 @@ int FTPProfile::Sanitize() {
 
 	if (m_connectionMode < 0 || m_connectionMode >= Mode_ConnectionMax)
 		m_connectionMode = Mode_Passive;
+
+	m_acceptedMethods = (AuthenticationMethods)(m_acceptedMethods & Method_All);
 
 	m_askPassword = false;
 

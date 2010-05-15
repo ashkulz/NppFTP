@@ -32,7 +32,7 @@ SettingsDialog::~SettingsDialog() {
 
 int SettingsDialog::Create(HWND hParent, FTPCache * globalCache) {
 	m_globalCache = globalCache;
-	return Dialog::Create(hParent, true, TEXT("General settings"));
+	return Dialog::Create(hParent, true, NULL);
 }
 
 INT_PTR SettingsDialog::OnInitDialog() {

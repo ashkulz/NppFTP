@@ -20,13 +20,19 @@
 #include "FTPClientWrapper.h"
 
 #include "MessageDialog.h"
+#include "KBIntDialog.h"
 #include <fcntl.h>
+#include <libssh/keys.h>	//complete type for private_key
 
 extern TCHAR * _HostsFile;
 
 FTPClientWrapperSSH::FTPClientWrapperSSH(const char * host, int port, const char * user, const char * password) :
-	FTPClientWrapper(Client_SSH, host, port, user, password)
+	FTPClientWrapper(Client_SSH, host, port, user, password),
+	m_useAgent(false),
+	m_acceptedMethods(SSH_AUTH_METHOD_PASSWORD)
 {
+	m_keyFile = SU::DupString(TEXT(""));
+	m_passphrase = SU::strdup("");
 }
 
 FTPClientWrapperSSH::~FTPClientWrapperSSH() {
@@ -341,6 +347,35 @@ bool FTPClientWrapperSSH::IsConnected() {
 	return true;
 }
 
+int FTPClientWrapperSSH::SetKeyFile(const TCHAR * keyFile) {
+	SU::FreeTChar(m_keyFile);
+	m_keyFile = SU::DupString(keyFile);
+	return 0;
+}
+
+int FTPClientWrapperSSH::SetPassphrase(const char * passphrase) {
+	free(m_passphrase);
+	m_passphrase = SU::strdup(passphrase);
+	return 0;
+}
+
+int FTPClientWrapperSSH::SetUseAgent(bool useAgent) {
+	m_useAgent = useAgent;
+	return 0;
+}
+
+int FTPClientWrapperSSH::SetAcceptedMethods(AuthenticationMethods acceptedMethods) {
+	m_acceptedMethods = 0;
+	if (acceptedMethods & Method_Password)
+		m_acceptedMethods |= SSH_AUTH_METHOD_PASSWORD;
+	if (acceptedMethods & Method_Key)
+		m_acceptedMethods |= SSH_AUTH_METHOD_PUBLICKEY;
+	if (acceptedMethods & Method_Interactive)
+		m_acceptedMethods |= SSH_AUTH_METHOD_INTERACTIVE;
+
+	return 0;
+}
+
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
@@ -393,7 +428,7 @@ int FTPClientWrapperSSH::connect_ssh() {
 		return -1;
 	}
 
-	auth = authenticate_password(session);
+	auth = authenticate(session);
 	if(auth == -1) {
 		ssh_disconnect(session);
 		ssh_free(session);
@@ -423,38 +458,152 @@ int FTPClientWrapperSSH::connect_ssh() {
 	return 0;
 }
 
-int FTPClientWrapperSSH::authenticate_password(ssh_session session) {
-	int rc;
-	int method;
-	char *banner;
+int FTPClientWrapperSSH::authenticate(ssh_session session) {
+	int methods = 0;
+	int authres = 0;
 
-	// Try to authenticate
-	rc = ssh_userauth_none(session, NULL);
-	if (rc == SSH_AUTH_ERROR) {
+	authres = ssh_userauth_none(session, NULL);
+	if (authres == SSH_AUTH_ERROR) {
 		OutErr("[SFTP] Authentication failed.");
 		return -1;
+	} else if (authres == SSH_AUTH_SUCCESS) {
+		OutMsg("[SFTP] Authenticated without credentials.");
+		return 0;
 	}
 
-	method = ssh_auth_list(session);
-	// Try to authenticate with password
-	if (method & SSH_AUTH_METHOD_PASSWORD) {
-		rc = ssh_userauth_password(session, NULL, m_password);
-		if (rc == SSH_AUTH_ERROR) {
-			OutErr("[SFTP] Authentication failed.");
-			return -1;
-		}
-	} else {
-		OutErr("[SFTP] No password authentication.");
-		return -1;
-	}
-
-	banner = ssh_get_issue_banner(session);
+	char * banner = ssh_get_issue_banner(session);
 	if (banner) {
 		OutMsg("[SFTP] Banner: %s\n", banner);
 		free(banner);
 	}
 
-	return 0;
+	methods = ssh_auth_list(session);
+	if (methods == -1) {
+		OutErr("[SFTP] No authentication methods provided.");
+		return -1;
+	}
+
+	//Filter out methods client does not wish to use
+	methods &= m_acceptedMethods;
+
+	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PUBLICKEY)) {
+		authres = authenticate_key(session);
+	}
+
+	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_INTERACTIVE)) {
+		authres = authenticate_kbinteractive(session);
+	}
+
+	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PASSWORD)) {
+		authres = authenticate_password(session);
+	}
+
+	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_UNKNOWN)) {
+		OutErr("[SFTP] Unknown authentication method.");
+		return -1;
+	}
+
+	if (authres == SSH_AUTH_ERROR) {
+		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
+		return -1;
+	}
+
+	if (authres == SSH_AUTH_SUCCESS) {
+		OutMsg("[SFTP] Successfully authenticated");
+		return 0;
+	}
+
+	OutErr("[SFTP] Unable to authenticate");
+
+	return -1;
+}
+
+int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
+	int rc;
+	int type = 0;
+
+	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
+	ssh_private_key privkey = privatekey_from_file(session, keyfile, 0, m_passphrase);
+	SU::FreeUtf8(keyfile);
+
+	if (privkey == NULL)
+		return SSH_AUTH_ERROR;
+
+	type = privkey->type;
+	if (type == 0) {
+		privatekey_free(privkey);
+		return SSH_AUTH_ERROR;
+	}
+
+	ssh_public_key pubkeyfrompriv = publickey_from_privatekey(privkey);
+	if (pubkeyfrompriv == NULL) {
+		privatekey_free(privkey);
+		return SSH_AUTH_ERROR;
+	}
+
+	ssh_string pubstringkey = publickey_to_string(pubkeyfrompriv);
+	publickey_free(pubkeyfrompriv);
+
+
+	if (pubstringkey == NULL) {
+		privatekey_free(privkey);
+		return SSH_AUTH_ERROR;
+	}
+
+	if (pubstringkey == NULL || privkey == NULL)
+		return SSH_AUTH_ERROR;
+
+	rc = ssh_userauth_offer_pubkey(session, m_username, type, pubstringkey);
+	if (rc == SSH_AUTH_SUCCESS) {
+		rc = ssh_userauth_pubkey(session, m_username, pubstringkey, privkey);
+	}
+
+	privatekey_free(privkey);
+	string_free(pubstringkey);
+
+	if (rc == SSH_AUTH_DENIED) {
+		OutMsg("[SFTP] Key authentication denied.");
+	}
+
+	return rc;
+}
+
+int FTPClientWrapperSSH::authenticate_password(ssh_session session) {
+	int rc;
+
+	rc = ssh_userauth_password(session, NULL, m_password);
+	if (rc == SSH_AUTH_DENIED) {
+		OutMsg("[SFTP] Password authentication denied.");
+	}
+
+	return rc;
+}
+
+int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
+	int rc;
+
+	KBIntDialog kbdlg;
+
+	rc = ssh_userauth_kbdint(session, NULL, NULL);
+	int i = 0;	//upper bound on challenges, it has got to end at some point
+	while (rc == SSH_AUTH_INFO && i < 10) {
+		int res = kbdlg.Create(_MainOutputWindow, session);
+		if (res == -1) {
+			OutErr("[SFTP] Error creating interactive dialog");
+			return SSH_AUTH_ERROR;
+		} else if (res != 1 && res != 0) {	//1: Gave answer, 0: No input required
+			OutMsg("[SFTP] Keyboard interactive authentication cancelled.");
+			return SSH_AUTH_ERROR;
+		}
+		rc = ssh_userauth_kbdint(session, NULL, NULL);
+		i++;
+	}
+
+	if (rc == SSH_AUTH_DENIED) {
+		OutMsg("[SFTP] Keyboard interactive authentication denied.");
+	}
+
+	return rc;
 }
 
 int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {

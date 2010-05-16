@@ -46,7 +46,7 @@ TCHAR* SU::Utf8ToTChar(const char * utf8string) {
 	wchar_t * wstring = new wchar_t[size];
 	int ret = ::MultiByteToWideChar(CP_UTF8, 0, utf8string, -1, wstring, size);
 	if (ret == 0) {
-		delete wstring;
+		delete [] wstring;
 		return NULL;
 	}
 
@@ -244,7 +244,7 @@ TCHAR* SU::TSprintfNB(const TCHAR * format, ...) {
 		return NULL;
 	}
 	TCHAR * buffer = new TCHAR[size+1];
-	int ret = TSprintfV(buffer, size+1, format, vaList);
+	/*int ret = */TSprintfV(buffer, size+1, format, vaList);
 
 	va_end(vaList);
 	return buffer;

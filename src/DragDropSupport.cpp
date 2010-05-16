@@ -28,7 +28,7 @@ CDropTarget::CDropTarget() {
 	size = 0;
 }
 
-STDMETHODIMP CDropTarget::QueryInterface(REFIID iid, void FAR* FAR* ppv) {
+STDMETHODIMP CDropTarget::QueryInterface(REFIID iid, void ** ppv) {
 	if(iid == IID_IUnknown || iid == IID_IDropTarget) {
 		*ppv = this;
 		AddRef();
@@ -135,7 +135,7 @@ CDropSource::CDropSource() {
 	customData = NULL;
 }
 
-STDMETHODIMP CDropSource::QueryInterface(REFIID iid, void FAR* FAR* ppv) {
+STDMETHODIMP CDropSource::QueryInterface(REFIID iid, void ** ppv) {
 	if(iid == IID_IUnknown || iid == IID_IDropSource)
 	{
 	  *ppv = this;
@@ -186,7 +186,7 @@ CDataObject::CDataObject() {
 	m_refs = 1;
 	currentFormat = 0;
 	callback = NULL;
-	void * customData = NULL;
+	customData = NULL;
 	formats.clear();
 }
 
@@ -194,7 +194,7 @@ CDataObject::~CDataObject() {
 	formats.clear();
 }
 
-STDMETHODIMP CDataObject::QueryInterface(REFIID iid, void FAR* FAR* ppv) {
+STDMETHODIMP CDataObject::QueryInterface(REFIID iid, void ** ppv) {
 	if(iid == IID_IUnknown || iid == IID_IDataObject) {
 	  *ppv = this;
 	  AddRef();
@@ -248,7 +248,7 @@ STDMETHODIMP CDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium) {
 	return ResultFromScode(DATA_E_FORMATETC);
 }
 
-STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium) {
+STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC /*pformatetc*/, LPSTGMEDIUM /*pmedium*/) {
 	return ResultFromScode(DATA_E_FORMATETC);
 }
 
@@ -261,17 +261,17 @@ STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC pformatetc) {
 		return ResultFromScode(S_FALSE);
 }
 
-STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC pformatetc, LPFORMATETC pformatetcOut) {
+STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC /*pformatetc*/, LPFORMATETC pformatetcOut) {
 	pformatetcOut->ptd = NULL;
 	return ResultFromScode(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::SetData(LPFORMATETC pformatetc, STGMEDIUM *pmedium, BOOL fRelease) {
+STDMETHODIMP CDataObject::SetData(LPFORMATETC /*pformatetc*/, STGMEDIUM * /*pmedium*/, BOOL /*fRelease*/) {
 	return ResultFromScode(E_NOTIMPL);
 }
 
 
-STDMETHODIMP CDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppenumFormatEtc) {
+STDMETHODIMP CDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC * ppenumFormatEtc) {
 	SCODE sc = S_OK;
 
 	if (dwDirection == DATADIR_GET){
@@ -287,15 +287,15 @@ STDMETHODIMP CDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* 
 	return ResultFromScode(sc);
 }
 
-STDMETHODIMP CDataObject::DAdvise(FORMATETC FAR* pFormatetc, DWORD advf, LPADVISESINK pAdvSink, DWORD FAR* pdwConnection) {
+STDMETHODIMP CDataObject::DAdvise(FORMATETC * /*pFormatetc*/, DWORD /*advf*/, LPADVISESINK /*pAdvSink*/, DWORD * /*pdwConnection*/) {
 	return ResultFromScode(OLE_E_ADVISENOTSUPPORTED);
 }
 
-STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
+STDMETHODIMP CDataObject::DUnadvise(DWORD /*dwConnection*/) {
 	return ResultFromScode(OLE_E_ADVISENOTSUPPORTED);
 }
 
-STDMETHODIMP CDataObject::EnumDAdvise(LPENUMSTATDATA FAR* ppenumAdvise) {
+STDMETHODIMP CDataObject::EnumDAdvise(LPENUMSTATDATA FAR* /*ppenumAdvise*/) {
 	return ResultFromScode(OLE_E_ADVISENOTSUPPORTED);
 }
 
@@ -305,7 +305,7 @@ void CDataObject::addType(FORMATETC format) {
 
 void CDataObject::setCallback(renderData call, void * custom) {
 	callback = call;
-	void * customData = custom;
+	customData = custom;
 }
 
 bool CDataObject::getFormatIndex(LPFORMATETC pformatetc, size_t * offset) {
@@ -341,7 +341,7 @@ CEnumFormatEtc::CEnumFormatEtc(std::vector<FORMATETC> * formats) {
 	}
 }
 
-CEnumFormatEtc::CEnumFormatEtc(FORMATETC *pFormatEtc, int nNumFormats) {
+CEnumFormatEtc::CEnumFormatEtc(FORMATETC * pFormatEtc, int nNumFormats) {
 	m_refs			= 1;
 	m_nIndex		= 0;
 	m_nNumFormats	= nNumFormats;
@@ -360,7 +360,7 @@ CEnumFormatEtc::~CEnumFormatEtc() {
 	}
 }
 
-STDMETHODIMP CEnumFormatEtc::QueryInterface(REFIID iid, void FAR* FAR* ppv) {
+STDMETHODIMP CEnumFormatEtc::QueryInterface(REFIID iid, void ** ppv) {
 	if(iid == IID_IUnknown || iid == IID_IEnumFORMATETC) {
 	  *ppv = this;
 	  AddRef();
@@ -383,7 +383,7 @@ STDMETHODIMP_(ULONG) CEnumFormatEtc::Release(void) {
 }
 
 
-STDMETHODIMP CEnumFormatEtc::Next(ULONG celt, FORMATETC *pFormatEtc, ULONG * pceltFetched)
+STDMETHODIMP CEnumFormatEtc::Next(ULONG celt, FORMATETC * pFormatEtc, ULONG * pceltFetched)
 {
 	ULONG copied  = 0;
 
@@ -437,7 +437,7 @@ CStreamData::CStreamData() {
     m_refs = 1;
 	closedStream = false;
 	if (!CreatePipe(&readHandle, &writeHandle, NULL, 2048)) {
-		printToLog("Unable to create pipe for stream\n");
+		OutErr("[DnD] Unable to create pipe for stream\n");
 		closedStream = true;
 	}
 }
@@ -449,7 +449,7 @@ CStreamData::~CStreamData() {
 	}
 }
 
-STDMETHODIMP CStreamData::QueryInterface(REFIID iid, void FAR* FAR* ppv) {
+STDMETHODIMP CStreamData::QueryInterface(REFIID iid, void ** ppv) {
 	if(iid == IID_IUnknown || iid == IID_IStream || iid == IID_ISequentialStream) {
 		*ppv = this;
 		AddRef();
@@ -472,7 +472,7 @@ STDMETHODIMP_(ULONG) CStreamData::Release(void) {
 }
 
 
-STDMETHODIMP CStreamData::Read(void* pv, ULONG cb, ULONG* pcbRead) {
+STDMETHODIMP CStreamData::Read(void * pv, ULONG cb, ULONG * pcbRead) {
 	if (!pv || !pcbRead) {
 		return STG_E_INVALIDPOINTER;
 	}
@@ -493,7 +493,7 @@ STDMETHODIMP CStreamData::Read(void* pv, ULONG cb, ULONG* pcbRead) {
 		if (err == ERROR_BROKEN_PIPE) {
 			return S_OK;
 		} else {
-			printToLog("Stream unexpected error: %d\n", err);
+			OutErr("[DnD] Stream unexpected error: %d\n", err);
 			return S_FALSE;
 		}
 	}
@@ -501,15 +501,15 @@ STDMETHODIMP CStreamData::Read(void* pv, ULONG cb, ULONG* pcbRead) {
 	return S_OK;
 }
 
-STDMETHODIMP CStreamData::Write(void const* pv, ULONG cb, ULONG* pcbWritten) {
+STDMETHODIMP CStreamData::Write(void const * /*pv*/, ULONG /*cb*/, ULONG * /*pcbWritten*/) {
     return E_NOTIMPL;
 }
 
-STDMETHODIMP CStreamData::SetSize(ULARGE_INTEGER newsize) {
+STDMETHODIMP CStreamData::SetSize(ULARGE_INTEGER /*newsize*/) {
     return E_NOTIMPL;
 }
 
-STDMETHODIMP CStreamData::CopyTo(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*) {
+STDMETHODIMP CStreamData::CopyTo(IStream *, ULARGE_INTEGER, ULARGE_INTEGER *, ULARGE_INTEGER *) {
     return E_NOTIMPL;
 }
 
@@ -533,7 +533,7 @@ STDMETHODIMP CStreamData::Clone(IStream **) {
     return E_NOTIMPL;
 }
 
-STDMETHODIMP CStreamData::Seek(LARGE_INTEGER liDistanceToMove, DWORD dwOrigin, ULARGE_INTEGER* lpNewFilePointer) {
+STDMETHODIMP CStreamData::Seek(LARGE_INTEGER /*liDistanceToMove*/, DWORD dwOrigin, ULARGE_INTEGER * /*lpNewFilePointer*/) {
 	DWORD dwMoveMethod;
 
 	switch(dwOrigin) {
@@ -554,7 +554,7 @@ STDMETHODIMP CStreamData::Seek(LARGE_INTEGER liDistanceToMove, DWORD dwOrigin, U
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CStreamData::Stat(STATSTG* pStatstg, DWORD grfStatFlag) {
+STDMETHODIMP CStreamData::Stat(STATSTG * pStatstg, DWORD grfStatFlag) {
 	//Doesnt seem to get called by explorer
 	FILETIME currentTime;
 	if (CoFileTimeNow(&currentTime) != S_OK) {

@@ -389,7 +389,7 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 			datacpy[i] = ' ';
 	}
 	OutClnt("-> %s", datacpy);
-	delete datacpy;
+	delete [] datacpy;
 
 	return CUT_WSClient::Send(data, len);
 }

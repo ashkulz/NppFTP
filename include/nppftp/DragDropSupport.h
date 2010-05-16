@@ -16,16 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <windows.h>
-#include <ole2.h>
-#include <shlobj.h>
-#include <stdio.h>
-#include <vector>
+#ifndef DRAGDROPSUPPORT_H
+#define DRAGDROPSUPPORT_H
 
 //Based on microsoft classes from DragDrop example files from FTP, altered for personal use
-//These classes represent various DnD items in FTP_synchronize, and the means to support them
+//These classes represent various DnD items in NppFTP, and the means to support them
 
 //callback function definitions
 typedef void (*enterCallback) (CLIPFORMAT, IDataObject *, void *);							//type, object, custom data
@@ -194,3 +189,5 @@ private:
 	HANDLE writeHandle;
 	bool closedStream;
 };
+
+#endif //DRAGDROPSUPPORT_H

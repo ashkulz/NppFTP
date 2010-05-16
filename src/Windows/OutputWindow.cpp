@@ -165,7 +165,7 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
 
 	msgBuffer[0] = 0;
 
-	int ret = SU::TSprintfV(msgBuffer, 1024, message, vaList);
+	/*int ret =*/SU::TSprintfV(msgBuffer, 1024, message, vaList);
     //if (ret == -1)	//-1 indicates truncation, not necessarily failure
 	//	return -1;
 

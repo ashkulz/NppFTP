@@ -38,7 +38,8 @@ FTPProfile::FTPProfile() :
 	m_initialDir(NULL),
 	m_keyFile(NULL),
 	m_passphrase(NULL),
-	m_useAgent(false)
+	m_useAgent(false),
+	m_acceptedMethods(Method_Password)
 {
 }
 
@@ -51,7 +52,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
-	m_useAgent(false)
+	m_useAgent(false),
+	m_acceptedMethods(Method_Password)
 {
 	m_cache = new FTPCache();
 

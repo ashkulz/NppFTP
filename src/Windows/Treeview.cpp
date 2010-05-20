@@ -61,7 +61,7 @@ int Treeview::Create(HWND hParent) {
 	if (res == -1)
 		return -1;
 
-	HRESULT hres = PF::SetWindowTheme(m_hwnd, TEXT("explorer"), NULL);
+	HRESULT hres = PF::SetWindowTheme(m_hwnd, L"explorer", NULL);
 	if (hres != E_NOTIMPL) {
 		::SetWindowLongPtr(m_hwnd, GWL_STYLE, WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_TRACKSELECT);
 		SendMessage(m_hwnd, TVM_SETEXTENDEDSTYLE, 0, TVS_EX_FADEINOUTEXPANDOS|TVS_EX_DOUBLEBUFFER|TVS_EX_AUTOHSCROLL);

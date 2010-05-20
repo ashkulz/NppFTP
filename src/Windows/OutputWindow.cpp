@@ -175,7 +175,8 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
 }
 
 int OutputWindow::AddMessage(const TCHAR * message, COLORREF color) {
-	int res = m_histControl.AddLine(message, color, 0xFFFFFFFF, FALSE);
+	//int res = m_histControl.AddLine(message, color, 0xFFFFFFFF, FALSE);
+	int res = m_histControl.AddStampedLine(message, color, 0xFFFFFFFF, FALSE);
 	if (res != UH_SUCCESS)
 		return -1;
 

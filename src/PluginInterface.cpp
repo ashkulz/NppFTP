@@ -26,7 +26,7 @@
 
 typedef void* BufferID;
 
-const int	nrFuncItem = 2;
+const int	nrFuncItem = 3;
 FuncItem	funcItems[nrFuncItem];
 NppData		nppData;
 NppFTP		nppFTP;
@@ -36,6 +36,7 @@ bool		show = false;
 bool		isStarted = false;
 
 void __cdecl ShowFTPWindow();
+void __cdecl FocusFTPWindow();
 void __cdecl ShowAboutDialog();
 void __cdecl FakeItem();
 
@@ -77,10 +78,15 @@ FuncItem * getFuncsArray(int * arraysize) {
 	funcItems[0]._pShKey = NULL;
 	lstrcpyn(funcItems[0]._itemName, TEXT("Show NppFTP Window"), nbChar);
 
-	funcItems[1]._pFunc = &ShowAboutDialog;
+	funcItems[1]._pFunc = &FocusFTPWindow;
 	funcItems[1]._init2Check = false;
 	funcItems[1]._pShKey = NULL;
-	lstrcpyn(funcItems[1]._itemName, TEXT("About NppFTP"), nbChar);
+	lstrcpyn(funcItems[1]._itemName, TEXT("Focus NppFTP Window"), nbChar);
+
+	funcItems[2]._pFunc = &ShowAboutDialog;
+	funcItems[2]._init2Check = false;
+	funcItems[2]._pShKey = NULL;
+	lstrcpyn(funcItems[2]._itemName, TEXT("About NppFTP"), nbChar);
 
 	return &funcItems[0];
 }
@@ -150,6 +156,12 @@ void __cdecl ShowFTPWindow() {
 	show = !show;
 	if (isStarted)
 		nppFTP.ShowFTPWindow();
+}
+
+void __cdecl FocusFTPWindow() {
+	show = !show;
+	if (isStarted)
+		nppFTP.FocusFTPWindow();
 }
 
 void __cdecl ShowAboutDialog() {

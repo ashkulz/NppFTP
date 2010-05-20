@@ -18,13 +18,14 @@
 
 //System headers
 #define _WIN32_IE 0x0501
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
 #include <windows.h>
 #include <Shlwapi.h>
 #include <tchar.h>
+#include <uxtheme.h>
 #include <string>
 #include <vector>
-#include <queue>
+#include <deque>
 
 #include <string.h>	//strdup
 
@@ -35,6 +36,7 @@
 #include "Output.h"
 #include "StringUtils.h"
 #include "PathUtils.h"
+#include "WinPlatform.h"
 #include "RefObject.h"
 
 #include "FileObject.h"

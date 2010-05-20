@@ -19,6 +19,24 @@
 #include "StdInc.h"
 #include "Treeview.h"
 
+/* Tree view extended styles */
+#if 1
+    #define TVS_EX_MULTISELECT          0x00000002L
+    #define TVS_EX_DOUBLEBUFFER         0x00000004L
+    #define TVS_EX_NOINDENTSTATE        0x00000008L
+    #define TVS_EX_RICHTOOLTIP          0x00000010L
+    #define TVS_EX_AUTOHSCROLL          0x00000020L
+    #define TVS_EX_FADEINOUTEXPANDOS    0x00000040L
+    #define TVS_EX_PARTIALCHECKBOXES    0x00000080L
+    #define TVS_EX_EXCLUSIONCHECKBOXES  0x00000100L
+    #define TVS_EX_DIMMEDCHECKBOXES     0x00000200L
+    #define TVS_EX_DRAWIMAGEASYNC       0x00000400L
+
+    #define TVM_SETEXTENDEDSTYLE		(TV_FIRST + 44)
+
+#endif
+
+
 #include "resource.h"
 
 Treeview::Treeview() :
@@ -26,10 +44,30 @@ Treeview::Treeview() :
 	m_treeImagelist(NULL)
 {
 	m_exStyle = WS_EX_CLIENTEDGE;
-	m_style = WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASLINES|TVS_HASBUTTONS|TVS_LINESATROOT|TVS_SHOWSELALWAYS;
+	m_style = WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_HASLINES;
+
+	INITCOMMONCONTROLSEX icx;
+	icx.dwSize = sizeof(icx);
+	icx.dwICC = ICC_TREEVIEW_CLASSES;
+	InitCommonControlsEx(&icx);
+
 }
 
 Treeview::~Treeview() {
+}
+
+int Treeview::Create(HWND hParent) {
+	int res = Window::Create(hParent);
+	if (res == -1)
+		return -1;
+
+	HRESULT hres = PF::SetWindowTheme(m_hwnd, TEXT("explorer"), NULL);
+	if (hres != E_NOTIMPL) {
+		::SetWindowLongPtr(m_hwnd, GWL_STYLE, WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_TRACKSELECT);
+		SendMessage(m_hwnd, TVM_SETEXTENDEDSTYLE, 0, TVS_EX_FADEINOUTEXPANDOS|TVS_EX_DOUBLEBUFFER|TVS_EX_AUTOHSCROLL);
+	}
+
+	return 0;
 }
 
 HTREEITEM Treeview::AddRoot(FileObject * rootDir) {
@@ -192,6 +230,15 @@ FileObject* Treeview::GetItemFileObject(HTREEITEM item) {
 	FileObject * fo = (FileObject*) tvi.lParam;
 
 	return fo;
+}
+
+bool Treeview::GetObjectItemRect(FileObject * fo, RECT * pRect) {
+	HTREEITEM hti = (HTREEITEM)(fo->GetData());
+	if (hti == NULL)
+		return false;
+
+	BOOL res = TreeView_GetItemRect(m_hwnd, hti, pRect, TRUE);
+	return (res == TRUE);
 }
 
 int Treeview::UpdateFileObject(FileObject * fo) {

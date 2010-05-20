@@ -23,7 +23,7 @@
 #include "Monitor.h"
 #include "QueueOperation.h"
 
-typedef std::queue<QueueOperation*> VQueue;
+typedef std::deque<QueueOperation*> VQueue;
 
 /*
 Some notes about threading:

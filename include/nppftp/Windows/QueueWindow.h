@@ -35,6 +35,7 @@ public:
 	virtual int				RemoveQueueItem(QueueOperation * op);
 
 	virtual QueueOperation*	GetSelectedQueueOperation();
+	virtual bool			GetSelectedQueueRect(RECT * pRect);
 
 	virtual int				ProgressQueueItem(QueueOperation * op);
 private:

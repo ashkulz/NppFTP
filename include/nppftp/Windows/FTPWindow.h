@@ -33,7 +33,7 @@
 class FTPSession;
 
 class FTPWindow : public DockableWindow {
-	friend class NppFTP;	//for output window
+	friend class NppFTP;	//for output window/ratio
 public:
 							FTPWindow();
 	virtual					~FTPWindow();
@@ -42,6 +42,7 @@ public:
 	virtual int				Destroy();
 
 	virtual int				Show(bool show);
+	virtual int				Focus();
 
 	virtual int				SetSession(FTPSession * session);
 	virtual int				SetProfilesVector(vProfile * vProfiles);
@@ -84,6 +85,7 @@ protected:
 	QueueWindow				m_queueWindow;
 	SettingsDialog			m_settingsDialog;
 	ProfilesDialog			m_profilesDialog;
+	WindowSplitter			m_splitter;
 
 	OutputWindow			m_outputWindow;
 	bool					m_outputShown;

@@ -26,9 +26,11 @@ public:
 							ChildDialog(int dialogResource = 0);
 	virtual					~ChildDialog();
 
-	virtual int				Create(HWND hParent, const TCHAR * title);	//if modal, returns 99 on close
+	virtual int				Create(HWND hParent, HWND hOwner, const TCHAR * title);	//if modal, returns 99 on close
 protected:
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	HWND					m_hOwner;
 
 };
 

@@ -147,6 +147,15 @@ QueueOperation*	QueueWindow::GetSelectedQueueOperation() {
 	return (QueueOperation*)lvi.lParam;
 }
 
+bool QueueWindow::GetSelectedQueueRect(RECT * pRect) {
+	int selectedindex = ListView_GetNextItem(m_hwnd, -1, LVNI_ALL|LVNI_SELECTED);
+	if (selectedindex == -1)
+		return false;
+
+	BOOL res = ListView_GetItemRect(m_hwnd, selectedindex, pRect, LVIR_LABEL);
+	return (res == TRUE);
+}
+
 int QueueWindow::ProgressQueueItem(QueueOperation * op) {
 	if (op->GetType() != QueueOperation::QueueTypeDownload && op->GetType() != QueueOperation::QueueTypeUpload)
 		return -1;	//only transfers supported

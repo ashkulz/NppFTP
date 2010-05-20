@@ -34,6 +34,7 @@ const TCHAR * FTPWindow::FTPWINDOWCLASS = TEXT("NPPFTPMAIN");
 FTPWindow::FTPWindow() :
 	DockableWindow(FTPWINDOWCLASS),
 	m_treeimagelist(m_hInstance),
+	m_splitter(this, &m_treeview, &m_queueWindow),
 	m_outputShown(false),
 	m_currentSelection(NULL),
 	m_localFileExists(false),
@@ -147,7 +148,13 @@ int FTPWindow::Show(bool show) {
 		m_outputWindow.Show(false);
 	}
 
+	Focus();
+
 	return 0;
+}
+
+int FTPWindow::Focus() {
+	return m_treeview.Focus();
 }
 
 int FTPWindow::SetSession(FTPSession * ftpSession) {
@@ -174,13 +181,16 @@ int FTPWindow::OnSize(int newWidth, int newHeight) {
 	m_rebar.Resize(newWidth, toolbarHeight);
 
 	int clientheight = newHeight - toolbarHeight;
+
+	m_splitter.OnSize(0, toolbarHeight, newWidth, clientheight);
+/*
 	int treeheight = clientheight/2;
-	int queueheight = clientheight/2 - 6;
+	int queueheight = clientheight - treeheight;
 
 	m_treeview.Move(0, toolbarHeight, newWidth, treeheight);
 
 	m_queueWindow.Move(0, toolbarHeight+treeheight+5, newWidth-1, queueheight);	//listview appears to be 1px wider than treeview
-
+*/
 	return 0;
 }
 
@@ -255,6 +265,26 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			FillRect(hDC, &rectClient, m_backgroundBrush);
 			result = TRUE;
 			break; }
+		case WM_SETCURSOR: {
+			if (m_splitter.OnSetCursor()) {
+				return TRUE;
+			}
+			return FALSE;
+			break; }
+		case WM_CAPTURECHANGED: {
+			m_splitter.OnCaptureChanged((HWND)lParam);
+			break; }
+		case WM_LBUTTONDOWN: {
+			m_splitter.OnButtonDown();
+			break; }
+		case WM_LBUTTONUP: {
+			m_splitter.OnButtonUp();
+			break; }
+		case WM_MOUSEMOVE: {
+			if (wParam & MK_LBUTTON) {
+				m_splitter.OnMouseMove();
+			}
+			break; }
 		case WM_COMMAND: {
 			switch(LOWORD(wParam)) {
 				case IDM_POPUP_QUEUE_ABORT: {
@@ -284,9 +314,14 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					break;}
 				case IDM_POPUP_DOWNLOADFILE:
 				case IDB_BUTTON_TOOLBAR_DOWNLOAD: {
-					m_ftpSession->DownloadFileCache(m_currentSelection->GetPath());
-					result = TRUE;
-					break; }
+					SHORT state = GetKeyState(VK_CONTROL);
+					if (!(state & 0x8000)) {
+						m_ftpSession->DownloadFileCache(m_currentSelection->GetPath());
+						result = TRUE;
+						break;
+					}
+					//else fallthrough
+					}
 				case IDM_POPUP_DLDTOLOCATION: {
 					TCHAR target[MAX_PATH];
 					lstrcpy(target, m_currentSelection->GetLocalName());
@@ -301,8 +336,17 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					//upload(TRUE, TRUE);		//upload to cached folder is present, else upload to last selected folder
 					//m_ftpSession->UploadFile();
 					TCHAR source[MAX_PATH];
-					BOOL res = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
-					if (res == TRUE) {
+					BOOL doUpload = FALSE;
+					SHORT state = GetKeyState(VK_CONTROL);
+					if ((state & 0x8000) && LOWORD(wParam) == IDB_BUTTON_TOOLBAR_UPLOAD) {
+						source[0] = 0;
+						int res = PU::GetOpenFilename(source, MAX_PATH, m_hParent);
+						if (res == 0)
+							doUpload = TRUE;
+					} else {
+						doUpload = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
+					}
+					if (doUpload == TRUE) {
 						if (m_currentSelection->isDir()) {
 							m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
 						} else {
@@ -439,24 +483,12 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					case NM_CLICK: {
 						HTREEITEM res = m_treeview.OnClick();
 						if (res) {
-							result = TRUE;
 							m_currentSelection = m_treeview.GetItemFileObject(res);
 							SetToolbarState();
-							if (nmh.code == (UINT)NM_RCLICK) {
-								DWORD pos = GetMessagePos();
-								SHORT state = GetKeyState(VK_SHIFT);
-								if ((state & 0x8000) && m_currentSelection->isLink()) {
-									TrackPopupMenu(m_popupLink, TPM_LEFTALIGN, GET_X_LPARAM(pos), GET_Y_LPARAM(pos), 0, m_hwnd, NULL);
-								} else if (m_currentSelection->isDir()) {
-									TrackPopupMenu(m_popupDir, TPM_LEFTALIGN, GET_X_LPARAM(pos), GET_Y_LPARAM(pos), 0, m_hwnd, NULL);
-								} else {
-									TrackPopupMenu(m_popupFile, TPM_LEFTALIGN, GET_X_LPARAM(pos), GET_Y_LPARAM(pos), 0, m_hwnd, NULL);
-								}
-							} else if (nmh.code == (UINT)NM_DBLCLK) {
+							if (nmh.code == (UINT)NM_DBLCLK) {
 								OnItemActivation();
+								result = TRUE;
 							}
-						} else {
-							result = FALSE;
 						}
 						break; }
 					case NM_RETURN: {
@@ -485,27 +517,6 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						doDefaultProc = true;
 						break; }
 				}
-			} else if (nmh.hwndFrom == m_queueWindow.GetHWND()) {
-				switch(nmh.code) {
-					case NM_RCLICK: {
-						QueueOperation * op = m_queueWindow.GetSelectedQueueOperation();
-						if (op != NULL)  {
-							m_cancelOperation = op;
-							bool run = op->GetRunning();
-							DWORD pos = GetMessagePos();
-							if (run) {
-								TrackPopupMenu(m_popupQueueActive, TPM_LEFTALIGN, GET_X_LPARAM(pos), GET_Y_LPARAM(pos), 0, m_hwnd, NULL);
-							} else {
-								TrackPopupMenu(m_popupQueueHold, TPM_LEFTALIGN, GET_X_LPARAM(pos), GET_Y_LPARAM(pos), 0, m_hwnd, NULL);
-							}
-							//m_cancelOperation = NULL;
-						}
-						result = TRUE;
-						break; }
-					default: {
-						doDefaultProc = true;
-						break; }
-				}
 			} else {
 				switch(nmh.code) {
 					case TTN_GETDISPINFO: {
@@ -519,6 +530,80 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						break; }
 				}
 			}
+			break; }
+		case WM_CONTEXTMENU: {
+			HWND hWinContext = (HWND)wParam;
+			HMENU hContext = NULL;
+
+			POINT menuPos;
+			menuPos.x = GET_X_LPARAM(lParam);
+			menuPos.y = GET_Y_LPARAM(lParam);
+			bool fromKeyboard = (menuPos.x == -1 && menuPos.y == -1);
+			if (fromKeyboard) {	//keyboard activation
+				DWORD pos = GetMessagePos();
+				menuPos.x = GET_X_LPARAM(pos);
+				menuPos.y = GET_Y_LPARAM(pos);
+
+			}
+
+			if (hWinContext == m_treeview.GetHWND()) {
+				if (!m_currentSelection) {
+					result = FALSE;
+					break;
+				}
+
+				if (fromKeyboard) {
+					RECT treerect;
+					bool res = m_treeview.GetObjectItemRect(m_currentSelection, &treerect);
+					if (res) {
+						menuPos.x = treerect.left;
+						menuPos.y = treerect.bottom;
+						::ClientToScreen(m_treeview.GetHWND(), &menuPos);
+					}
+				}
+
+				SHORT state = GetKeyState(VK_SHIFT);
+				if ((state & 0x8000) && m_currentSelection->isLink() && !fromKeyboard) {
+					hContext = m_popupLink;
+				} else if (m_currentSelection->isDir()) {
+					hContext = m_popupDir;
+				} else {
+					hContext = m_popupFile;
+				}
+			} else if (hWinContext == m_queueWindow.GetHWND()) {
+				QueueOperation * op = m_queueWindow.GetSelectedQueueOperation();
+				if (!op) {
+					result = FALSE;
+					break;
+				}
+
+				m_cancelOperation = op;
+				bool run = op->GetRunning();
+
+				if (fromKeyboard) {
+					RECT queuerect;
+					bool res = m_queueWindow.GetSelectedQueueRect(&queuerect);
+					if (res) {
+						menuPos.x = queuerect.left;
+						menuPos.y = queuerect.bottom;
+						::ClientToScreen(m_queueWindow.GetHWND(), &menuPos);
+					}
+				}
+
+				if (run) {
+					hContext = m_popupQueueActive;
+				} else {
+					hContext = m_popupQueueHold;
+				}
+			}
+
+			if (!hContext) {
+				result = FALSE;
+				break;
+			}
+
+			::TrackPopupMenu(hContext, TPM_LEFTALIGN, menuPos.x, menuPos.y, 0, m_hwnd, NULL);
+			result = TRUE;
 			break; }
 		case NotifyMessageStart:
 		case NotifyMessageEnd: {
@@ -579,7 +664,7 @@ int FTPWindow::CreateMenus() {
 	//Create context menu for directories in folder window
 	m_popupDir = CreatePopupMenu();
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_NEWDIR,TEXT("Create new &directory"));
-	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_NEWFILE,TEXT("Create new &file"));
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_NEWFILE,TEXT("&Create new file"));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_RENAMEDIR,TEXT("&Rename Directory"));
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_DELETEDIR,TEXT("D&elete directory"));

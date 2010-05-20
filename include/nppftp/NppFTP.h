@@ -34,6 +34,7 @@ public:
 	int						Stop();
 
 	int						ShowFTPWindow();
+	int						FocusFTPWindow();
 	int						ShowAboutDialog();
 
 	int						OnSave(const TCHAR* path);
@@ -48,6 +49,7 @@ private:
 	FTPWindow*				m_ftpWindow;
 
 	bool					m_outputShown;
+	double					m_splitRatio;
 
 	vProfile				m_profiles;
 	bool					m_activeSession;

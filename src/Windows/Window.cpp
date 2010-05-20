@@ -57,8 +57,11 @@ int Window::Create(HWND hParent) {
 	             (LPVOID)this
 	         );
 
-	if (m_hwnd == 0)
+	if (m_hwnd == 0) {
+		int err = GetLastError();
+		OutErr("CreateWindow failed: %d", err);
 		return -1;
+	}
 
 	m_created = true;
 
@@ -124,6 +127,11 @@ bool Window::IsVisible() {
 int Window::Redraw() {
 	BOOL res = RedrawWindow(m_hwnd, NULL, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);
 	return (res==TRUE?0:-1);
+}
+
+int Window::Focus() {
+	HWND hPrev = ::SetFocus(m_hwnd);
+	return (hPrev!=NULL?0:-1);
 }
 
 LRESULT Window::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -198,6 +206,164 @@ int Window::RegisterClass(LPCTSTR classname, WNDCLASSEX wclass) {
 
 	if (!::RegisterClassEx(&wclass))
 		return -1;
+
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
+WindowSplitter::WindowSplitter(Window * windowParent, Window * window1, Window * window2) :
+	m_windowParent(windowParent),
+	m_window1(window1),
+	m_window2(window2),
+	m_splitRatio(0.5),
+	m_dragging(false),
+	m_splitterSize(5),
+	m_dragStartOffset(0),
+	m_splitterMargin(20)
+{
+	::ZeroMemory(&m_splitterRect, sizeof(m_splitterRect));
+	::ZeroMemory(&m_windowRect, sizeof(m_windowRect));
+
+	/*
+	HCURSOR cursorDefault = LoadCursor(NULL, IDC_ARROW);
+	HCURSOR cursorSplitterHorizontal = LoadCursor(NULL, IDC_SIZENS);
+	HCURSOR cursorSplitterVertical = LoadCursor(NULL, IDC_SIZEWE);
+	*/
+}
+
+WindowSplitter::~WindowSplitter() {
+}
+
+int WindowSplitter::SetRatio(double ratio) {
+	if (ratio >= 0.0 && ratio <= 1.0) {
+		m_splitRatio = ratio;
+		m_splitterRect.top = m_windowRect.top + (m_windowRect.bottom*m_splitRatio);
+		m_splitterRect.bottom = m_splitterRect.top + m_splitterSize;
+		PerformLayout();
+	}
+	return 0;
+}
+
+double WindowSplitter::GetRatio() {
+	return m_splitRatio;
+}
+
+int WindowSplitter::OnSize(int x, int y, int width, int height) {
+	m_windowRect.left = x;
+	m_windowRect.right = width;
+	m_windowRect.top = y;
+	m_windowRect.bottom = height;
+
+	m_splitterRect.left = x;
+	m_splitterRect.right = width+x;
+
+	int splitterTop = y + (height*m_splitRatio);
+	if ((splitterTop - y) > (height-m_splitterMargin))
+		splitterTop = y + height - m_splitterMargin;
+	if ((splitterTop - y) < m_splitterMargin)
+		splitterTop = y + m_splitterMargin;
+
+	m_splitterRect.top = splitterTop;
+	m_splitterRect.bottom = m_splitterRect.top + m_splitterSize;
+
+	//keep the ratio intact
+	//m_splitRatio = (double)(splitterTop-y)/(double)height;
+
+	return PerformLayout();
+}
+
+int WindowSplitter::OnCaptureChanged(HWND /*hNewCapture*/) {
+	m_dragging = false;
+	return 0;
+}
+
+bool WindowSplitter::OnSetCursor() {
+	DWORD dPos = GetMessagePos();			//get current mouse pos
+	POINTS pts = MAKEPOINTS(dPos);
+	POINT pos = {pts.x, pts.y};
+	ScreenToClient(m_windowParent->GetHWND(), &pos);
+
+	if (PointOnSplitter(pos)) {
+		::SetCursor(::LoadCursor(NULL, IDC_SIZENS));
+		return true;
+	}
+
+	return false;
+}
+
+bool WindowSplitter::OnButtonDown() {
+	//m_dragging = true;
+	DWORD dPos = GetMessagePos();			//get current mouse pos
+	POINTS pts = MAKEPOINTS(dPos);
+	POINT pos = {pts.x, pts.y};
+	ScreenToClient(m_windowParent->GetHWND(), &pos);
+
+	if (PointOnSplitter(pos)) {
+		m_dragging = true;
+		m_dragStartOffset = pos.y - m_splitterRect.top;
+		::SetCapture(m_windowParent->GetHWND());
+		return true;
+	}
+
+	return false;
+}
+
+bool WindowSplitter::OnMouseMove() {
+	if (!m_dragging)
+		return false;
+
+	DWORD dPos = GetMessagePos();			//get current mouse pos
+	POINTS pts = MAKEPOINTS(dPos);
+	POINT pos = {pts.x, pts.y};
+	ScreenToClient(m_windowParent->GetHWND(), &pos);
+
+	int newSplitterTop = pos.y-m_dragStartOffset;
+
+	if (newSplitterTop < (m_windowRect.top + m_splitterMargin) || (newSplitterTop + m_splitterSize) > (m_windowRect.bottom + m_windowRect.top - m_splitterMargin))
+		return true;
+
+	m_splitRatio = (double)(newSplitterTop - m_windowRect.top)/(double)m_windowRect.bottom;
+
+	m_splitterRect.top = newSplitterTop;
+	m_splitterRect.bottom = m_splitterRect.top + m_splitterSize;
+
+	PerformLayout();
+
+	return false;
+}
+
+bool WindowSplitter::OnButtonUp() {
+	if (m_dragging) {
+		m_dragging = false;
+		::ReleaseCapture();
+		return true;
+	}
+
+	return false;
+}
+
+bool WindowSplitter::PointOnSplitter(POINT pt) {
+	if (pt.x < m_splitterRect.left || pt.x > m_splitterRect.right)
+		return false;
+
+	if (pt.y < m_splitterRect.top || pt.y > m_splitterRect.bottom)
+		return false;
+
+	return true;
+}
+
+int WindowSplitter::PerformLayout() {
+	int win1height = m_splitterRect.top - m_windowRect.top;
+	int win2height = (m_windowRect.bottom - (m_splitterRect.bottom-m_windowRect.top));
+	int win1top = m_windowRect.top;
+	int win2top = m_splitterRect.bottom;
+
+	m_window1->Move(m_windowRect.left, win1top, m_windowRect.right, win1height);
+	m_window2->Move(m_windowRect.left, win2top, m_windowRect.right, win2height);
 
 	return 0;
 }

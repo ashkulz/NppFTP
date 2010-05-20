@@ -41,6 +41,19 @@ struct DropHandler {
 	cancelCallback cancelCall;
 };
 
+class DropTargetWindow {	//does _not_ derive Window
+public:
+							DropTargetWindow();
+	virtual					~DropTargetWindow();
+
+	bool					AcceptType(CLIPFORMAT type);
+	HRESULT					OnDragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	HRESULT					OnDragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	HRESULT					OnDragLeave();
+	HRESULT					OnDrop(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+private:
+};
+
 //Class used to allow items to be dragged INTO the window
 class CDropTarget : public IDropTarget {
 //Register a type and callbackfunction (static) with custom data to support different droppable stuff
@@ -59,8 +72,7 @@ public:
 	STDMETHOD(Drop)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
 
 	/* Client interface methods */
-	//Note that add type concerns order. The first type added is the preferred one
-	void addType(CLIPFORMAT type, void * custom, enterCallback enter, dragCallback drag, dropCallback drop, cancelCallback cancel);
+	bool addType(CLIPFORMAT type, void * custom, enterCallback enter, dragCallback drag, dropCallback drop, cancelCallback cancel);
 
 private:
 	ULONG m_refs;

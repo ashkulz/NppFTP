@@ -78,7 +78,7 @@ int FTPQueue::Deinitialize() {
 		m_queue.front()->ClearPendingNotifications();
 		m_queue.front()->SendNotification(QueueOperation::QueueEventRemove);
 		delete m_queue.front();
-		m_queue.pop();
+		m_queue.pop_front();
 	}
 
 	m_running = false;
@@ -91,11 +91,22 @@ int FTPQueue::Deinitialize() {
 int FTPQueue::AddQueueOp(QueueOperation * op) {
 	op->SetClient(m_wrapper);
 
+	m_monitor->Enter();
+		VQueue::iterator it;
+		for(it = m_queue.begin(); it != m_queue.end(); ++it) {
+			if (op->Equals(**it)) {
+				OutMsg("[Queue] The operation was already added to the queue, ignoring");
+				m_monitor->Exit();
+				return 0;
+			}
+		}
+	m_monitor->Exit();
+
 	//Can safely inform queueWindow, Add is called by window thread
 	op->SendNotification(QueueOperation::QueueEventAdd);
 
 	m_monitor->Enter();
-		m_queue.push(op);
+		m_queue.push_back(op);
 		if (m_queue.size() == 1)
 			m_monitor->Signal(ConditionQueueOps);
 	m_monitor->Exit();
@@ -119,15 +130,15 @@ int FTPQueue::ClearQueue() {
 	m_monitor->Enter();
 		if (m_performing) {
 			op = m_queue.front();
-			m_queue.pop();
+			m_queue.pop_front();
 		}
 		while (!m_queue.empty()) {
 			m_queue.front()->SendNotification(QueueOperation::QueueEventRemove);
 			delete m_queue.front();
-			m_queue.pop();
+			m_queue.pop_front();
 		}
 		if (m_performing) {
-			m_queue.push(op);
+			m_queue.push_back(op);
 		}
 	m_monitor->Exit();
 
@@ -147,13 +158,16 @@ int FTPQueue::CancelQueueOp(QueueOperation * op) {
 		QueueOperation * queueop = NULL;
 		for(size_t i = 0; i < size; i++) {
 			queueop = m_queue.front();
-			m_queue.pop();
+			//m_queue.pop_front();
 			if (queueop == op) {
+				m_queue.erase(m_queue.begin()+i);
 				queueop->SendNotification(QueueOperation::QueueEventRemove);
 				delete queueop;
-			} else {
-				m_queue.push(queueop);
+				break;
 			}
+			// else {
+			//	m_queue.push_back(queueop);
+			//}
 		}
 	m_monitor->Exit();
 
@@ -181,6 +195,7 @@ int FTPQueue::QueueLoop() {
 
 		op->SendNotification(QueueOperation::QueueEventStart);
 		op->SetRunning(true);
+		Sleep(500);
 		op->Perform();
 		op->SetRunning(false);
 		op->SendNotification(QueueOperation::QueueEventEnd);
@@ -193,7 +208,7 @@ int FTPQueue::QueueLoop() {
 		m_monitor->Enter();
 			m_activeOp = NULL;
 			m_performing = false;
-			m_queue.pop();
+			m_queue.pop_front();
 			delete op;
 		m_monitor->Exit();
 	}

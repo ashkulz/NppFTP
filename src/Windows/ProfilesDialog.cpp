@@ -169,6 +169,25 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				int sel = ComboBox_GetCurSel(idHwnd);
 				if (sel != CB_ERR) {
 					m_currentProfile->SetSecurityMode((Security_Mode)sel);	//index matches enum
+					int port = m_currentProfile->GetPort();
+					bool setport = (port == 21 || port == 22 || port == 990);	//otherwise its custom so leave it as is
+					if (setport) {
+						switch ((Security_Mode)sel) {
+							case Mode_FTP: {
+								m_currentProfile->SetPort(21);
+								break; }
+							case Mode_FTPS: {
+								m_currentProfile->SetPort(990);
+								break; }
+							case Mode_FTPES: {
+								m_currentProfile->SetPort(21);
+								break; }
+							case Mode_SFTP: {
+								m_currentProfile->SetPort(22);
+								break; }
+						}
+						::SetDlgItemInt(m_hPageConnection, IDC_EDIT_PORT,  m_currentProfile->GetPort(), TRUE);
+					}
 				}
 			}
 			break; }
@@ -389,10 +408,10 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	TabCtrl_SetCurSel(hTab, 0);
 
-	m_pageConnection.Create(m_hwnd, TEXT(""));
-	m_pageAuthentication.Create(m_hwnd, TEXT(""));
-	m_pageTransfer.Create(m_hwnd, TEXT(""));
-	m_pageCache.Create(m_hwnd, TEXT(""));
+	m_pageConnection.Create(hTab, m_hwnd, TEXT(""));
+	m_pageAuthentication.Create(hTab, m_hwnd, TEXT(""));
+	m_pageTransfer.Create(hTab, m_hwnd, TEXT(""));
+	m_pageCache.Create(hTab, m_hwnd, TEXT(""));
 
 	m_hPageConnection = m_pageConnection.GetHWND();
 	m_hPageAuthentication = m_pageAuthentication.GetHWND();

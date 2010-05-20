@@ -36,6 +36,8 @@ public:
 							Treeview();
 	virtual					~Treeview();
 
+	virtual int				Create(HWND hParent);
+
 	virtual HTREEITEM		AddRoot(FileObject * rootDir);
 	virtual HTREEITEM		AddFileObject(HTREEITEM root, FileObject * file);
 
@@ -47,6 +49,7 @@ public:
 	virtual int				OnExpanding(const NM_TREEVIEW* nmt);	//return true when refresh is required
 
 	virtual FileObject*		GetItemFileObject(HTREEITEM item);
+	virtual bool			GetObjectItemRect(FileObject * fo, RECT * pRect);
 
 	virtual int				UpdateFileObject(FileObject * fo);
 	virtual int				UpdateDirectory(FileObject * dir);

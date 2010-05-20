@@ -56,12 +56,12 @@ public:
 	virtual int				Perform() = 0;
 	virtual int				Terminate();
 
-	virtual int				GetResult();
-	virtual void*			GetNotifyData();
-	virtual void*			GetData();
-	virtual QueueType		GetType();
+	virtual int				GetResult() const;
+	virtual void*			GetNotifyData() const;
+	virtual void*			GetData() const;
+	virtual QueueType		GetType() const;
 
-	virtual bool			GetRunning();
+	virtual bool			GetRunning() const;
 	virtual int				SetRunning(bool running);
 
 	virtual int				SendNotification(QueueEvent event);
@@ -69,7 +69,9 @@ public:
 	virtual int				ClearPendingNotifications();
 
 	virtual int				SetProgress(float progress);
-	virtual float			GetProgress();
+	virtual float			GetProgress() const;
+
+	virtual bool			Equals(const QueueOperation & other);
 protected:
 	virtual int				SetClient(FTPClientWrapper* wrapper);
 
@@ -103,6 +105,8 @@ public:
 	virtual					~QueueConnect();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 };
 
 class QueueDisconnect : public QueueOperation {
@@ -111,6 +115,8 @@ public:
 	virtual					~QueueDisconnect();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 };
 
 /*
@@ -122,6 +128,8 @@ public:
 	virtual					~QueueDownload();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 
 	virtual const TCHAR*	GetLocalPath();
 	virtual const char*		GetExternalPath();
@@ -141,6 +149,8 @@ public:
 
 	virtual int				Perform();
 
+	virtual bool			Equals(const QueueOperation & other);
+
 	virtual const TCHAR*	GetLocalPath();
 	virtual const char*		GetExternalPath();
 protected:
@@ -156,6 +166,8 @@ public:
 
 	virtual int				Perform();
 
+	virtual bool			Equals(const QueueOperation & other);
+
 	virtual char*			GetDirPath();
 	virtual int				GetFileCount();
 protected:
@@ -170,6 +182,8 @@ public:
 
 	virtual int				Perform();
 
+	virtual bool			Equals(const QueueOperation & other);
+
 	virtual char*			GetDirPath();
 protected:
 	char*					m_dirPath;
@@ -181,6 +195,8 @@ public:
 	virtual					~QueueRemoveDir();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 
 	virtual char*			GetDirPath();
 protected:
@@ -194,6 +210,8 @@ public:
 
 	virtual int				Perform();
 
+	virtual bool			Equals(const QueueOperation & other);
+
 	virtual char*			GetFilePath();
 protected:
 	char*					m_filePath;
@@ -206,6 +224,8 @@ public:
 
 	virtual int				Perform();
 
+	virtual bool			Equals(const QueueOperation & other);
+
 	virtual char*			GetFilePath();
 protected:
 	char*					m_filePath;
@@ -217,6 +237,8 @@ public:
 	virtual					~QueueRenameFile();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 
 	virtual char*			GetFilePath();
 	virtual char*			GetNewPath();
@@ -232,6 +254,8 @@ public:
 	virtual					~QueueQuote();
 
 	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
 
 	virtual char*			GetQuote();
 protected:

@@ -44,6 +44,12 @@ FTPClientWrapper* FTPClientWrapperSSH::Clone() {
 	wrapper->SetProgressMonitor(m_progmon);
 	wrapper->SetCertificates(m_certificates);
 
+	wrapper->SetKeyFile(m_keyFile);
+	wrapper->SetPassphrase(m_passphrase);
+	wrapper->SetUseAgent(m_useAgent);
+	//wrapper->SetAcceptedMethods(m_acceptedMethods);
+	wrapper->m_acceptedMethods = m_acceptedMethods;
+
 	return wrapper;
 }
 

@@ -42,6 +42,7 @@ public:
 	virtual int				Show(bool show);
 	virtual bool			IsVisible();
 	virtual int				Redraw();
+	virtual int				Focus();
 
 	virtual LRESULT			MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -62,6 +63,38 @@ protected:
 	DWORD					m_style;
 
 	static HINSTANCE		_hDefaultInst;
+};
+
+class WindowSplitter {
+public:
+							WindowSplitter(Window * windowParent, Window * window1, Window * window2);
+							~WindowSplitter();
+
+	int						SetRatio(double ratio);
+	double					GetRatio();
+
+	int						OnSize(int x, int y, int width, int height);
+	int						OnCaptureChanged(HWND hNewCapture);
+
+	bool					OnSetCursor();
+	bool					OnButtonDown();
+	bool					OnMouseMove();
+	bool					OnButtonUp();
+private:
+	bool					PointOnSplitter(POINT pt);
+	int						PerformLayout();
+
+	Window*					m_windowParent;
+	Window*					m_window1;
+	Window*					m_window2;
+
+	RECT					m_windowRect;
+	RECT					m_splitterRect;
+	double					m_splitRatio;
+	bool					m_dragging;
+	int						m_splitterSize;
+	int						m_dragStartOffset;
+	int						m_splitterMargin;
 };
 
 #endif //WINDOW_H

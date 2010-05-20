@@ -20,24 +20,39 @@
 #include "ChildDialog.h"
 
 ChildDialog::ChildDialog(int dialogResource) :
-	Dialog(dialogResource)
+	Dialog(dialogResource),
+	m_hOwner(NULL)
 {
 }
 
 ChildDialog::~ChildDialog() {
 }
 
-int ChildDialog::Create(HWND hParent, const TCHAR * title) {
-	return Dialog::Create(hParent, false, title);
+int ChildDialog::Create(HWND hParent, HWND hOwner, const TCHAR * title) {
+	int res = Dialog::Create(hParent, false, title);
+	if (res == -1)
+		return -1;
+
+	m_hOwner = hOwner;
+	return 0;
 }
 
 INT_PTR ChildDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	INT_PTR result;
 
 	switch(uMsg) {
+		case WM_ERASEBKGND: {
+			HDC hDC = (HDC)wParam;
+			POINT pt = {0, 0};
+			MapWindowPoints(m_hwnd, m_hParent, &pt, 1);
+			//pt = OffsetWindowOrg(hDC, pt.x, pt.y);
+			result = SendMessage(m_hParent, WM_ERASEBKGND, (WPARAM)hDC, 0);
+			//SetWindowOrg(hDC, pt.x, pt.y);
+
+			break; }
 		case WM_COMMAND:
 		case WM_NOTIFY: {
-			result = (INT_PTR)::SendMessage(m_hParent, uMsg, wParam, lParam);
+			result = (INT_PTR)::SendMessage(m_hOwner, uMsg, wParam, lParam);
 			break; }
 		default:
 			result = Dialog::DlgMsgProc(uMsg, wParam, lParam);

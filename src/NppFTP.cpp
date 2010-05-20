@@ -30,6 +30,7 @@ NppFTP::NppFTP() :
 	m_ftpSession(NULL),
 	m_ftpWindow(NULL),
 	m_outputShown(false),
+	m_splitRatio(0.5),
 	m_activeSession(false),
 	m_configStore(NULL)
 {
@@ -54,6 +55,8 @@ NppFTP::~NppFTP() {
 
 int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem funcItem) {
 	m_nppData = nppData;
+
+	PF::Init();
 
 	m_configStore = new TCHAR[MAX_PATH];
 	lstrcpy(m_configStore, nppConfigStore);
@@ -102,6 +105,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 	res = m_ftpWindow->SetProfilesVector(&m_profiles);
 	res = m_ftpWindow->SetGlobalCache(&m_globalCache);
 	m_ftpWindow->m_outputShown = m_outputShown;
+	m_ftpWindow->m_splitter.SetRatio(m_splitRatio);
 
 	res = m_ftpSession->SetCertificates(&m_certificates);
 
@@ -129,6 +133,8 @@ int NppFTP::Stop() {
 		_ConfigPath = NULL;
 	}
 
+	PF::Deinit();
+
 	return 0;
 }
 
@@ -138,6 +144,17 @@ int NppFTP::ShowFTPWindow() {
 
 	return 0;
 }
+
+int NppFTP::FocusFTPWindow() {
+	bool shown = (m_ftpWindow->IsVisible());
+	if (!shown)
+		m_ftpWindow->Show(true);
+	m_ftpWindow->Focus();
+
+	return 0;
+}
+
+
 
 int NppFTP::ShowAboutDialog() {
 	AboutDialog ab;
@@ -206,6 +223,12 @@ int NppFTP::LoadSettings() {
 		outState = 0;
 	}
 	m_outputShown = (outState != 0);
+	double ratio = 0.5;
+	const char * ratiostr = ftpElem->Attribute("windowRatio", &ratio);
+	if (!ratiostr) {
+		ratio = 0.5;
+	}
+	m_splitRatio = ratio;
 
 	const char * defaultCacheutf8 = ftpElem->Attribute("defaultCache");
 	TCHAR * defaultCache;
@@ -290,6 +313,7 @@ int NppFTP::SaveSettings() {
 
 	bool shown = (m_ftpWindow != NULL)?m_ftpWindow->m_outputShown:false;
 	ftpElem->SetAttribute("outputShown", shown?1:0);
+	ftpElem->SetDoubleAttribute("windowRatio", m_ftpWindow->m_splitter.GetRatio());
 
 	TiXmlElement * profilesElem = FTPProfile::SaveProfiles(m_profiles);
 	ftpElem->LinkEndChild(profilesElem);

@@ -133,7 +133,6 @@
 		<Linker>
 			<Add directory="..\lib" />
 		</Linker>
-		<Unit filename="..\include\nppftp\ChildDialog.h" />
 		<Unit filename="..\include\nppftp\DragDropSupport.h" />
 		<Unit filename="..\include\nppftp\FTPCache.h" />
 		<Unit filename="..\include\nppftp\FTPClientWrapper.h" />
@@ -160,7 +159,9 @@
 			<Option weight="0" />
 		</Unit>
 		<Unit filename="..\include\nppftp\StringUtils.h" />
+		<Unit filename="..\include\nppftp\WinPlatform.h" />
 		<Unit filename="..\include\nppftp\Windows\AboutDialog.h" />
+		<Unit filename="..\include\nppftp\Windows\ChildDialog.h" />
 		<Unit filename="..\include\nppftp\Windows\Commands.h" />
 		<Unit filename="..\include\nppftp\Windows\Dialog.h" />
 		<Unit filename="..\include\nppftp\Windows\DockableWindow.h" />
@@ -202,6 +203,7 @@
 		<Unit filename="..\src\RefObject.cpp" />
 		<Unit filename="..\src\SSLCertificates.cpp" />
 		<Unit filename="..\src\StringUtils.cpp" />
+		<Unit filename="..\src\WinPlatform.cpp" />
 		<Unit filename="..\src\Windows\AboutDialog.cpp" />
 		<Unit filename="..\src\Windows\ChildDialog.cpp" />
 		<Unit filename="..\src\Windows\Dialog.cpp" />

@@ -54,19 +54,19 @@ int QueueOperation::Terminate() {
 	return 0;
 }
 
-int QueueOperation::GetResult() {
+int QueueOperation::GetResult() const {
 	return m_result;
 }
 
-void* QueueOperation::GetData() {
+void* QueueOperation::GetData() const {
 	return m_data;
 }
 
-void* QueueOperation::GetNotifyData() {
+void* QueueOperation::GetNotifyData() const {
 	return m_notifyData;
 }
 
-QueueOperation::QueueType QueueOperation::GetType() {
+QueueOperation::QueueType QueueOperation::GetType() const {
 	return m_type;
 }
 
@@ -75,7 +75,7 @@ int QueueOperation::SetRunning(bool running) {
 	return 0;
 }
 
-bool QueueOperation::GetRunning() {
+bool QueueOperation::GetRunning() const {
 	return m_running;
 }
 
@@ -151,8 +151,17 @@ int QueueOperation::SetProgress(float progress) {
 	return 0;
 }
 
-float QueueOperation::GetProgress() {
+float QueueOperation::GetProgress() const {
 	return m_progress;
+}
+
+bool QueueOperation::Equals(const QueueOperation & other) {
+	if (other.GetType() != m_type)
+		return false;
+	if (other.m_client != m_client || other.m_data != m_data || other.m_hNotify != m_hNotify || other.m_notifyData != m_notifyData)
+		return false;
+
+	return true;	//ignore everything else
 }
 
 int QueueOperation::SetClient(FTPClientWrapper* wrapper) {
@@ -178,6 +187,14 @@ int QueueConnect::Perform() {
 	return m_result;
 }
 
+bool QueueConnect::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	//const QueueConnect & otherConnect = (QueueConnect&) other;
+
+	return true;
+}
+
 //////////////////////////////////////
 
 QueueDisconnect::QueueDisconnect(HWND hNotify, int notifyCode, void * notifyData) :
@@ -192,6 +209,14 @@ int QueueDisconnect::Perform() {
 	m_result = m_client->Disconnect();
 
 	return m_result;
+}
+
+bool QueueDisconnect::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	//const QueueDisconnect & otherDisconnect = (QueueDisconnect&) other;
+
+	return true;
 }
 
 //////////////////////////////////////
@@ -223,6 +248,14 @@ int QueueDownload::Perform() {
 
 	m_result = m_client->ReceiveFile(m_localFile, m_externalFile);
 	return m_result;
+}
+
+bool QueueDownload::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueDownload & otherDld = (QueueDownload&) other;
+
+	return (!lstrcmp(otherDld.m_localFile, m_localFile) && !strcmp(otherDld.m_externalFile, m_externalFile) && !m_running && !otherDld.m_running);
 }
 
 const TCHAR* QueueDownload::GetLocalPath() {
@@ -262,6 +295,14 @@ int QueueUpload::Perform() {
 
 	m_result = m_client->SendFile(m_localFile, m_externalFile);
 	return m_result;
+}
+
+bool QueueUpload::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueUpload & otherUld = (QueueUpload&) other;
+
+	return (!lstrcmp(otherUld.m_localFile, m_localFile) && !strcmp(otherUld.m_externalFile, m_externalFile) && !m_running && !otherUld.m_running);
 }
 
 const TCHAR* QueueUpload::GetLocalPath() {
@@ -313,6 +354,14 @@ int QueueGetDir::Perform() {
 	return m_result;
 }
 
+bool QueueGetDir::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueGetDir & otherGet = (QueueGetDir&) other;
+
+	return (!strcmp(otherGet.m_dirPath, m_dirPath));
+}
+
 char * QueueGetDir::GetDirPath() {
 	return m_dirPath;
 }
@@ -346,6 +395,14 @@ int QueueCreateDir::Perform() {
 	return m_result;
 }
 
+bool QueueCreateDir::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueCreateDir & otherMkdir = (QueueCreateDir&) other;
+
+	return (!strcmp(otherMkdir.m_dirPath, m_dirPath));
+}
+
 char * QueueCreateDir::GetDirPath() {
 	return m_dirPath;
 }
@@ -372,6 +429,14 @@ int QueueRemoveDir::Perform() {
 
 	m_result = m_client->RmDir(m_dirPath);
 	return m_result;
+}
+
+bool QueueRemoveDir::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueRemoveDir & otherRmdir = (QueueRemoveDir&) other;
+
+	return (!strcmp(otherRmdir.m_dirPath, m_dirPath));
 }
 
 char * QueueRemoveDir::GetDirPath() {
@@ -402,6 +467,15 @@ int QueueCreateFile::Perform() {
 	return m_result;
 }
 
+bool QueueCreateFile::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueCreateFile & otherMkfile = (QueueCreateFile&) other;
+
+	return (!strcmp(otherMkfile.m_filePath, m_filePath));
+}
+
+
 char * QueueCreateFile::GetFilePath() {
 	return m_filePath;
 }
@@ -428,6 +502,14 @@ int QueueDeleteFile::Perform() {
 
 	m_result = m_client->DeleteFile(m_filePath);
 	return m_result;
+}
+
+bool QueueDeleteFile::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueDeleteFile & otherRmfile = (QueueDeleteFile&) other;
+
+	return (!strcmp(otherRmfile.m_filePath, m_filePath));
 }
 
 char * QueueDeleteFile::GetFilePath() {
@@ -459,6 +541,14 @@ int QueueRenameFile::Perform() {
 	m_result = m_client->Rename(m_filePath, m_newPath);
 
 	return m_result;
+}
+
+bool QueueRenameFile::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueRenameFile & otherRename = (QueueRenameFile&) other;
+
+	return (!strcmp(otherRename.m_filePath, m_filePath) && !strcmp(otherRename.m_newPath, m_newPath));
 }
 
 char * QueueRenameFile::GetFilePath() {
@@ -493,6 +583,14 @@ int QueueQuote::Perform() {
 	FTPClientWrapperSSL* client = (FTPClientWrapperSSL*)m_client;
 	m_result = client->Quote(m_quote);
 	return m_result;
+}
+
+bool QueueQuote::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueQuote & otherQuote = (QueueQuote&) other;
+
+	return (!strcmp(otherQuote.m_quote, m_quote));
 }
 
 char * QueueQuote::GetQuote() {

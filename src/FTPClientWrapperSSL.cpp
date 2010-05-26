@@ -384,6 +384,9 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 	char * datacpy = new char[datalen+1];
 	datacpy[datalen] = 0;
 	memcpy(datacpy, data, datalen*sizeof(char));
+	if (!strncmp(datacpy, "PASS", 4)) {
+		strcpy(datacpy, "PASS *HIDDEN*");
+	}
 	for(int i = 0; i < datalen; i++) {
 		if (datacpy[i] == '\r' || datacpy[i] == '\n')
 			datacpy[i] = ' ';

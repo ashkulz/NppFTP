@@ -408,10 +408,26 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	TabCtrl_SetCurSel(hTab, 0);
 
-	m_pageConnection.Create(hTab, m_hwnd, TEXT(""));
-	m_pageAuthentication.Create(hTab, m_hwnd, TEXT(""));
-	m_pageTransfer.Create(hTab, m_hwnd, TEXT(""));
-	m_pageCache.Create(hTab, m_hwnd, TEXT(""));
+	m_pageConnection.Create(m_hwnd, m_hwnd, TEXT(""));
+	m_pageAuthentication.Create(m_hwnd, m_hwnd, TEXT(""));
+	m_pageTransfer.Create(m_hwnd, m_hwnd, TEXT(""));
+	m_pageCache.Create(m_hwnd, m_hwnd, TEXT(""));
+
+	PF::EnableThemeDialogTexture(m_pageConnection.GetHWND(), ETDT_ENABLETAB);
+	PF::EnableThemeDialogTexture(m_pageAuthentication.GetHWND(), ETDT_ENABLETAB);
+	PF::EnableThemeDialogTexture(m_pageTransfer.GetHWND(), ETDT_ENABLETAB);
+	PF::EnableThemeDialogTexture(m_pageCache.GetHWND(), ETDT_ENABLETAB);
+	//PF::EnableThemeDialogTexture(m_hwnd, ETDT_ENABLETAB);
+
+	RECT tabRect;
+	::GetClientRect(hTab, (LPRECT)&tabRect);
+	::MapWindowPoints(hTab, m_hwnd, (LPPOINT)&tabRect, 2);
+	TabCtrl_AdjustRect(hTab, FALSE, &tabRect);
+
+	m_pageConnection.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
+	m_pageAuthentication.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
+	m_pageTransfer.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
+	m_pageCache.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
 
 	m_hPageConnection = m_pageConnection.GetHWND();
 	m_hPageAuthentication = m_pageAuthentication.GetHWND();

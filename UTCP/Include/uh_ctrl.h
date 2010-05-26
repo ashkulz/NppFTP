@@ -4,14 +4,14 @@
 //
 //  Purpose:
 //
-//      Provide output to custom control and file logging 
+//      Provide output to custom control and file logging
 //      for status messages.
 //
 // =================================================================
 // Ultimate TCP/IP v4.2
 // Copyright (C) The Ultimate Toolbox 1995-2007, all rights reserverd
 // =================================================================
- 
+
 #ifndef _CUH_CONTROL
 #define _CUH_CONTROL
 
@@ -63,7 +63,7 @@ private:
     HFONT       m_font;
     int         m_fontHeight;
     int         m_fontWidth;
-    
+
     //history list info
     UH_HistoryList *m_historyList;
     int m_historyListMaxLen;
@@ -72,7 +72,7 @@ private:
     int             m_HLCurrentPos;
     UH_HistoryList *m_HLEndPosPtr;
     int             m_HLEndPos;
-    
+
     //scrollbar values
     int m_vScrollRange;
     int m_vScrollPos;
@@ -111,7 +111,7 @@ protected:
     void UpdateScrollRange();
     BOOL OnKeyDown(int nKeyCode);
 
-    int  GetTimeDateStamp(LPTSTR string,int len);
+    int  GetTimeDateStamp(LPTSTR string,int len, time_t ttime = 0);
 
     void WriteToLog(LPCTSTR string,int newline);
     int  OpenLog();
@@ -120,18 +120,18 @@ protected:
 public:
 
     //contructor - destructor
-    
+
     CUH_Control();
     virtual ~CUH_Control();
 
     //window creation
-    
+
     int CreateHistoryWindow(HWND parent,DWORD style,RECT &rect);
     int AttachHistoryWindow(HWND parent,UINT ID);
     static int RegisterWindowClass(HINSTANCE hInstance);
 
     //setup
-    
+
     int     SetTextColor(COLORREF color);
     COLORREF GetTextColor() const;
 
@@ -166,7 +166,10 @@ public:
 
     int     AddLine(LPCTSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AddStampedLine(LPCTSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
+    int     AddStampedLineT(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog, time_t time = 0);
     int     AppendToLine(LPCTSTR string,BOOLEAN addToLog = TRUE);
+
+    int		CopyToClipboard();
 
 #if defined _UNICODE
 	// some char based protocol classes will send server responses etc. as LPSTRs in a _UNICODE build. These
@@ -175,35 +178,35 @@ public:
     int     AddStampedLine(LPCSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AppendToLine(LPCSTR string,BOOLEAN addToLog = TRUE);
 #endif
-  
+
 };
 
 /**********************************
-Static method that takes the same 
-parameters as sprintf function and 
+Static method that takes the same
+parameters as sprintf function and
 returning a pointer to the internal
 buffer.
 
-This method simplifies the use of the 
+This method simplifies the use of the
 methods like AddLine if you need to
 create the string first.
 
   Ex: AddLine(S("Number of errors: %d", nErrors));
-***********************************/    
+***********************************/
 // v4.3 this generates too many warning 4505s.
 /*
-static LPCTSTR S(LPCTSTR lpszFormat, ...) 
+static LPCTSTR S(LPCTSTR lpszFormat, ...)
 {
     va_list         marker;
     static _TCHAR   szSBuffer[1024];
 
     // Initialize variable arguments
-    va_start( marker, lpszFormat);  
+    va_start( marker, lpszFormat);
 
     // Write formatted output using a pointer to a list of arguments
-	CUT_Str::sntprintf(szSBuffer,sizeof(szSBuffer)-1, sizeof(szSBuffer)-1, lpszFormat, marker); 
+	CUT_Str::sntprintf(szSBuffer,sizeof(szSBuffer)-1, sizeof(szSBuffer)-1, lpszFormat, marker);
     // Reset variable arguments
-    va_end( marker );    
+    va_end( marker );
 
     // Return the pointer to the static buffer
     return szSBuffer;

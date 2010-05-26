@@ -382,7 +382,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					result = TRUE;
 					break; }
 				case IDB_BUTTON_TOOLBAR_MESSAGES: {
-					m_outputShown = !m_outputShown;
+					m_outputShown = !m_outputWindow.IsVisible();
 					m_outputWindow.Show(m_outputShown);
 					result = TRUE;
 					break; }

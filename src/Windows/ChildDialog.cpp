@@ -41,15 +41,6 @@ INT_PTR ChildDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	INT_PTR result;
 
 	switch(uMsg) {
-		case WM_ERASEBKGND: {
-			HDC hDC = (HDC)wParam;
-			POINT pt = {0, 0};
-			MapWindowPoints(m_hwnd, m_hParent, &pt, 1);
-			//pt = OffsetWindowOrg(hDC, pt.x, pt.y);
-			result = SendMessage(m_hParent, WM_ERASEBKGND, (WPARAM)hDC, 0);
-			//SetWindowOrg(hDC, pt.x, pt.y);
-
-			break; }
 		case WM_COMMAND:
 		case WM_NOTIFY: {
 			result = (INT_PTR)::SendMessage(m_hOwner, uMsg, wParam, lParam);

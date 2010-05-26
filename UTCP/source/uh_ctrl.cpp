@@ -20,6 +20,9 @@
 NppFTP:
 Modification made April 2010:
 -remove pragma statements
+May 2010:
+-Add time_t parameters for stamped line
+-Add clipboard functionality
 */
 
 #include "stdafx.h"
@@ -1172,6 +1175,10 @@ Return
     1 - (UH_ERROR)
 ***********************************/
 int CUH_Control::AddStampedLine(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog){
+	return AddStampedLineT(string, TextColor, BackColor, addToLog, 0);
+}
+
+int CUH_Control::AddStampedLineT(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog, time_t time){
 
     //enter into a critical section
     #ifdef UH_THREADSAFE
@@ -1181,7 +1188,7 @@ int CUH_Control::AddStampedLine(LPCTSTR string, COLORREF TextColor, COLORREF Bac
     int len = (int)_tcslen(string);
     _TCHAR *buf = new _TCHAR[len+25];
 
-    GetTimeDateStamp(buf,len+25);
+    GetTimeDateStamp(buf,len+25, time);
     _tcscat(buf,_T(" "));
     _tcscat(buf,string);
     int rt = AddLine(buf,TextColor, BackColor, addToLog);
@@ -1312,6 +1319,74 @@ int CUH_Control::ClearHistory(){
     return UH_SUCCESS;
 }
 
+/**********************************
+CopyToClipboard
+    Copies all items from the
+    history to the clipboard in
+    plaintext.
+Params
+    none
+Return
+    0 - (UH_SUCCESS) Places contents on clipboard
+    1 - (UH_ERROR) No memory or clipboard failure
+***********************************/
+int CUH_Control::CopyToClipboard(){
+	long size = 0;
+
+	UH_HistoryList *current = m_historyList;
+	UH_HistoryList *last = m_historyList;
+    while(current != NULL){
+        if(current->m_string != NULL)
+        	size += lstrlen(current->m_string) + 2;	//+newline
+		last = current;
+        current = current->m_next;
+    }
+    size += 1;
+
+    BOOL result = OpenClipboard(m_hWnd);
+	if (result == FALSE) {
+		return UH_ERROR;
+	}
+	result = EmptyClipboard();
+	if (result == FALSE) {
+		return UH_ERROR;
+	}
+
+    long totalBytesNeeded = size*sizeof(TCHAR);
+	HGLOBAL hTXTBuffer = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, totalBytesNeeded);
+	TCHAR * clipString = (TCHAR*)GlobalLock(hTXTBuffer);
+	clipString[0] = 0;
+
+	current = last;
+    while(current != NULL){
+        if(current->m_string != NULL) {
+        	lstrcat(clipString, current->m_string);
+        	lstrcat(clipString, TEXT("\r\n"));
+        }
+        current = current->m_prev;
+    }
+
+    GlobalUnlock(hTXTBuffer);
+
+#if defined _UNICODE
+	HANDLE clipHandle = SetClipboardData(CF_UNICODETEXT, hTXTBuffer);
+#else
+	HANDLE clipHandle = SetClipboardData(CF_TEXT, hTXTBuffer);
+#endif
+	if (!clipHandle) {
+		GlobalFree(hTXTBuffer);
+		return UH_ERROR;
+	}
+
+    result = CloseClipboard();
+    if (result == FALSE) {
+    	//what to do?
+		return UH_ERROR;
+	}
+
+	return UH_SUCCESS;
+}
+
 /**********************************************
 GetTimeDateStamp
     Internal function
@@ -1324,13 +1399,13 @@ Return
     0 - (UH_SUCCESS)
     1 - (UH_ERROR)
 ***********************************************/
-int CUH_Control::GetTimeDateStamp(LPTSTR string,int len){
+int CUH_Control::GetTimeDateStamp(LPTSTR string,int len, time_t ttime){
 
     if(len < 18)
         return UH_ERROR;
 
     //get the time/date
-    time_t  t           = time(NULL);
+    time_t  t           = (ttime==0)?time(NULL):ttime;
     struct tm * systime = localtime(&t);
 
     //format the date into a string

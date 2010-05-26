@@ -41,9 +41,11 @@ public:
 							//message: %T is tchar (%s or %S), %s is char, %S is wchar_t
 	virtual int				OutVA(Output_Type type, const TCHAR * message, va_list vaList);
 protected:
-	virtual int				AddMessage(const TCHAR * message, COLORREF color);
+	virtual int				AddMessage(const TCHAR * message, Output_Type type, time_t time);
 
 	CUH_Control				m_histControl;
+	DWORD					m_winThread;
+	HMENU					m_hContextMenu;
 
 	static const TCHAR * OUTWINDOWCLASS;
 };

@@ -20,14 +20,21 @@
 #include "OutputWindow.h"
 
 #include "resource.h"
+#include "Commands.h"
+#include <Windowsx.h>
 
 Output* _MainOutput = NULL;
 
 const TCHAR * OutputWindow::OUTWINDOWCLASS = TEXT("NPPFTPOUTPUT");
 
+const int WM_OUT_ADDLINE_SYST = WM_USER + 1;
+const int WM_OUT_ADDLINE_CLNT = WM_USER + 2;
+const int WM_OUT_ADDLINE_ERR = WM_USER + 3;
+
 OutputWindow::OutputWindow() :
 	DockableWindow(OUTWINDOWCLASS),
-	m_histControl()
+	m_histControl(),
+	m_winThread(0)
 {
 	m_style = 0;
 	m_exStyle = WS_EX_NOACTIVATE;
@@ -55,6 +62,11 @@ int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 		DockableWindow::Destroy();
 		return -1;
 	}
+
+	m_winThread = GetCurrentThreadId();	//GetWindowThreadProcessId(m_histControl.m_hWnd, NULL);
+	m_hContextMenu = ::CreatePopupMenu();
+	AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_COPY,TEXT("&Copy contents to clipboard"));
+	AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_CLEAR,TEXT("Clea&r contents"));
 
 	m_histControl.SetHistoryLength(250);
 
@@ -127,6 +139,53 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			FillRect(hDC, &rectClient, ::GetSysColorBrush(COLOR_3DFACE));
 			result = TRUE;
 			break; }
+		case WM_OUT_ADDLINE_SYST: {
+			TCHAR * msg = (TCHAR*)lParam;
+			time_t time = (time_t)wParam;
+			AddMessage(msg, Output_System, time);
+			delete [] msg;
+			break; }
+		case WM_OUT_ADDLINE_CLNT: {
+			TCHAR * msg = (TCHAR*)lParam;
+			time_t time = (time_t)wParam;
+			AddMessage(msg, Output_Client, time);
+			delete [] msg;
+			break; }
+		case WM_OUT_ADDLINE_ERR: {
+			TCHAR * msg = (TCHAR*)lParam;
+			time_t time = (time_t)wParam;
+			AddMessage(msg, Output_Error, time);
+			delete [] msg;
+			break; }
+		case WM_COMMAND: {
+			switch (LOWORD(wParam)) {
+				case IDM_POPUP_OUTPUT_COPY: {
+					m_histControl.CopyToClipboard();
+					return TRUE;
+					break; }
+				case IDM_POPUP_OUTPUT_CLEAR: {
+					m_histControl.ClearHistory();
+					return TRUE;
+					break; }
+				default: {
+					return FALSE;
+					break; }
+			}
+			break; }
+		case WM_CONTEXTMENU: {
+			POINT menuPos;
+			menuPos.x = GET_X_LPARAM(lParam);
+			menuPos.y = GET_Y_LPARAM(lParam);
+			bool fromKeyboard = (menuPos.x == -1 && menuPos.y == -1);
+			if (fromKeyboard) {	//keyboard activation
+				RECT winRect;
+				::GetWindowRect(m_histControl.m_hWnd, &winRect);
+				menuPos.x = winRect.left;
+				menuPos.y = winRect.top;
+				//use the top left location as the output window has no caret location
+			}
+			::TrackPopupMenu(m_hContextMenu, TPM_LEFTALIGN, menuPos.x, menuPos.y, 0, m_hwnd, NULL);
+			break; }
 		default:
 			doDefaultProc = true;
 			break;
@@ -139,13 +198,57 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList) {
-	static TCHAR msgBuffer[1024];
 	if (m_hwnd == NULL || m_histControl.m_hWnd == NULL)
 		return -1;
 
 	if (!message)
 		return -1;
 
+	TCHAR * msgBuffer = new TCHAR[1024];
+	msgBuffer[0] = 0;
+
+	/*int ret =*/SU::TSprintfV(msgBuffer, 1024, message, vaList);
+    //if (ret == -1)	//-1 indicates truncation, not necessarily failure
+	//	return -1;
+
+	//Replace newline characters, history control ignores them, but they show up on copy/paste
+	TCHAR * curChar = msgBuffer;
+	while(*curChar) {
+		if (*curChar == TEXT('\r') || *curChar == TEXT('\n'))
+			*curChar = ' ';
+		curChar++;
+	}
+
+	time_t t = time(NULL);
+
+	UINT msg = WM_OUT_ADDLINE_SYST;
+	switch(type) {
+		case Output_System:
+			msg = WM_OUT_ADDLINE_SYST;
+			break;
+		case Output_Client:
+			msg = WM_OUT_ADDLINE_CLNT;
+			break;
+		case Output_Error:
+			msg = WM_OUT_ADDLINE_ERR;
+			break;
+		default:
+			break;
+	}
+
+	DWORD curThread = GetCurrentThreadId();
+	if (m_winThread == curThread) {
+		::PostMessage(m_hwnd, msg, (WPARAM)t, (LPARAM)msgBuffer);
+		return 0;
+	} else {
+		::PostMessage(m_hwnd, msg, (WPARAM)t, (LPARAM)msgBuffer);
+	}
+
+
+    return 0;
+}
+
+int OutputWindow::AddMessage(const TCHAR * message, Output_Type type, time_t time) {
 	COLORREF color = 0xFFFFFFFF;
 
 	switch(type) {
@@ -163,20 +266,7 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
 			break;
 	}
 
-	msgBuffer[0] = 0;
-
-	/*int ret =*/SU::TSprintfV(msgBuffer, 1024, message, vaList);
-    //if (ret == -1)	//-1 indicates truncation, not necessarily failure
-	//	return -1;
-
-	AddMessage(msgBuffer, color);
-
-    return 0;
-}
-
-int OutputWindow::AddMessage(const TCHAR * message, COLORREF color) {
-	//int res = m_histControl.AddLine(message, color, 0xFFFFFFFF, FALSE);
-	int res = m_histControl.AddStampedLine(message, color, 0xFFFFFFFF, FALSE);
+	int res = m_histControl.AddStampedLineT(message, color, 0xFFFFFFFF, FALSE, time);
 	if (res != UH_SUCCESS)
 		return -1;
 

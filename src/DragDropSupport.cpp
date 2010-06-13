@@ -19,13 +19,59 @@
 #include "StdInc.h"
 #include "DragDropSupport.h"
 
+//----------------------------------------DropTargetWindow-------------------------------------------------
+DropTargetWindow::DropTargetWindow() :
+	m_dropHwnd(NULL),
+	m_dropTarget(this)
+{
+}
+
+DropTargetWindow::~DropTargetWindow() {
+}
+
+bool DropTargetWindow::AcceptType(LPDATAOBJECT /*pDataObj*/) {
+	return false;
+}
+
+HRESULT DropTargetWindow::OnDragEnter(LPDATAOBJECT /*pDataObj*/, DWORD /*grfKeyState*/, POINTL /*pt*/, LPDWORD /*pdwEffect*/) {
+	return E_NOTIMPL;
+}
+
+HRESULT DropTargetWindow::OnDragOver(DWORD /*grfKeyState*/, POINTL /*pt*/, LPDWORD /*pdwEffect*/) {
+	return E_NOTIMPL;
+}
+
+HRESULT DropTargetWindow::OnDragLeave() {
+	return E_NOTIMPL;
+}
+
+HRESULT DropTargetWindow::OnDrop(LPDATAOBJECT /*pDataObj*/, DWORD /*grfKeyState*/, POINTL /*pt*/, LPDWORD /*pdwEffect*/) {
+	return E_NOTIMPL;
+}
+
+int DropTargetWindow::DoRegisterDragDrop(HWND hwnd) {
+	if (hwnd == NULL)
+		hwnd = m_dropHwnd;
+	::RegisterDragDrop(hwnd, &m_dropTarget);
+	return 0;
+}
+
+int DropTargetWindow::DoRevokeDragDrop(HWND hwnd) {
+	if (hwnd == NULL)
+		hwnd = m_dropHwnd;
+	::RevokeDragDrop(hwnd);
+	return 0;
+}
+
 //----------------------------------------DropTarget-------------------------------------------------
-CDropTarget::CDropTarget() {
-	m_refs = 1;
-	m_bAcceptFmt = FALSE;
-	m_currentAcceptedType = -1;
-	m_supportedTypes.clear();
-	size = 0;
+CDropTarget::CDropTarget(DropTargetWindow * targetWindow) :
+	m_refs(1),
+	m_dragging(false),
+	m_targetWindow(targetWindow)
+{
+}
+
+CDropTarget::~CDropTarget() {
 }
 
 STDMETHODIMP CDropTarget::QueryInterface(REFIID iid, void ** ppv) {
@@ -51,88 +97,57 @@ STDMETHODIMP_(ULONG) CDropTarget::Release(void) {
 }
 
 STDMETHODIMP CDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect) {
-	FORMATETC fmtetc;
-
-	fmtetc.ptd	  = NULL;
-	fmtetc.dwAspect = DVASPECT_CONTENT;
-	fmtetc.lindex   = -1;
-	fmtetc.tymed	= TYMED_HGLOBAL;
-
-	m_bAcceptFmt = FALSE;
-
-	for(int i = 0; i < size; i++) {
-		fmtetc.cfFormat	= m_supportedTypes.at(i).type;
-		if (NOERROR == pDataObj->QueryGetData(&fmtetc)) {	//found a match
-			m_bAcceptFmt = true;
-			m_currentAcceptedType = i;
-			break;
-		}
-	}
+	m_dragging = m_targetWindow->AcceptType(pDataObj);
 
 	// Does the drag source provide a suitable type? Callback if so
-	if (m_bAcceptFmt) {
+	if (m_dragging) {
 		*pdwEffect= DROPEFFECT_NONE;	//security
-		DropHandler & dh = m_supportedTypes.at(m_currentAcceptedType);
-		dh.enterCall(dh.type, pDataObj, dh.customData);
-		dh.dragCall(grfKeyState, pt, pdwEffect, dh.customData);
+		m_targetWindow->OnDragEnter(pDataObj, grfKeyState, pt, pdwEffect);
+		m_targetWindow->OnDragOver(grfKeyState, pt, pdwEffect);
 	} else {
 		*pdwEffect= DROPEFFECT_NONE;
 	}
-
 	return NOERROR;
 }
 
 STDMETHODIMP CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect) {
 	//if accepted format do callback
-	if (m_bAcceptFmt) {
+	if (m_dragging) {
 		*pdwEffect= DROPEFFECT_NONE;
-		DropHandler & dh = m_supportedTypes.at(m_currentAcceptedType);
-		dh.dragCall(grfKeyState, pt, pdwEffect, dh.customData);
-	} else
+		m_targetWindow->OnDragOver(grfKeyState, pt, pdwEffect);
+	} else {
 		*pdwEffect= DROPEFFECT_NONE;
+	}
 	return NOERROR;
 }
 
 STDMETHODIMP CDropTarget::DragLeave() {
 	//Cancel drag and drop operation
-	m_bAcceptFmt = FALSE;
-	if (m_currentAcceptedType != -1) {
-		DropHandler & dh = m_supportedTypes.at(m_currentAcceptedType);
-		dh.cancelCall(dh.customData);
-		m_currentAcceptedType = -1;
+	if (m_dragging) {
+		m_targetWindow->OnDragLeave();
 	}
+	m_dragging = false;
 
 	return NOERROR;
 }
 
 STDMETHODIMP CDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect) {
-	if (m_bAcceptFmt && m_currentAcceptedType != -1) {	  //check if valid drop
+	if (m_dragging) {	  //check if valid drop
 		*pdwEffect = DROPEFFECT_NONE;
-		DropHandler & dh = m_supportedTypes.at(m_currentAcceptedType);
-		dh.dropCall(dh.type, pDataObj, grfKeyState, pt, pdwEffect, dh.customData);
+		m_targetWindow->OnDrop(pDataObj, grfKeyState, pt, pdwEffect);
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
 	return NOERROR;
 }
 
-void CDropTarget::addType(CLIPFORMAT type, void * custom, enterCallback enter, dragCallback drag, dropCallback drop, cancelCallback cancel) {
-	DropHandler newHandler;
-	newHandler.type = type;
-	newHandler.customData = custom;
-	newHandler.enterCall = enter;
-	newHandler.dragCall = drag;
-	newHandler.dropCall = drop;
-	newHandler.cancelCall = cancel;
-	m_supportedTypes.push_back(newHandler);
-	size++;
+//----------------------------------------DropSource-------------------------------------------------
+CDropSource::CDropSource() :
+	m_refs(1)
+{
 }
 
-//----------------------------------------DropSource-------------------------------------------------
-CDropSource::CDropSource() {
-	m_refs = 1;
-	callback = NULL;
-	customData = NULL;
+CDropSource::~CDropSource() {
 }
 
 STDMETHODIMP CDropSource::QueryInterface(REFIID iid, void ** ppv) {
@@ -170,28 +185,20 @@ STDMETHODIMP CDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeySta
 		return NOERROR;
 }
 
-STDMETHODIMP CDropSource::GiveFeedback(DWORD dwEffect) {
-	if (callback)
-		return callback(dwEffect, customData);
+STDMETHODIMP CDropSource::GiveFeedback(DWORD /*dwEffect*/) {
 	return ResultFromScode(DRAGDROP_S_USEDEFAULTCURSORS);
 }
 
-void CDropSource::setCallback(feedbackCall feed, void * custom) {
-	callback = feed;
-	customData = custom;
-}
-
 //----------------------------------------DataObject--------------------------------------------------
-CDataObject::CDataObject() {
+CDataObject::CDataObject(DropDataWindow * dataWindow) {
 	m_refs = 1;
-	currentFormat = 0;
-	callback = NULL;
-	customData = NULL;
-	formats.clear();
+	m_filedescriptorID = RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR);
+	m_filecontentsID = RegisterClipboardFormat(CFSTR_FILECONTENTS);
+
+	m_dataWindow = dataWindow;
 }
 
 CDataObject::~CDataObject() {
-	formats.clear();
 }
 
 STDMETHODIMP CDataObject::QueryInterface(REFIID iid, void ** ppv) {
@@ -217,35 +224,67 @@ STDMETHODIMP_(ULONG) CDataObject::Release(void) {
 }
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium) {
-	void * pRendered;
-
 	pmedium->tymed = NULL;
 	pmedium->pUnkForRelease = NULL;
 	pmedium->hGlobal = NULL;
 
-	size_t offset = 0;
-	if (this->getFormatIndex(pformatetc, &offset)) {	//query ourself if request is valid
-		if (!callback)
-			return ResultFromScode(E_FAIL);	//This may NEVER HAPPEN!
-		pRendered = callback(&(formats.at(offset)), customData);
-		if (!pRendered)
+	//pformatetc->lindex == -1
+	//pformatetc->ptd == NULL
+	//pformatetc->dwAspect == DVASPECT_CONTENT
+
+	if (pformatetc->cfFormat == m_filedescriptorID && pformatetc->tymed & TYMED_HGLOBAL) {
+
+
+		int files = m_dataWindow->GetNrFiles();
+		if (files <= 0)
+			return ResultFromScode(E_FAIL);	//TODO: not really nice error code
+
+		HGLOBAL globalFGD = GlobalAlloc(GMEM_MOVEABLE, sizeof(FILEGROUPDESCRIPTOR) + (files-1)*sizeof(FILEDESCRIPTOR));
+		if (globalFGD == NULL)
 			return ResultFromScode(E_OUTOFMEMORY);
 
-		pmedium->tymed = formats.at(offset).tymed;
-		switch(pmedium->tymed) {
-			case TYMED_HGLOBAL:
-				pmedium->hGlobal = (HGLOBAL)*((HGLOBAL*)(pRendered));
-				break;
-			case TYMED_ISTREAM:
-				pmedium->pstm = (IStream*)pRendered;
-				break;
-			default:
-				pmedium->hGlobal = (HGLOBAL)*((HGLOBAL*)(pRendered));
-				break;
+		FILEGROUPDESCRIPTOR * fgd = (FILEGROUPDESCRIPTOR*)GlobalLock(globalFGD);
+		ZeroMemory(fgd, sizeof(FILEGROUPDESCRIPTOR) + (files-1)*sizeof(FILEDESCRIPTOR));
+
+		fgd->cItems = files;
+		for(int i = 0; i < files; i++) {
+			int fdres = m_dataWindow->GetFileDescriptor(&(fgd->fgd[i]), i);
+			if (fdres == -1) {
+				GlobalUnlock(globalFGD);
+				GlobalFree(globalFGD);
+				return ResultFromScode(E_FAIL);	//TODO: not really nice error code
+			}
 		}
+
+		GlobalUnlock(globalFGD);
+		pmedium->hGlobal = globalFGD;
+		pmedium->tymed = TYMED_HGLOBAL;
 		return ResultFromScode(S_OK);
+	} else if (pformatetc->cfFormat == m_filecontentsID && pformatetc->tymed & TYMED_ISTREAM) {
+		int index = (int)pformatetc->lindex;
+		if (index >= m_dataWindow->GetNrFiles())
+			return ResultFromScode(E_INVALIDARG);
+
+		FILEDESCRIPTOR fd;
+		int fdres = m_dataWindow->GetFileDescriptor(&fd, index);
+		if (fdres == -1)
+			return ResultFromScode(E_FAIL);	//TODO: not really nice error code
+
+		CStreamData * stream = new CStreamData(&fd);
+		if (!stream)
+			return ResultFromScode(E_OUTOFMEMORY);
+
+		pmedium->pstm = stream;
+		pmedium->tymed = TYMED_ISTREAM;
+
+		m_dataWindow->StreamData(stream, index);
+
+		return ResultFromScode(S_OK);
+	} else {
+		return ResultFromScode(DATA_E_FORMATETC);
 	}
-	return ResultFromScode(DATA_E_FORMATETC);
+
+	return ResultFromScode(S_OK);
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC /*pformatetc*/, LPSTGMEDIUM /*pmedium*/) {
@@ -255,10 +294,12 @@ STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC /*pformatetc*/, LPSTGMEDIUM /*
 STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC pformatetc) {
 	// This method is called by the drop target to check whether the source
 	// provides data is a format that the target accepts.
-	if (getFormatIndex(pformatetc, NULL) == true)
+	if (pformatetc->cfFormat == m_filedescriptorID && pformatetc->tymed & TYMED_HGLOBAL)
 		return ResultFromScode(S_OK);
-	else
-		return ResultFromScode(S_FALSE);
+	if (pformatetc->cfFormat == m_filecontentsID && pformatetc->tymed == TYMED_ISTREAM)
+		return ResultFromScode(S_OK);
+
+	return ResultFromScode(S_FALSE);
 }
 
 STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC /*pformatetc*/, LPFORMATETC pformatetcOut) {
@@ -270,12 +311,25 @@ STDMETHODIMP CDataObject::SetData(LPFORMATETC /*pformatetc*/, STGMEDIUM * /*pmed
 	return ResultFromScode(E_NOTIMPL);
 }
 
-
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC * ppenumFormatEtc) {
 	SCODE sc = S_OK;
 
+	FORMATETC formats[2];
+	formats[0].cfFormat = m_filedescriptorID;
+	formats[0].ptd = NULL;
+	formats[0].dwAspect = DVASPECT_CONTENT;
+	formats[0].lindex = -1;
+	formats[0].tymed = TYMED_HGLOBAL;
+
+	formats[1].cfFormat = m_filecontentsID;
+	formats[1].ptd = NULL;
+	formats[1].dwAspect = DVASPECT_CONTENT;
+	formats[1].lindex = -1;
+	formats[1].tymed = TYMED_ISTREAM;
+
+
 	if (dwDirection == DATADIR_GET){
-		*ppenumFormatEtc = (IEnumFORMATETC*) new CEnumFormatEtc(&formats);
+		*ppenumFormatEtc = (IEnumFORMATETC*) new CEnumFormatEtc(formats, 2);
 		if (*ppenumFormatEtc == NULL)
 			sc = E_OUTOFMEMORY;
 	} else if (dwDirection == DATADIR_SET) {
@@ -299,48 +353,32 @@ STDMETHODIMP CDataObject::EnumDAdvise(LPENUMSTATDATA FAR* /*ppenumAdvise*/) {
 	return ResultFromScode(OLE_E_ADVISENOTSUPPORTED);
 }
 
-void CDataObject::addType(FORMATETC format) {
-	formats.push_back(format);
+//--------------------
+
+
+DropDataWindow::DropDataWindow() {
 }
 
-void CDataObject::setCallback(renderData call, void * custom) {
-	callback = call;
-	customData = custom;
+DropDataWindow::~DropDataWindow() {
 }
 
-bool CDataObject::getFormatIndex(LPFORMATETC pformatetc, size_t * offset) {
-	size_t size = formats.size();
-	if (offset == NULL)
-		offset = &size;	//size unused when setting offset anyway
-
-	//Iterate over the COMPLETE set of formats as there is no guaranteed order
-	//If a partial match doesnt end up being a full match it doesnt have to mean the format isnt there
-	for(size_t i = 0; i < size; i++) {
-		FORMATETC & fmt = formats.at(i);
-		if (pformatetc->cfFormat == fmt.cfFormat
-		 //&& pformatetc->lindex == fmt.lindex
-		 && pformatetc->tymed & fmt.tymed) {
-			*offset = i;
-			return true;
-		}
-	}
-	*offset = 0;
-	return false;	//not found
+int DropDataWindow::GetNrFiles() {
+	return 0;
 }
+
+int DropDataWindow::GetFileDescriptor(FILEDESCRIPTOR * /*fd*/, int /*index*/) {
+	return -1;
+}
+
+int DropDataWindow::StreamData(CStreamData * /*stream*/, int /*index*/) {
+	return -1;
+}
+
+int DropDataWindow::OnEndDnD() {
+	return -1;
+}
+
 //---------------------------------------EnumFORMATETC------------------------------------------------
-CEnumFormatEtc::CEnumFormatEtc(std::vector<FORMATETC> * formats) {
-	m_refs			= 1;
-	m_nIndex		= 0;
-	m_nNumFormats	= (ULONG)formats->size();
-	m_pFormatEtc	= new FORMATETC[m_nNumFormats];
-
-	// copy the FORMATETC structures
-	for(ULONG i = 0; i < m_nNumFormats; i++) {
-		m_pFormatEtc[i] = formats->at(i);
-		m_pFormatEtc[i].ptd = NULL;
-	}
-}
-
 CEnumFormatEtc::CEnumFormatEtc(FORMATETC * pFormatEtc, int nNumFormats) {
 	m_refs			= 1;
 	m_nIndex		= 0;
@@ -433,19 +471,24 @@ STDMETHODIMP CEnumFormatEtc::Clone(IEnumFORMATETC ** ppEnumFormatEtc) {
 	}
 }
 //----------------------------------------Stream-------------------------------------------------
-CStreamData::CStreamData() {
+CStreamData::CStreamData(FILEDESCRIPTOR * fd) {
     m_refs = 1;
-	closedStream = false;
-	if (!CreatePipe(&readHandle, &writeHandle, NULL, 2048)) {
+    m_currentPointer.QuadPart = 0;
+	m_closedStream = false;
+	m_readHandle = NULL;
+	m_writeHandle = NULL;
+
+	m_filedesc = *fd;
+
+	if (!CreatePipe(&m_readHandle, &m_writeHandle, NULL, 2048)) {
 		OutErr("[DnD] Unable to create pipe for stream\n");
-		closedStream = true;
+		m_closedStream = true;
 	}
 }
 
 CStreamData::~CStreamData() {
-	if (!closedStream) {
-		CloseHandle(readHandle);
-		CloseHandle(writeHandle);
+	if (!m_closedStream) {
+		Close();
 	}
 }
 
@@ -471,29 +514,41 @@ STDMETHODIMP_(ULONG) CStreamData::Release(void) {
 	return m_refs;
 }
 
-
 STDMETHODIMP CStreamData::Read(void * pv, ULONG cb, ULONG * pcbRead) {
-	if (!pv || !pcbRead) {
+	if (!pv) {
 		return STG_E_INVALIDPOINTER;
 	}
 
-	if (!cb || closedStream) {
+	if (!cb || m_closedStream) {
 		*pcbRead = 0;
 		return S_OK;
 	}
 
 	DWORD bytesRead = 0;
-	BOOL res = ReadFile(readHandle, pv, cb, &bytesRead, NULL);
+	DWORD totalBytesRead = 0;
+	BOOL res = TRUE;
+	char * dataBuffer = (char*)pv;
+	while(res == TRUE && cb > 0) {
+		res = ReadFile(m_readHandle, dataBuffer, cb, &bytesRead, NULL);
+		cb -= bytesRead;
+		dataBuffer += bytesRead;
+		totalBytesRead += bytesRead;
+		m_currentPointer.QuadPart += bytesRead;
+	}
+
 	if (res) {
-		*pcbRead = bytesRead;
+		if (pcbRead)
+			*pcbRead = totalBytesRead;
 	} else {
-		*pcbRead = 0;
-		closedStream = true;
+		if (pcbRead)
+			*pcbRead = 0;
 		DWORD err = GetLastError();
 		if (err == ERROR_BROKEN_PIPE) {
+			Close();
 			return S_OK;
 		} else {
-			OutErr("[DnD] Stream unexpected error: %d\n", err);
+			OutErr("[DnD] Stream unexpected error: %d", err);
+			Close();
 			return S_FALSE;
 		}
 	}
@@ -533,51 +588,134 @@ STDMETHODIMP CStreamData::Clone(IStream **) {
     return E_NOTIMPL;
 }
 
-STDMETHODIMP CStreamData::Seek(LARGE_INTEGER /*liDistanceToMove*/, DWORD dwOrigin, ULARGE_INTEGER * /*lpNewFilePointer*/) {
-	DWORD dwMoveMethod;
-
+STDMETHODIMP CStreamData::Seek(LARGE_INTEGER liDistanceToMove, DWORD dwOrigin, ULARGE_INTEGER * lpNewFilePointer) {
 	switch(dwOrigin) {
-	case STREAM_SEEK_SET:
-		dwMoveMethod = FILE_BEGIN;
-		break;
-	case STREAM_SEEK_CUR:
-		dwMoveMethod = FILE_CURRENT;
-		break;
-	case STREAM_SEEK_END:
-		dwMoveMethod = FILE_END;
-		break;
-	default:
-		return STG_E_INVALIDFUNCTION;
-		break;
+		case STREAM_SEEK_SET:
+			return E_NOTIMPL;
+			break;
+		case STREAM_SEEK_CUR:
+			if (liDistanceToMove.QuadPart != 0)
+				return E_NOTIMPL;
+			break;
+		case STREAM_SEEK_END:
+			return E_NOTIMPL;
+			break;
+		default:
+			return E_INVALIDARG;
+			break;
 	}
 
-	return E_NOTIMPL;
+	if (lpNewFilePointer)
+		*lpNewFilePointer = m_currentPointer;
+
+	return S_OK;
 }
 
 STDMETHODIMP CStreamData::Stat(STATSTG * pStatstg, DWORD grfStatFlag) {
 	//Doesnt seem to get called by explorer
-	FILETIME currentTime;
-	if (CoFileTimeNow(&currentTime) != S_OK) {
-		currentTime.dwHighDateTime = 0;
-		currentTime.dwLowDateTime = 0;
-	}
-
 	if (!pStatstg)
 		return STG_E_INVALIDPOINTER;
 
 	if (!(grfStatFlag & STATFLAG_NONAME))  {	//allocate memory for name
-		pStatstg->pwcsName = (LPOLESTR)CoTaskMemAlloc(11*sizeof(WCHAR));
-		lstrcpynW(pStatstg->pwcsName, L"FTP_Stream", 11);
+#ifdef UNICODE
+		int len = lstrlen(m_filedesc.cFileName)+1;
+		pStatstg->pwcsName = (LPOLESTR)CoTaskMemAlloc(len*sizeof(WCHAR));
+		lstrcpyn(pStatstg->pwcsName, m_filedesc.cFileName, len);
+#else
+		WCHAR * unistring = SU::CharToWChar(m_filedesc.cFileName);
+		int len = lstrlenW(unistring)+1;
+		pStatstg->pwcsName = (LPOLESTR)CoTaskMemAlloc(len*sizeof(WCHAR));
+		lstrcpynW(pStatstg->pwcsName, unistring, len);
+		SU::FreeWChar(unistring);
+#endif
 	}
+
 	pStatstg->type = STGTY_STREAM;
-	pStatstg->cbSize.LowPart = 0;	//FILESIZE!!
-	pStatstg->cbSize.HighPart = 0;
-	pStatstg->mtime = currentTime;
-	pStatstg->ctime = currentTime;
-	pStatstg->atime = currentTime;
+	pStatstg->cbSize.LowPart = m_filedesc.nFileSizeLow;
+	pStatstg->cbSize.HighPart = m_filedesc.nFileSizeHigh;
+	pStatstg->mtime = m_filedesc.ftLastWriteTime;
+	pStatstg->ctime = m_filedesc.ftCreationTime;
+	pStatstg->atime = m_filedesc.ftLastAccessTime;
 	pStatstg->grfMode = STGM_READ;
 	pStatstg->grfLocksSupported = 0;
 	//pStatstg->clsid = ;
 	//pStatstg->grfStateBits = ;
 	return S_OK;
+}
+
+HANDLE CStreamData::GetWriteHandle() const {
+	return m_writeHandle;
+}
+
+void CStreamData::Close() {
+	m_closedStream = true;
+	::CloseHandle(m_readHandle);
+	::CloseHandle(m_writeHandle);
+}
+
+//----------------------------------------DropHelper-------------------------------------------------
+
+
+DropHelper::DropHelper(DropDataWindow * dataWindow) :
+	m_hThread(NULL),
+	m_dataWindow(dataWindow)
+{
+}
+
+DropHelper::~DropHelper() {
+}
+
+int DropHelper::DropHelper::PerformDragDrop() {
+	if (m_hThread != NULL)
+		return -1;
+
+	m_hThread = ::CreateThread(NULL, 0, &DropHelper::StaticDragDropThread, (LPVOID)this, 0, NULL);
+	if (m_hThread == NULL)
+		return -1;
+
+	return 0;
+}
+
+DWORD WINAPI DropHelper::StaticDragDropThread(LPVOID param) {
+	DropHelper * pDH = (DropHelper*)param;
+	return pDH->DragDropThread();
+}
+
+int DropHelper::DragDropThread() {
+	int result = 0;
+
+	HRESULT res = OleInitialize(NULL);
+	if (res != S_OK && res != S_FALSE) {
+		OutErr("[DnD] Error initializing OLE (Thread): %d\n", res);
+		return -1;
+	}
+
+	CDropSource * src = new CDropSource();
+	if (!src) {
+		return -1;
+	}
+	CDataObject * dat = new CDataObject(m_dataWindow);
+	if (!dat) {
+		src->Release();
+		return -1;
+	}
+
+	DWORD resEffect = 0;
+	OutMsg("[DnD] Begin DoDragDrop");
+	res = DoDragDrop(dat, src, DROPEFFECT_COPY, &resEffect);
+	OutMsg("[DnD] End DoDragDrop");
+
+	src->Release();
+	dat->Release();
+	if (res == S_OK || res == DRAGDROP_S_DROP)
+		result = TRUE;
+	else
+		result = FALSE;
+
+	m_dataWindow->OnEndDnD();
+
+	::OleUninitialize();
+	m_hThread = NULL;
+
+	return result;
 }

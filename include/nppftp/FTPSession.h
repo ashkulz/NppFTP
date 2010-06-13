@@ -40,12 +40,14 @@ public:
 	int						TerminateSession();
 
 	bool					IsConnected();
+	const FTPProfile*		GetCurrentProfile();
 
 	int						Connect();
 	int						GetDirectory(const char * dir);
 
 	int						DownloadFileCache(const char * sourcefile);	//return 0 on download, -1 on error, 1 when no cache match was found
 	int						DownloadFile(const char * sourcefile, const TCHAR * target, bool targetIsDir, int code = 1);
+	int						DownloadFileHandle(const char * sourcefile, HANDLE target);
 
 	int						UploadFileCache(const TCHAR * sourcefile);	//return 0 on upload, -1 on error, 1 when no cache match was found
 	int						UploadFile(const TCHAR * sourcefile, const char * target, bool targetIsDir, int code = 1);

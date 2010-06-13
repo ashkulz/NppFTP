@@ -20,7 +20,6 @@
 #define OUTPUTWINDOW_H
 
 #include "DockableWindow.h"
-#include "uh_ctrl.h"
 
 class OutputWindow : public DockableWindow, Output {
 public:
@@ -41,11 +40,13 @@ public:
 							//message: %T is tchar (%s or %S), %s is char, %S is wchar_t
 	virtual int				OutVA(Output_Type type, const TCHAR * message, va_list vaList);
 protected:
+	virtual int				SetScintillaParameters();
 	virtual int				AddMessage(const TCHAR * message, Output_Type type, time_t time);
 
-	CUH_Control				m_histControl;
 	DWORD					m_winThread;
 	HMENU					m_hContextMenu;
+	HWND					m_hScintilla;
+	int						m_maxLines;
 
 	static const TCHAR * OUTWINDOWCLASS;
 };

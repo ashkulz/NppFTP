@@ -20,6 +20,9 @@
 #include "NppFTP.h"
 
 #include "AboutDialog.h"
+#include "InputDialog.h"
+#include "Encryption.h"
+#include "DragDropWindow.h"
 #include <commctrl.h>
 
 HWND _MainOutputWindow = NULL;
@@ -57,6 +60,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 	m_nppData = nppData;
 
 	PF::Init();
+	Encryption::Init();
 
 	m_configStore = new TCHAR[MAX_PATH];
 	lstrcpy(m_configStore, nppConfigStore);
@@ -73,7 +77,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 	char * utf8Store = SU::TCharToCP(m_configStore, CP_ACP);
 	strcpy(_HostsFile, utf8Store);
 	::PathCombineA(_HostsFile, utf8Store, "known_hosts");
-	SU::FreeUtf8(utf8Store);
+	SU::FreeChar(utf8Store);
 
 	_MainOutputWindow = nppData._nppHandle;
 
@@ -103,7 +107,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 	}
 
 	res = m_ftpWindow->SetProfilesVector(&m_profiles);
-	res = m_ftpWindow->SetGlobalCache(&m_globalCache);
+	res = m_ftpWindow->SetGlobalProps(&m_globalCache);
 	m_ftpWindow->m_outputShown = m_outputShown;
 	m_ftpWindow->m_splitter.SetRatio(m_splitRatio);
 
@@ -134,6 +138,7 @@ int NppFTP::Stop() {
 	}
 
 	PF::Deinit();
+	Encryption::Deinit();
 
 	return 0;
 }
@@ -184,6 +189,7 @@ int NppFTP::InitAll(HINSTANCE hInst) {
 	Window::SetDefaultInstance(hInst);
 	FTPWindow::RegisterClass();
 	OutputWindow::RegisterClass();
+	DragDropWindow::RegisterClass();
 
     INITCOMMONCONTROLSEX icce;
     icce.dwSize = sizeof(icce);
@@ -206,7 +212,7 @@ int NppFTP::LoadSettings() {
 
 	strcpy(xmlPath, utf8Store);
 	::PathCombineA(xmlPath, utf8Store, "Certificates.xml");
-	SU::FreeUtf8(utf8Store);
+	SU::FreeChar(utf8Store);
 
 	TiXmlDocument certificatesDoc = TiXmlDocument(xmlPath);
 	certificatesDoc.LoadFile();
@@ -229,6 +235,40 @@ int NppFTP::LoadSettings() {
 		ratio = 0.5;
 	}
 	m_splitRatio = ratio;
+
+	//Imperative that masterpassword be set beforel oading all profiles
+	const char * passstr = ftpElem->Attribute("MasterPass");
+	if (passstr) {
+		InputDialog inputPass;
+		const TCHAR * query = TEXT("Please enter master password");
+		bool success = false;
+		while(!success) {
+			int res = inputPass.Create(m_nppData._nppHandle, TEXT("NppFTP: Master password required"), query, TEXT(""));
+			if (res == 1) {
+				char * localPass = SU::TCharToCP(inputPass.GetValue(), CP_ACP);
+				char * challenge = Encryption::Decrypt(localPass, -1, passstr, true);
+
+				if (strcmp(challenge, "NppFTP")) {
+					query = TEXT("Wrong password.\r\nPlease enter master password");
+				} else {
+					Encryption::SetDefaultKey(localPass, -1);
+					success = true;
+				}
+
+				Encryption::FreeData(challenge);
+				SU::FreeChar(localPass);
+			} else {
+				break;
+			}
+		}
+		if (!success) {
+			MessageBox(m_nppData._nppHandle,
+							TEXT("Incorrect password entered.\r\n")
+							TEXT("The passwords will most likely be corrupted and you have to reenter them")
+						, TEXT("NppFTP: Password manager error"), MB_OK);
+		}
+
+	}
 
 	const char * defaultCacheutf8 = ftpElem->Attribute("defaultCache");
 	TCHAR * defaultCache;
@@ -295,7 +335,7 @@ int NppFTP::SaveSettings() {
 
 	strcpy(xmlPath, utf8Store);
 	::PathCombineA(xmlPath, utf8Store, "Certificates.xml");
-	SU::FreeUtf8(utf8Store);
+	SU::FreeChar(utf8Store);
 
 	TiXmlDocument * certificatesDoc = new TiXmlDocument(xmlPath);
 	decl = new TiXmlDeclaration("1.0", "UTF-8", "");
@@ -308,12 +348,18 @@ int NppFTP::SaveSettings() {
 		const PathMap & map = m_globalCache.GetPathMap(0);
 		char * defaultCacheutf8 = SU::TCharToUtf8(map.localpath);
 		ftpElem->SetAttribute("defaultCache", defaultCacheutf8);
-		SU::FreeUtf8(defaultCacheutf8);
+		SU::FreeChar(defaultCacheutf8);
 	}
 
 	bool shown = (m_ftpWindow != NULL)?m_ftpWindow->m_outputShown:false;
 	ftpElem->SetAttribute("outputShown", shown?1:0);
 	ftpElem->SetDoubleAttribute("windowRatio", m_ftpWindow->m_splitter.GetRatio());
+
+	if (!Encryption::IsDefaultKey()) {
+		char * challenge = Encryption::Encrypt(NULL, -1, "NppFTP", -1);
+		ftpElem->SetAttribute("MasterPass", challenge);
+		Encryption::FreeData(challenge);
+	}
 
 	TiXmlElement * profilesElem = FTPProfile::SaveProfiles(m_profiles);
 	ftpElem->LinkEndChild(profilesElem);

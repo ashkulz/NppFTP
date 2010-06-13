@@ -19,6 +19,9 @@
 #include "StdInc.h"
 #include "FTPProfile.h"
 
+#include "Encryption.h"
+#include <algorithm>
+
 const char * FTPProfile::ProfilesElement = "Profiles";
 
 FTPProfile::FTPProfile() :
@@ -28,10 +31,7 @@ FTPProfile::FTPProfile() :
 	m_port(0),
 	m_username(NULL),
 	m_password(NULL),
-	m_askPassword(false),
 	m_timeout(30),
-	m_keepAlive(30),
-	m_keepAliveTransfer(90),
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
@@ -45,10 +45,7 @@ FTPProfile::FTPProfile() :
 
 FTPProfile::FTPProfile(const TCHAR * name) :
 	m_port(21),
-	m_askPassword(false),
 	m_timeout(30),
-	m_keepAlive(30),
-	m_keepAliveTransfer(90),
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
@@ -75,15 +72,15 @@ FTPProfile::~FTPProfile() {
 		m_name = NULL;
 	}
 	if (m_hostname) {
-		free(m_hostname);
+		SU::free(m_hostname);
 		m_hostname = NULL;
 	}
 	if (m_username) {
-		free(m_username);
+		SU::free(m_username);
 		m_username = NULL;
 	}
 	if (m_password) {
-		free(m_password);
+		SU::free(m_password);
 		m_password = NULL;
 	}
 
@@ -93,17 +90,17 @@ FTPProfile::~FTPProfile() {
 	}
 
 	if (m_initialDir) {
-		free(m_initialDir);
+		SU::free(m_initialDir);
 		m_initialDir = NULL;
 	}
 
 	for(size_t i = 0; i < m_asciiTypes.size(); i++) {
-		free(m_asciiTypes[i]);
+		SU::FreeTChar(m_asciiTypes[i]);
 	}
 	m_asciiTypes.clear();
 
 	for(size_t i = 0; i < m_binTypes.size(); i++) {
-		free(m_binTypes[i]);
+		SU::FreeTChar(m_binTypes[i]);
 	}
 	m_binTypes.clear();
 }
@@ -135,6 +132,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 			break;
 		case Mode_SecurityMax:
 		default:
+			return NULL;
 			break;
 
 	}
@@ -154,13 +152,12 @@ int FTPProfile::SetName(const TCHAR * name) {
 	return 0;
 }
 
-
 const char* FTPProfile::GetHostname() const {
 	return m_hostname;
 }
 
 int FTPProfile::SetHostname(const char * hostname) {
-	free(m_hostname);
+	SU::free(m_hostname);
 	m_hostname = SU::strdup(hostname);
 	m_cache->SetEnvironment(m_hostname, m_username);
 	return 0;
@@ -182,7 +179,7 @@ const char* FTPProfile::GetUsername() const {
 }
 
 int FTPProfile::SetUsername(const char * username) {
-	free(m_username);
+	SU::free(m_username);
 	m_username = SU::strdup(username);
 	m_cache->SetEnvironment(m_hostname, m_username);
 	return 0;
@@ -193,23 +190,10 @@ const char* FTPProfile::GetPassword() const {
 }
 
 int FTPProfile::SetPassword(const char * password) {
-	free(m_password);
+	SU::free(m_password);
 	m_password = SU::strdup(password);
 	return 0;
 }
-
-bool FTPProfile::GetAskPassword() const {
-	return m_askPassword;
-}
-
-int FTPProfile::SetAskPassword(bool ask) {
-	if (ask)		//asking for password atm not supported
-		return -1;
-
-	m_askPassword = ask;
-	return 0;
-}
-
 
 int FTPProfile::GetTimeout() const {
 	return m_timeout;
@@ -220,30 +204,6 @@ int FTPProfile::SetTimeout(int timeout) {
 		return -1;
 
 	m_timeout = timeout;
-	return 0;
-}
-
-int FTPProfile::GetKeepAlive() const {
-	return m_keepAlive;
-}
-
-int FTPProfile::SetKeepAlive(int keepalive) {
-	if (keepalive < 0)
-		return -1;
-
-	m_keepAlive = keepalive;
-	return 0;
-}
-
-int FTPProfile::GetKeepAliveTransfer() const {
-	return m_keepAliveTransfer;
-}
-
-int FTPProfile::SetKeepAliveTransfer(int keepalivetransfer) {
-	if (keepalivetransfer < 0)
-		return -1;
-
-	m_keepAliveTransfer = keepalivetransfer;
 	return 0;
 }
 
@@ -288,7 +248,7 @@ const char* FTPProfile::GetInitialDir() const {
 }
 
 int FTPProfile::SetInitialDir(const char * dir) {
-	free(m_initialDir);
+	SU::free(m_initialDir);
 	m_initialDir = SU::strdup(dir);
 	return 0;
 }
@@ -308,7 +268,7 @@ const char* FTPProfile::GetPassphrase() const {
 }
 
 int FTPProfile::SetPassphrase(const char * passphrase) {
-	free(m_passphrase);
+	SU::free(m_passphrase);
 	m_passphrase = SU::strdup(passphrase);
 	return 0;
 }
@@ -459,6 +419,8 @@ vProfile FTPProfile::LoadProfiles(const TiXmlElement * profilesElem) {
 		}
 	}
 
+	SortVector(profiles);
+
 	return profiles;
 }
 
@@ -503,18 +465,18 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 		else
 			profile->m_username = SU::strdup(attrstr);
 
-		attrstr = profileElem->Attribute("password");	//password may be empty, but not missing
-		if (!attrstr)
+		attrstr = profileElem->Attribute("password");
+		if (!attrstr) {
 			profile->m_password = SU::strdup("");
-		else
-			profile->m_password = SU::strdup(attrstr);
+		} else {
+			char * decryptpass = Encryption::Decrypt(NULL, -1, attrstr, true);
+			profile->m_password = SU::strdup(decryptpass);
+			Encryption::FreeData(decryptpass);
+		}
 
-		profileElem->Attribute("askPassword", (int*)(&profile->m_askPassword));
 		profileElem->Attribute("timeout", &profile->m_timeout);
-		profileElem->Attribute("keepAlive", &profile->m_keepAlive);
-		profileElem->Attribute("keepAliveTransfer", &profile->m_keepAliveTransfer);
 
-	//TODO: this is rather risky casting, check if the compiler accepts it
+		//TODO: this is rather risky casting, check if the compiler accepts it
 		profileElem->Attribute("securityMode", (int*)(&profile->m_securityMode));
 		profileElem->Attribute("transferMode", (int*)(&profile->m_transferMode));
 		profileElem->Attribute("connectionMode", (int*)(&profile->m_connectionMode));
@@ -540,10 +502,13 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			profile->m_keyFile = SU::Utf8ToTChar(attrstr);
 
 		attrstr = profileElem->Attribute("passphrase");
-		if (!attrstr)
+		if (!attrstr) {
 			profile->m_passphrase = SU::strdup("");
-		else
-			profile->m_passphrase = SU::strdup(attrstr);
+		} else {
+			char * decryptphrase = Encryption::Decrypt(NULL, -1, attrstr, true);
+			profile->m_passphrase = SU::strdup(decryptphrase);
+			Encryption::FreeData(decryptphrase);
+		}
 
 		profileElem->Attribute("useAgent", (int*)(&profile->m_useAgent));
 		profileElem->Attribute("acceptedMethods", (int*)(&profile->m_acceptedMethods));
@@ -584,15 +549,16 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 
 	char * utf8name = SU::TCharToUtf8(m_name);
 	profileElem->SetAttribute("name", utf8name);
-	SU::FreeUtf8(utf8name);
+	SU::FreeChar(utf8name);
 	profileElem->SetAttribute("hostname", m_hostname);
 	profileElem->SetAttribute("port", m_port);
 	profileElem->SetAttribute("username", m_username);
-	profileElem->SetAttribute("password", m_password);
-	profileElem->SetAttribute("askPassword", m_askPassword?1:0);
+
+	char * encryptPass = Encryption::Encrypt(NULL, -1, m_password, -1);
+	profileElem->SetAttribute("password", encryptPass);
+	Encryption::FreeData(encryptPass);
+
 	profileElem->SetAttribute("timeout", m_timeout);
-	profileElem->SetAttribute("keepAlive", m_keepAlive);
-	profileElem->SetAttribute("keepAliveTransfer", m_keepAliveTransfer);
 
 	profileElem->SetAttribute("securityMode", m_securityMode);
 	profileElem->SetAttribute("transferMode", m_transferMode);
@@ -602,8 +568,12 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 
 	char * utf8keyfile = SU::TCharToUtf8(m_keyFile);
 	profileElem->SetAttribute("keyFile", utf8keyfile);
-	SU::FreeUtf8(utf8keyfile);
-	profileElem->SetAttribute("passphrase", m_passphrase);
+	SU::FreeChar(utf8keyfile);
+
+	char * encryptPhrase = Encryption::Encrypt(NULL, -1, m_passphrase, -1);
+	profileElem->SetAttribute("passphrase", encryptPhrase);
+	Encryption::FreeData(encryptPhrase);
+
 	profileElem->SetAttribute("useAgent", m_useAgent?1:0);
 	profileElem->SetAttribute("acceptedMethods", (int)m_acceptedMethods);
 
@@ -625,8 +595,8 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	typesElem->SetAttribute("binaryTypes", binUtf8);
 	profileElem->LinkEndChild(typesElem);
 
-	SU::FreeUtf8(asciiUtf8);
-	SU::FreeUtf8(binUtf8);
+	SU::FreeChar(asciiUtf8);
+	SU::FreeChar(binUtf8);
 
 	return profileElem;
 }
@@ -638,14 +608,6 @@ int FTPProfile::Sanitize() {
 	if (m_timeout < 0)
 		m_timeout = 0;
 
-	if (m_keepAlive < 0)
-		m_keepAlive = 0;
-
-	if (m_keepAliveTransfer < 0)
-		m_keepAliveTransfer = 0;
-
-	m_askPassword = (m_askPassword == true);
-
 	if (m_securityMode < 0 || m_securityMode >= Mode_SecurityMax)
 		m_securityMode = Mode_FTP;
 
@@ -656,8 +618,6 @@ int FTPProfile::Sanitize() {
 		m_connectionMode = Mode_Passive;
 
 	m_acceptedMethods = (AuthenticationMethods)(m_acceptedMethods & Method_All);
-
-	m_askPassword = false;
 
 	return 0;
 }
@@ -707,4 +667,17 @@ tstring FTPProfile::CompactTypeVector(vString vect) const {
 	}
 
 	return typeString;
+}
+
+int FTPProfile::SortVector(vProfile & pVect) {
+	std::sort(pVect.begin(), pVect.end(), &FTPProfile::CompareProfile);
+
+	return 0;
+}
+
+bool FTPProfile::CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2) {
+	int res = 0;
+	res = lstrcmpi(prof1->GetName(), prof2->GetName());
+
+	return (res < 0);
 }

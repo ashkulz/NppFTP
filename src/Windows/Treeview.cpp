@@ -241,6 +241,19 @@ bool Treeview::GetObjectItemRect(FileObject * fo, RECT * pRect) {
 	return (res == TRUE);
 }
 
+FileObject* Treeview::GetItemByPoint(POINTL pt) {
+	TV_HITTESTINFO ht;
+	ht.pt.x = pt.x;
+	ht.pt.y = pt.y;
+	::ScreenToClient(m_hwnd, &ht.pt);
+	HTREEITEM result = TreeView_HitTest(m_hwnd, &ht);
+	if (result && (ht.flags & TVHT_ONITEM)) {
+		return GetItemFileObject(result);
+	}
+
+	return NULL;
+}
+
 int Treeview::UpdateFileObject(FileObject * fo) {
 	void* dat = fo->GetData();
 	if (!dat)

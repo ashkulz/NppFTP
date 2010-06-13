@@ -139,7 +139,7 @@ int SSLCertificates::FreeX509(X509 * x509) {
 char * SSLCertificates::GetDERString(const DER & der) {
 	static const char * table = "0123456789ABCDEF";
 
-	char * derString = new char[der.len*2+2+300];
+	char * derString = new char[der.len*2+2];
 	for(int i = 0; i < der.len; i++) {
 		derString[i*2] = table[(unsigned int)der.data[i]/16];
 		derString[i*2+1] = table[(unsigned int)der.data[i]%16];

@@ -1912,11 +1912,8 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
         }
 
     //send the list command
-    Send("LIST ");
-    if (path) {
-    	Send(path);
-    }
-    Send("\r\n");
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    Send(m_szBuf);
 
     //wait for a connection on the data port
     if(m_wsData.WaitForAccept(15)!= UTE_SUCCESS){  // GW: July 18 the wait Time Out is increased to 15 sec
@@ -2088,10 +2085,8 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
 
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.
-    Send("LIST ");
-    if (path)
-		Send(path);
-	Send("\r\n");
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    Send(m_szBuf);
 
     // connect to the server supplied port to establish the
     // data connection.
@@ -3144,7 +3139,7 @@ int CUT_FTPClient::SocketOnConnected(SOCKET s, const char *lpszName){
 
 	if (performAuth)
 	{
-		Send("AUTH TLS-P\r\n");									// Send the TLS negotiation command
+		Send("AUTH TLS\r\n");									// Send the TLS negotiation command
 
 		rt = GetResponseCode(this);
 

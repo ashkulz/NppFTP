@@ -231,7 +231,7 @@ QueueDownload::QueueDownload(HWND hNotify, const char * externalFile, const TCHA
 
 QueueDownload::~QueueDownload() {
 	SU::FreeTChar(m_localFile);
-	free(m_externalFile);
+	SU::free(m_externalFile);
 }
 
 int QueueDownload::Perform() {
@@ -268,6 +268,52 @@ const char* QueueDownload::GetExternalPath() {
 
 //////////////////////////////////////
 
+QueueDownloadHandle::QueueDownloadHandle(HWND hNotify, const char * externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeDownloadHandle, hNotify, notifyCode, notifyData),
+	m_tMode(tMode),
+	m_hFile(hFile)
+{
+	m_externalFile = SU::strdup(externalFile);
+}
+
+QueueDownloadHandle::~QueueDownloadHandle() {
+	SU::free(m_externalFile);
+}
+
+int QueueDownloadHandle::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		m_result = m_client->Connect();
+		if (m_result == -1)
+			return m_result;
+		m_result = -1;
+	}
+
+	if (m_client->GetType() == Client_SSL) {
+		((FTPClientWrapperSSL*)m_client)->SetTransferMode(m_tMode);
+	}
+
+	m_result = m_client->ReceiveFile(m_hFile, m_externalFile);
+	return m_result;
+}
+
+bool QueueDownloadHandle::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueDownloadHandle & otherDld = (QueueDownloadHandle&) other;
+
+	return (m_hFile == otherDld.m_hFile && !strcmp(otherDld.m_externalFile, m_externalFile) && !m_running && !otherDld.m_running);
+}
+
+const TCHAR* QueueDownloadHandle::GetLocalPath() {
+	return TEXT("Automated download");
+}
+
+const char* QueueDownloadHandle::GetExternalPath() {
+	return m_externalFile;
+}
+
+//////////////////////////////////////
+
 QueueUpload::QueueUpload(HWND hNotify, const char * externalFile, const TCHAR * localFile, Transfer_Mode tMode, int notifyCode, void * notifyData) :
 	QueueOperation(QueueTypeUpload, hNotify, notifyCode, notifyData),
 	m_tMode(tMode)
@@ -278,7 +324,7 @@ QueueUpload::QueueUpload(HWND hNotify, const char * externalFile, const TCHAR * 
 
 QueueUpload::~QueueUpload() {
 	SU::FreeTChar(m_localFile);
-	free(m_externalFile);
+	SU::free(m_externalFile);
 }
 
 int QueueUpload::Perform() {
@@ -329,7 +375,7 @@ QueueGetDir::~QueueGetDir() {
 		m_data = NULL;
 	}
 
-	free(m_dirPath);
+	SU::free(m_dirPath);
 }
 
 int QueueGetDir::Perform() {
@@ -380,7 +426,7 @@ QueueCreateDir::QueueCreateDir(HWND hNotify, const char * dirPath, int notifyCod
 }
 
 QueueCreateDir::~QueueCreateDir() {
-	free(m_dirPath);
+	SU::free(m_dirPath);
 }
 
 int QueueCreateDir::Perform() {
@@ -416,7 +462,7 @@ QueueRemoveDir::QueueRemoveDir(HWND hNotify, const char * dirPath, int notifyCod
 }
 
 QueueRemoveDir::~QueueRemoveDir() {
-	free(m_dirPath);
+	SU::free(m_dirPath);
 }
 
 int QueueRemoveDir::Perform() {
@@ -452,7 +498,7 @@ QueueCreateFile::QueueCreateFile(HWND hNotify, const char * filePath, int notify
 }
 
 QueueCreateFile::~QueueCreateFile() {
-	free(m_filePath);
+	SU::free(m_filePath);
 }
 
 int QueueCreateFile::Perform() {
@@ -489,7 +535,7 @@ QueueDeleteFile::QueueDeleteFile(HWND hNotify, const char * filePath, int notify
 }
 
 QueueDeleteFile::~QueueDeleteFile() {
-	free(m_filePath);
+	SU::free(m_filePath);
 }
 
 int QueueDeleteFile::Perform() {
@@ -526,8 +572,8 @@ QueueRenameFile::QueueRenameFile(HWND hNotify, const char * filePath, const char
 }
 
 QueueRenameFile::~QueueRenameFile() {
-	free(m_filePath);
-	free(m_newPath);
+	SU::free(m_filePath);
+	SU::free(m_newPath);
 }
 
 int QueueRenameFile::Perform() {
@@ -569,7 +615,7 @@ QueueQuote::QueueQuote(HWND hNotify, const char * quote, int notifyCode, void * 
 }
 
 QueueQuote::~QueueQuote() {
-	free(m_quote);
+	SU::free(m_quote);
 }
 
 int QueueQuote::Perform() {

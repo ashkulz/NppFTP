@@ -82,6 +82,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				FTPProfile * newProfile = new FTPProfile(id.GetValue());
 				newProfile->SetCacheParent(m_globalCache);
 				m_profiles->push_back(newProfile);
+				FTPProfile::SortVector(*m_profiles);
 				newProfile->AddRef();
 				m_ftpWindow->OnProfileChange();
 				LoadProfiles();
@@ -98,8 +99,9 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 	}
 
-	if (!m_currentProfile)
-		return TRUE;
+	if (!m_currentProfile) {
+		return Dialog::OnCommand(ctrlId, notifCode, idHwnd);
+	}
 
 	//things that require a profile
 	switch(ctrlId) {
@@ -108,6 +110,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			int res = id.Create(m_hwnd, TEXT("Renaming profile"), TEXT("Please enter the new name of the profile"), m_currentProfile->GetName());
 			if (res == 1) {
 				m_currentProfile->SetName(id.GetValue());
+				FTPProfile::SortVector(*m_profiles);
 				m_ftpWindow->OnProfileChange();
 				LoadProfiles();
 			}
@@ -120,9 +123,14 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				}
 			}
 			m_currentProfile->Release();
+			FTPProfile::SortVector(*m_profiles);
 			m_ftpWindow->OnProfileChange();
+			if (m_profiles->size() > 0) {
+				OnSelectProfile(m_profiles->at(0));
+			} else {
+				OnSelectProfile(NULL);
+			}
 			LoadProfiles();
-			OnSelectProfile(NULL);
 			break; }
 		case IDC_EDIT_HOSTNAME: {
 			if (notifCode == EN_KEYPRESS) {
@@ -358,6 +366,9 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				EnableCacheMapUI();
 			}
 			break; }
+		default: {
+			return Dialog::OnCommand(ctrlId, notifCode, idHwnd);
+			break; }
 	}
 
 	return TRUE;
@@ -369,7 +380,7 @@ INT_PTR ProfilesDialog::OnNotify(NMHDR * pnmh) {
 	if (pnmh->idFrom == IDC_LIST_CACHE) {
 		NMLISTVIEW * pnml = (NMLISTVIEW*)pnmh;
 		if (pnml->hdr.code == LVN_ITEMCHANGED) {
-			if (pnml->uChanged | LVIS_SELECTED) {
+			if (pnml->uChanged & LVIS_SELECTED) {
 				OnCacheMapSelect();
 			}
 		}
@@ -484,7 +495,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	if (m_profiles->size() > 0) {
 		HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
-		ListBox_SelectItemData(hListProfile, 0, m_profiles->at(0));
+		ListBox_SetCurSel(hListProfile, 0);
 		OnSelectProfile(m_profiles->at(0));
 	} else {
 		OnSelectProfile(NULL);
@@ -503,6 +514,9 @@ int ProfilesDialog::LoadProfiles() {
 		if (index == LB_ERR || index == LB_ERRSPACE)
 			return -1;
 		ListBox_SetItemData(hListProfile, index, m_profiles->at(i));
+		if (m_currentProfile == m_profiles->at(i)) {
+			ListBox_SetCurSel(hListProfile, index);
+		}
 	}
 
 	return 0;
@@ -534,6 +548,14 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY), enableSettings);
 
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_PASSWORD), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_KEY), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_KEYFILE), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_BUTTON_KEYBROWSE), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_AGENT), enableSettings);
+
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_RADIO_ACTIVE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_RADIO_PASSIVE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_RADIO_ASCII), enableSettings);
@@ -546,6 +568,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_LIST_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_BUTTON_CACHEBROWSE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_BUTTON_CACHE_ADD), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_BUTTON_CACHE_EDIT), enableSettings);

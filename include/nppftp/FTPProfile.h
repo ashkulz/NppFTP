@@ -50,15 +50,9 @@ public:
 	int						SetUsername(const char * username);
 	const char*				GetPassword() const;
 	int						SetPassword(const char * password);
-	bool					GetAskPassword() const;
-	int						SetAskPassword(bool ask);
 
 	int						GetTimeout() const;
 	int						SetTimeout(int timeout);
-	int						GetKeepAlive() const;
-	int						SetKeepAlive(int keepalive);
-	int						GetKeepAliveTransfer() const;
-	int						SetKeepAliveTransfer(int keepalivetransfer);
 
 	Security_Mode			GetSecurityMode() const;
 	int						SetSecurityMode(Security_Mode mode);
@@ -100,6 +94,8 @@ public:
 
 	static vProfile			LoadProfiles(const TiXmlElement * profilesElem);
 	static TiXmlElement*	SaveProfiles(const vProfile profiles);
+
+	static int				SortVector(vProfile & pVect);
 private:
 	static FTPProfile*		LoadProfile(const TiXmlElement * profileElem);
 	TiXmlElement*			SaveProfile() const;	//return value only valid as long as profile object exists
@@ -107,6 +103,8 @@ private:
 	bool					ValidType(const TCHAR * type) const;
 	int						ExpandTypeVector(tstring types, bool isAscii);
 	tstring					CompactTypeVector(vString vect) const;
+
+	static bool				CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2);
 
 	TCHAR*					m_name;
 
@@ -116,11 +114,8 @@ private:
 	int						m_port;
 	char*					m_username;
 	char*					m_password;
-	bool					m_askPassword;
 
 	int						m_timeout;
-	int						m_keepAlive;
-	int						m_keepAliveTransfer;
 
 	Security_Mode			m_securityMode;
 	Transfer_Mode			m_transferMode;

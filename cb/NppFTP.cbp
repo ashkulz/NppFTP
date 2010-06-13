@@ -21,6 +21,7 @@
 				<Linker>
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="uuid" />
 					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXMLD" />
@@ -57,6 +58,7 @@
 					<Add option="-s" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="uuid" />
 					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXML" />
@@ -89,6 +91,7 @@
 					<Add option="-s" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
+					<Add library="uuid" />
 					<Add library="ole32" />
 					<Add library="shlwapi" />
 					<Add library="TinyXML" />
@@ -120,11 +123,11 @@
 			<Add option="-DLIBSSH_STATIC" />
 			<Add directory="..\include" />
 			<Add directory="..\include\nppftp" />
-			<Add directory="..\include\nppftp\Windows" />
-			<Add directory="..\libssh-0.4.2\include" />
-			<Add directory="..\UTCP\Include" />
-			<Add directory="..\tinyxml\include" />
 			<Add directory="..\include\nppftp\Npp" />
+			<Add directory="..\include\nppftp\Windows" />
+			<Add directory="..\libssh-0.4.4\include" />
+			<Add directory="..\tinyxml\include" />
+			<Add directory="..\UTCP\Include" />
 		</Compiler>
 		<ResourceCompiler>
 			<Add directory="..\include\nppftp" />
@@ -134,6 +137,7 @@
 			<Add directory="..\lib" />
 		</Linker>
 		<Unit filename="..\include\nppftp\DragDropSupport.h" />
+		<Unit filename="..\include\nppftp\Encryption.h" />
 		<Unit filename="..\include\nppftp\FTPCache.h" />
 		<Unit filename="..\include\nppftp\FTPClientWrapper.h" />
 		<Unit filename="..\include\nppftp\FTPFile.h" />
@@ -146,6 +150,7 @@
 		<Unit filename="..\include\nppftp\Npp\Docking.h" />
 		<Unit filename="..\include\nppftp\Npp\Notepad_plus_msgs.h" />
 		<Unit filename="..\include\nppftp\Npp\PluginInterface.h" />
+		<Unit filename="..\include\nppftp\Npp\SciLexer.h" />
 		<Unit filename="..\include\nppftp\Npp\Scintilla.h" />
 		<Unit filename="..\include\nppftp\Npp\dockingResource.h" />
 		<Unit filename="..\include\nppftp\Output.h" />
@@ -165,6 +170,7 @@
 		<Unit filename="..\include\nppftp\Windows\Commands.h" />
 		<Unit filename="..\include\nppftp\Windows\Dialog.h" />
 		<Unit filename="..\include\nppftp\Windows\DockableWindow.h" />
+		<Unit filename="..\include\nppftp\Windows\DragDropWindow.h" />
 		<Unit filename="..\include\nppftp\Windows\FTPWindow.h" />
 		<Unit filename="..\include\nppftp\Windows\InputDialog.h" />
 		<Unit filename="..\include\nppftp\Windows\KBIntDialog.h" />
@@ -178,10 +184,8 @@
 		<Unit filename="..\include\nppftp\Windows\Window.h" />
 		<Unit filename="..\include\nppftp\Windows\resource.h" />
 		<Unit filename="..\include\nppftp\Windows\symbols.h" />
-		<Unit filename="..\src\DragDropSupport.cpp">
-			<Option compile="0" />
-			<Option link="0" />
-		</Unit>
+		<Unit filename="..\src\DragDropSupport.cpp" />
+		<Unit filename="..\src\Encryption.cpp" />
 		<Unit filename="..\src\FTPCache.cpp" />
 		<Unit filename="..\src\FTPClientWrapper.cpp" />
 		<Unit filename="..\src\FTPClientWrapperSSH.cpp" />
@@ -208,6 +212,7 @@
 		<Unit filename="..\src\Windows\ChildDialog.cpp" />
 		<Unit filename="..\src\Windows\Dialog.cpp" />
 		<Unit filename="..\src\Windows\DockableWindow.cpp" />
+		<Unit filename="..\src\Windows\DragDropWindow.cpp" />
 		<Unit filename="..\src\Windows\FTPWindow.cpp" />
 		<Unit filename="..\src\Windows\InputDialog.cpp" />
 		<Unit filename="..\src\Windows\KBIntDialog.cpp" />

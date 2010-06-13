@@ -38,9 +38,9 @@ FTPClientWrapper::~FTPClientWrapper() {
 	if (m_connected)	//cannot simply call Disconnect as it's virtual
 		OutErr("[FTPClientWrapper] connection active in destructor");
 
-	free(m_hostname);
-	free(m_username);
-	free(m_password);
+	SU::free(m_hostname);
+	SU::free(m_username);
+	SU::free(m_password);
 }
 
 Client_Type FTPClientWrapper::GetType() {

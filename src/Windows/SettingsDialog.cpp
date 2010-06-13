@@ -19,7 +19,9 @@
 #include "StdInc.h"
 #include "SettingsDialog.h"
 
+#include "Encryption.h"
 #include "resource.h"
+#include <Windowsx.h>
 
 SettingsDialog::SettingsDialog() :
 	Dialog(IDD_DIALOG_GLOBAL),
@@ -36,11 +38,19 @@ int SettingsDialog::Create(HWND hParent, FTPCache * globalCache) {
 }
 
 INT_PTR SettingsDialog::OnInitDialog() {
-	_EditDefaultProc = (WNDPROC)::SetWindowLongPtr(::GetDlgItem(m_hwnd, IDC_EDIT_CACHE), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-
 	const PathMap & pathmap = m_globalCache->GetPathMap(0);
 
+	Edit_LimitText(::GetDlgItem(m_hwnd, IDC_EDIT_MASTERPASS), Encryption::KeySize);
+
 	::SetDlgItemText(m_hwnd, IDC_EDIT_CACHE, pathmap.localpath);
+
+
+	if (!Encryption::IsDefaultKey()) {
+		char password[Encryption::KeySize+1];
+		memcpy(password, Encryption::GetDefaultKey(), Encryption::KeySize);
+		password[Encryption::KeySize] = 0;
+		::SetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password);
+	}
 
 	return Dialog::OnInitDialog();
 }
@@ -63,14 +73,13 @@ INT_PTR SettingsDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 INT_PTR SettingsDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 	switch(ctrlId) {
-		case IDC_EDIT_CACHEEXTERNAL: {
-			if (notifCode == EN_KEYRETURN) {
-				SaveGlobalPath();
-			}
-			break; }
 		case IDC_BUTTON_CLOSE: {
 			SaveGlobalPath();
+			SaveMasterPassword();
 			EndDialog(m_hwnd, 0);
+			break; }
+		default: {
+			return Dialog::OnCommand(ctrlId, notifCode, idHwnd);
 			break; }
 	}
 
@@ -90,6 +99,21 @@ int SettingsDialog::SaveGlobalPath() {
 	pathnew.localpath = SU::DupString(TTextBuffer);
 	pathnew.externalpath = SU::strdup(pathmaporig.externalpath);
 	m_globalCache->SetPathMap(pathnew, 0);
+
+	return 0;
+}
+
+int SettingsDialog::SaveMasterPassword() {
+	char password[Encryption::KeySize+1];
+	::GetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password, Encryption::KeySize);
+	Encryption::SetDefaultKey(password);
+
+
+	char * challenge = Encryption::Encrypt(NULL, -1, "NppFTP", -1);
+	OutMsg("challenge %s", challenge);
+	char * data = Encryption::Decrypt(NULL, -1, challenge, true);
+	OutMsg("data %s", data);
+
 
 	return 0;
 }

@@ -40,6 +40,16 @@ FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 		m_name++;			//skip slash
 
 	m_localName = SU::Utf8ToTChar(m_name);
+
+	FILETIME ft;
+	SYSTEMTIME st;
+
+	::GetSystemTime(&st);
+	::SystemTimeToFileTime(&st, &ft);
+
+	m_ctime = ft;
+	m_mtime = ft;
+	m_atime = ft;
 }
 
 FileObject::FileObject(FTPFile * ftpfile) :
@@ -60,11 +70,15 @@ FileObject::FileObject(FTPFile * ftpfile) :
 	m_localName = SU::Utf8ToTChar(m_name);
 
 	m_size = ftpfile->fileSize;
+
+	m_ctime = ftpfile->ctime;
+	m_mtime = ftpfile->mtime;
+	m_atime = ftpfile->atime;
 }
 
 FileObject::~FileObject() {
 	RemoveAllChildren();
-	free(m_path);
+	SU::free(m_path);
 	SU::FreeTChar(m_localName);
 }
 
@@ -177,6 +191,19 @@ long FileObject::GetSize() const {
 	return m_size;
 }
 
+FILETIME FileObject::GetCTime() const {
+	return m_ctime;
+}
+
+FILETIME FileObject::GetMTime() const {
+	return m_mtime;
+}
+
+FILETIME FileObject::GetATime() const {
+	return m_atime;
+}
+
+
 int FileObject::Sort() {
 	return FileObject::SortVector(m_children);
 }
@@ -186,12 +213,13 @@ int FileObject::SortVector(FOVector & foVect) {
 
 	return 0;
 }
- bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
- 	int res = 0;
- 	if (fo1->isDir() != fo2->isDir()) {
- 		res = fo1->isDir()?false:true;
- 	} else {
+
+bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
+	int res = 0;
+	if (fo1->isDir() != fo2->isDir()) {
+		res = fo1->isDir()?false:true;
+	} else {
 		res = lstrcmpiA(fo1->GetPath(), fo2->GetPath());
- 	}
- 	return (res < 0);
- }
+	}
+	return (res < 0);
+}

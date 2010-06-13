@@ -22,23 +22,31 @@
 //Based on microsoft classes from DragDrop example files from FTP, altered for personal use
 //These classes represent various DnD items in NppFTP, and the means to support them
 
-//callback function definitions
-typedef void (*enterCallback) (CLIPFORMAT, IDataObject *, void *);							//type, object, custom data
-typedef void (*dragCallback) (DWORD, POINTL, DWORD *, void *);								//keystate, position, effect, custom data
-typedef void (*dropCallback) (CLIPFORMAT, IDataObject *, DWORD, POINTL, DWORD *, void *);	//type, object, keystate, position, effect, custom data
-typedef void (*cancelCallback) (void *);													//custom data
+class DropTargetWindow;
+class DropDataWindow;
+class CStreamData;
 
-typedef HRESULT (*feedbackCall)(DWORD, void *);												//current dropstate, custom data
+//Class used to allow items to be dragged INTO the window
+class CDropTarget : public IDropTarget {
+//Register a type and callbackfunction (static) with custom data to support different droppable stuff
+public:
+							CDropTarget(DropTargetWindow * targetWindow);
+	virtual					~CDropTarget();
 
-typedef void* (*renderData)(LPFORMATETC pformatetc, void *);								//format to render, custom data, return pointer to rendered data, if HGLOBAL its an address of a handle to GlobalAlloc data, or NULL if failure (MUST be GMEM_SHARE)
+	/* IUnknown methods */
+	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
+	STDMETHOD_				(ULONG, AddRef)(void);
+	STDMETHOD_				(ULONG, Release)(void);
 
-struct DropHandler {
-	CLIPFORMAT type;
-	void * customData;
-	enterCallback enterCall;
-	dragCallback dragCall;
-	dropCallback dropCall;
-	cancelCallback cancelCall;
+	/* IDropTarget methods */
+	STDMETHOD				(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	STDMETHOD				(DragOver)(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	STDMETHOD				(DragLeave)();
+	STDMETHOD				(Drop)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+private:
+	ULONG					m_refs;
+	bool					m_dragging;
+	DropTargetWindow*		m_targetWindow;
 };
 
 class DropTargetWindow {	//does _not_ derive Window
@@ -46,160 +54,155 @@ public:
 							DropTargetWindow();
 	virtual					~DropTargetWindow();
 
-	bool					AcceptType(CLIPFORMAT type);
-	HRESULT					OnDragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-	HRESULT					OnDragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-	HRESULT					OnDragLeave();
-	HRESULT					OnDrop(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-private:
-};
+	virtual bool			AcceptType(LPDATAOBJECT pDataObj);
+	virtual HRESULT			OnDragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	virtual HRESULT			OnDragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	virtual HRESULT			OnDragLeave();
+	virtual HRESULT			OnDrop(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+protected:
+	virtual int				DoRegisterDragDrop(HWND hwnd = NULL);
+	virtual int				DoRevokeDragDrop(HWND hwnd = NULL);
 
-//Class used to allow items to be dragged INTO the window
-class CDropTarget : public IDropTarget {
-//Register a type and callbackfunction (static) with custom data to support different droppable stuff
-public:
-	CDropTarget();
-
-	/* IUnknown methods */
-	STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
-
-	/* IDropTarget methods */
-	STDMETHOD(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-	STDMETHOD(DragOver)(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-	STDMETHOD(DragLeave)();
-	STDMETHOD(Drop)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-
-	/* Client interface methods */
-	bool addType(CLIPFORMAT type, void * custom, enterCallback enter, dragCallback drag, dropCallback drop, cancelCallback cancel);
-
-private:
-	ULONG m_refs;
-	BOOL m_bAcceptFmt;
-	int m_currentAcceptedType;
-	std::vector<DropHandler> m_supportedTypes;
-	int size;
+	HWND					m_dropHwnd;
+	CDropTarget				m_dropTarget;
 };
 
 //Class used to allow files to be dragged OUT the window
 class CDropSource : public IDropSource {
 public:
-	CDropSource();
+							CDropSource();
+	virtual					~CDropSource();
 
 	/* IUnknown methods */
-	STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
+	STDMETHOD_				(ULONG, AddRef)(void);
+	STDMETHOD_				(ULONG, Release)(void);
 
 	/* IDropSource methods */
-	STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
-	STDMETHOD(GiveFeedback)(DWORD dwEffect);
-
-	void setCallback(feedbackCall, void *);
+	STDMETHOD				(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
+	STDMETHOD				(GiveFeedback)(DWORD dwEffect);
 private:
 	ULONG m_refs;
-	feedbackCall callback;
-	void * customData;
 };
 
 //Class used when dragging object OUT of window
 class CDataObject : public IDataObject {
 public:
-	CDataObject();
-	~CDataObject();
+							CDataObject(DropDataWindow * dataWindow);
+							~CDataObject();
 
    /* IUnknown methods */
-	STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
+	STDMETHOD_				(ULONG, AddRef)(void);
+	STDMETHOD_				(ULONG, Release)(void);
 
 	/* IDataObject methods */
-	STDMETHOD(GetData)(LPFORMATETC pformatetcIn,  LPSTGMEDIUM pmedium );
-	STDMETHOD(GetDataHere)(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium );
-	STDMETHOD(QueryGetData)(LPFORMATETC pformatetc );
-	STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC pformatetc, LPFORMATETC pformatetcOut);
-	STDMETHOD(SetData)(LPFORMATETC pformatetc, STGMEDIUM FAR * pmedium, BOOL fRelease);
-	STDMETHOD(EnumFormatEtc)(DWORD dwDirection, LPENUMFORMATETC FAR* ppenumFormatEtc);
-	STDMETHOD(DAdvise)(FORMATETC FAR* pFormatetc, DWORD advf, LPADVISESINK pAdvSink, DWORD FAR* pdwConnection);
-	STDMETHOD(DUnadvise)(DWORD dwConnection);
-	STDMETHOD(EnumDAdvise)(LPENUMSTATDATA FAR* ppenumAdvise);
-
-	void addType(FORMATETC format);		//TARGETDEVICE MUST be NULL;
-	void setCallback(renderData, void *);
+	STDMETHOD				(GetData)(LPFORMATETC pformatetcIn,  LPSTGMEDIUM pmedium);
+	STDMETHOD				(GetDataHere)(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium);
+	STDMETHOD				(QueryGetData)(LPFORMATETC pformatetc );
+	STDMETHOD				(GetCanonicalFormatEtc)(LPFORMATETC pformatetc, LPFORMATETC pformatetcOut);
+	STDMETHOD				(SetData)(LPFORMATETC pformatetc, STGMEDIUM FAR * pmedium, BOOL fRelease);
+	STDMETHOD				(EnumFormatEtc)(DWORD dwDirection, LPENUMFORMATETC FAR* ppenumFormatEtc);
+	STDMETHOD				(DAdvise)(FORMATETC FAR* pFormatetc, DWORD advf, LPADVISESINK pAdvSink, DWORD FAR* pdwConnection);
+	STDMETHOD				(DUnadvise)(DWORD dwConnection);
+	STDMETHOD				(EnumDAdvise)(LPENUMSTATDATA FAR* ppenumAdvise);
 private:
-	ULONG m_refs;
-	CLIPFORMAT currentFormat;
-	renderData callback;
-	void * customData;
-	std::vector<FORMATETC> formats;
-	//return -1 if not found
-	bool getFormatIndex(LPFORMATETC pformatetc, size_t * offset);
+	ULONG					m_refs;
+	CLIPFORMAT				m_filedescriptorID;
+	CLIPFORMAT				m_filecontentsID;
+
+	DropDataWindow*			m_dataWindow;
+};
+
+class DropDataWindow {
+public:
+							DropDataWindow();
+	virtual					~DropDataWindow();
+
+	virtual int				GetNrFiles();
+	virtual int				GetFileDescriptor(FILEDESCRIPTOR * fd, int index);
+	virtual int				StreamData(CStreamData * stream, int index);
+
+	virtual int				OnEndDnD();
+private:
 };
 
 //Class used in conjunction with CDataObject to allow to enumerate all of its dataformats
 class CEnumFormatEtc : public IEnumFORMATETC {
 public:
-	CEnumFormatEtc(std::vector<FORMATETC> * formats);
-	CEnumFormatEtc(FORMATETC *pFormatEtc, int nNumFormats);
-	~CEnumFormatEtc();
+							CEnumFormatEtc(FORMATETC *pFormatEtc, int nNumFormats);
+							~CEnumFormatEtc();
 
 	/* IUnknown methods */
-	STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
+	STDMETHOD_				(ULONG, AddRef)(void);
+	STDMETHOD_				(ULONG, Release)(void);
 
 	/* IEnumFORMATETC methods */
-	STDMETHOD(Next)(ULONG celt, FORMATETC * rgelt, ULONG * pceltFetched);
-	STDMETHOD(Skip)(ULONG celt);
-	STDMETHOD(Reset)(void);
-	STDMETHOD(Clone)(IEnumFORMATETC ** ppEnumFormatEtc);
+	STDMETHOD				(Next)(ULONG celt, FORMATETC * rgelt, ULONG * pceltFetched);
+	STDMETHOD				(Skip)(ULONG celt);
+	STDMETHOD				(Reset)(void);
+	STDMETHOD				(Clone)(IEnumFORMATETC ** ppEnumFormatEtc);
 private:
-	ULONG m_refs;
-	ULONG m_nIndex;
-	ULONG m_nNumFormats;
-	FORMATETC * m_pFormatEtc;
+	ULONG					m_refs;
+	ULONG					m_nIndex;
+	ULONG					m_nNumFormats;
+	FORMATETC*				m_pFormatEtc;
 };
 
 //Class to stream network contents to explorer
 class CStreamData : public IStream {
 	//Supports only 4GB streamsize, no more
 public:
-	CStreamData();
-	~CStreamData();
+							CStreamData(FILEDESCRIPTOR * fd);
+							~CStreamData();
 
 	/* IUnknown methods */
-	STDMETHOD(QueryInterface)(REFIID iid, void FAR* FAR* ppv);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD				(QueryInterface)(REFIID iid, void FAR* FAR* ppv);
+	STDMETHOD_				(ULONG, AddRef)(void);
+	STDMETHOD_				(ULONG, Release)(void);
 
 	/* ISequentialStream methods */
-	STDMETHOD(Read)(void* pv, ULONG cb, ULONG* pcbRead);
-	STDMETHOD(Write)(void const* pv, ULONG cb, ULONG* pcbWritten);
+	STDMETHOD				(Read)(void* pv, ULONG cb, ULONG* pcbRead);
+	STDMETHOD				(Write)(void const* pv, ULONG cb, ULONG* pcbWritten);
 
 	/* IStream methods */
-	STDMETHOD(SetSize)(ULARGE_INTEGER);
-	STDMETHOD(CopyTo)(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*);
-	STDMETHOD(Commit)(DWORD);
-	STDMETHOD(Revert)(void);
-	STDMETHOD(LockRegion)(ULARGE_INTEGER, ULARGE_INTEGER, DWORD);
-	STDMETHOD(UnlockRegion)(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) ;
-	STDMETHOD(Clone)(IStream **);
-	STDMETHOD(Seek)(LARGE_INTEGER liDistanceToMove, DWORD dwOrigin, ULARGE_INTEGER* lpNewFilePointer);
-	STDMETHOD(Stat)(STATSTG* pStatstg, DWORD grfStatFlag);
+	STDMETHOD				(SetSize)(ULARGE_INTEGER);
+	STDMETHOD				(CopyTo)(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*);
+	STDMETHOD				(Commit)(DWORD);
+	STDMETHOD				(Revert)(void);
+	STDMETHOD				(LockRegion)(ULARGE_INTEGER, ULARGE_INTEGER, DWORD);
+	STDMETHOD				(UnlockRegion)(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) ;
+	STDMETHOD				(Clone)(IStream **);
+	STDMETHOD				(Seek)(LARGE_INTEGER liDistanceToMove, DWORD dwOrigin, ULARGE_INTEGER* lpNewFilePointer);
+	STDMETHOD				(Stat)(STATSTG* pStatstg, DWORD grfStatFlag);
 
-	HANDLE getWriteHandle() {
-		return writeHandle;
-	}
-	void close() {
-		CloseHandle(writeHandle);
-	}
+	HANDLE					GetWriteHandle() const;
+	void					Close();
 private:
-    ULONG m_refs;
+    ULONG					m_refs;
 
-	HANDLE readHandle;
-	HANDLE writeHandle;
-	bool closedStream;
+    ULARGE_INTEGER			m_currentPointer;
+
+	HANDLE					m_readHandle;
+	HANDLE					m_writeHandle;
+	bool					m_closedStream;
+
+	FILEDESCRIPTOR			m_filedesc;
+};
+
+class DropHelper {
+public:
+							DropHelper(DropDataWindow * dataWindow);
+	virtual					~DropHelper();
+
+	virtual int				PerformDragDrop();
+private:
+	static DWORD WINAPI		StaticDragDropThread(LPVOID param);
+	virtual int				DragDropThread();
+
+	HANDLE					m_hThread;
+	DropDataWindow*			m_dataWindow;
 };
 
 #endif //DRAGDROPSUPPORT_H

@@ -59,15 +59,15 @@ int QueueWindow::Create(HWND hParent) {
 
 int QueueWindow::PushQueueItem(QueueOperation * op) {
 	QueueOperation::QueueType type = op->GetType();
-	if (type != QueueOperation::QueueTypeDownload && type != QueueOperation::QueueTypeUpload)
-		return -1;	//only transfers supported
+	if (!ValidType(type))
+		return -1;
 
 	LVITEM lvi;
 	lvi.mask = LVIF_TEXT | LVIF_PARAM;
 	lvi.iItem = GetNrItems();
 	lvi.iSubItem = 0;
 	lvi.lParam = (LPARAM)op;
-	lvi.pszText = (TCHAR*)(type==QueueOperation::QueueTypeDownload?TEXT("Download"):TEXT("Upload"));
+	lvi.pszText = (TCHAR*)(type==QueueOperation::QueueTypeDownload||type==QueueOperation::QueueTypeDownloadHandle?TEXT("Download"):TEXT("Upload"));
 
 	int index = ListView_InsertItem(m_hwnd,  &lvi);
 	if (index == -1)
@@ -78,6 +78,9 @@ int QueueWindow::PushQueueItem(QueueOperation * op) {
 	TCHAR * path = NULL;
 	if (type == QueueOperation::QueueTypeDownload) {
 		QueueDownload * qdld = (QueueDownload*)op;
+		path = SU::Utf8ToTChar(qdld->GetExternalPath());
+	} else if (type == QueueOperation::QueueTypeDownloadHandle) {
+		QueueDownloadHandle * qdld = (QueueDownloadHandle*)op;
 		path = SU::Utf8ToTChar(qdld->GetExternalPath());
 	} else if (type == QueueOperation::QueueTypeUpload) {
 		QueueUpload * quld = (QueueUpload*)op;
@@ -91,8 +94,8 @@ int QueueWindow::PushQueueItem(QueueOperation * op) {
 }
 
 int QueueWindow::PopQueueItem(QueueOperation * op) {
-	if (op->GetType() != QueueOperation::QueueTypeDownload && op->GetType() != QueueOperation::QueueTypeUpload)
-		return -1;	//only transfers supported
+	if (!ValidType(op->GetType()))
+		return -1;
 
 	int index = GetNrItems()-1;
 	if (index == -1)
@@ -117,8 +120,8 @@ int QueueWindow::PopQueueItem(QueueOperation * op) {
 }
 
 int QueueWindow::RemoveQueueItem(QueueOperation * op) {
-	if (op->GetType() != QueueOperation::QueueTypeDownload && op->GetType() != QueueOperation::QueueTypeUpload)
-		return -1;	//only transfers supported
+	if (!ValidType(op->GetType()))
+		return -1;
 
 	int index = GetItemIndex(op);
 	if (index == -1)
@@ -157,8 +160,8 @@ bool QueueWindow::GetSelectedQueueRect(RECT * pRect) {
 }
 
 int QueueWindow::ProgressQueueItem(QueueOperation * op) {
-	if (op->GetType() != QueueOperation::QueueTypeDownload && op->GetType() != QueueOperation::QueueTypeUpload)
-		return -1;	//only transfers supported
+	if (!ValidType(op->GetType()))
+		return -1;
 
 	int index = GetItemIndex(op);
 	if (index == -1)
@@ -182,6 +185,9 @@ int QueueWindow::ProgressQueueItem(QueueOperation * op) {
 }
 
 int QueueWindow::GetItemIndex(QueueOperation * op) {
+	if (!ValidType(op->GetType()))
+		return -1;
+
 	int index = -1;
 	int nritems = GetNrItems();
 
@@ -209,4 +215,12 @@ int QueueWindow::GetNrItems() {
 	int res = ListView_GetItemCount(m_hwnd);
 
 	return res;
+}
+
+bool QueueWindow::ValidType(QueueOperation::QueueType type) {
+	return (
+		type == QueueOperation::QueueTypeDownload ||
+		type == QueueOperation::QueueTypeDownloadHandle ||
+		type == QueueOperation::QueueTypeUpload
+		);
 }

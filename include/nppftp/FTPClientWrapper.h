@@ -98,6 +98,8 @@ public:
 	virtual int				MkFile(const char * path) = 0;
 	virtual int				SendFile(const TCHAR * localfile, const char * ftpfile) = 0;
 	virtual int				ReceiveFile(const TCHAR * localfile, const char * ftpfile) = 0;
+	virtual int				SendFile(HANDLE hFile, const char * ftpfile) = 0;
+	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile) = 0;
 	virtual int				DeleteFile(const char * path) = 0;
 
 	virtual bool			IsConnected();
@@ -146,6 +148,8 @@ public:
 	virtual int				MkFile(const char * path);
 	virtual int				SendFile(const TCHAR * localfile, const char * ftpfile);
 	virtual int				ReceiveFile(const TCHAR * localfile, const char * ftpfile);
+	virtual int				SendFile(HANDLE hFile, const char * ftpfile);
+	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile);
 	virtual int				DeleteFile(const char * path);
 
 	virtual bool			IsConnected();
@@ -204,6 +208,8 @@ public:
 	virtual int				MkFile(const char * path);
 	virtual int				SendFile(const TCHAR * localfile, const char * ftpfile);
 	virtual int				ReceiveFile(const TCHAR * localfile, const char * ftpfile);
+	virtual int				SendFile(HANDLE hFile, const char * ftpfile);
+	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile);
 	virtual int				DeleteFile(const char * path);
 
 	virtual bool			IsConnected();
@@ -236,6 +242,40 @@ protected:
 public:
 							MemoryDataSource(char * data, int len, bool del);
 	virtual					~MemoryDataSource();
+
+	// Virtual clone constructor
+	virtual CUT_DataSource *	clone();
+
+	// Opens data file type == UTM_OM_READING, UTM_OM_WRITING, UTM_OM_APPEND
+	virtual int				Open(OpenMsgType type);
+
+	// Close message
+	virtual int				Close();
+
+	// Read one line
+	virtual int				ReadLine(LPSTR buffer, size_t maxsize);
+
+	// Write one line
+	virtual int				WriteLine(LPCSTR buffer);
+
+	// Read data
+	virtual int				Read(LPSTR buffer, size_t count);
+
+	// Write data
+	virtual int				Write(LPCSTR buffer, size_t count);
+
+	// Move a current pointer to the specified location.
+	virtual long			Seek(long offset, int origin);
+};
+
+class HandleDataSource : public CUT_DataSource {
+protected:
+	HANDLE					m_handle;
+	bool					m_allowRead;
+	bool					m_allowWrite;
+public:
+							HandleDataSource(HANDLE handle, bool read, bool write);
+	virtual					~HandleDataSource();
 
 	// Virtual clone constructor
 	virtual CUT_DataSource *	clone();

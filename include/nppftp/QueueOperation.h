@@ -45,7 +45,8 @@ class QueueOperation {
 public:
 	enum QueueType { QueueTypeConnect, QueueTypeDisconnect, QueueTypeDownload, QueueTypeUpload,
 	                 QueueTypeDirectoryGet, QueueTypeDirectoryCreate, QueueTypeDirectoryRemove,
-	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote
+	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote,
+	                 QueueTypeDownloadHandle
 	               };
 
 	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
@@ -136,6 +137,23 @@ public:
 protected:
 	char*					m_externalFile;
 	TCHAR*					m_localFile;
+	Transfer_Mode			m_tMode;
+};
+
+class QueueDownloadHandle : public QueueOperation {
+public:
+							QueueDownloadHandle(HWND hNotify, const char * externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode = 0, void * notifyData = NULL);
+	virtual					~QueueDownloadHandle();
+
+	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
+
+	virtual const TCHAR*	GetLocalPath();
+	virtual const char*		GetExternalPath();
+protected:
+	char*					m_externalFile;
+	HANDLE					m_hFile;
 	Transfer_Mode			m_tMode;
 };
 

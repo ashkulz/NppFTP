@@ -23,7 +23,7 @@
 
 class Window {
 public:
-							 Window(HINSTANCE hInst, LPCTSTR classname);
+							Window(HINSTANCE hInst, LPCTSTR classname);
 	virtual 				~Window() {};
 
 	virtual int				Create(HWND hParent);

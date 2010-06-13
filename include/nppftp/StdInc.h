@@ -19,6 +19,7 @@
 //System headers
 #define _WIN32_IE 0x0501
 #define _WIN32_WINNT 0x0501
+#define _WINSOCKAPI_
 #include <windows.h>
 #include <Shlwapi.h>
 #include <tchar.h>
@@ -26,8 +27,6 @@
 #include <string>
 #include <vector>
 #include <deque>
-
-#include <string.h>	//strdup
 
 //Library headers
 #include "tinyxml.h"

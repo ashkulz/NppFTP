@@ -33,6 +33,7 @@ const TCHAR * FTPWindow::FTPWINDOWCLASS = TEXT("NPPFTPMAIN");
 
 FTPWindow::FTPWindow() :
 	DockableWindow(FTPWINDOWCLASS),
+	DropTargetWindow(),
 	m_treeimagelist(m_hInstance),
 	m_splitter(this, &m_treeview, &m_queueWindow),
 	m_outputShown(false),
@@ -43,7 +44,9 @@ FTPWindow::FTPWindow() :
 	m_globalCache(NULL),
 	m_connecting(false),
 	m_busy(false),
-	m_cancelOperation(NULL)
+	m_cancelOperation(NULL),
+	m_dndWindow(this),
+	m_currentDropObject(NULL)
 {
 	m_exStyle = WS_EX_NOACTIVATE;
 	m_style = 0;
@@ -119,6 +122,12 @@ int FTPWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 	}
 	SetToolbarState();
 
+	//Notepad++ still uses DragAcceptFiles. Dropping files still works, but the cursor wont be updaetd nicely
+	//Uncomment this to disable the Notepad++ behaviour, for debugging purposes only.
+	//DragAcceptFiles(m_hNpp, FALSE);
+	m_dropHwnd = m_hwnd;
+	DoRegisterDragDrop(m_treeview.GetHWND());
+
 	return 0;
 }
 
@@ -126,6 +135,8 @@ int FTPWindow::Destroy() {
 	m_treeview.Destroy();
 	m_toolbar.Destroy();
 	m_rebar.Destroy();
+
+	m_dndWindow.Destroy();
 
 	DestroyMenu(m_popupProfile);
 	DestroyMenu(m_popupFile);
@@ -170,7 +181,7 @@ int FTPWindow::SetProfilesVector(vProfile * vProfiles) {
 	return 0;
 }
 
-int FTPWindow::SetGlobalCache(FTPCache * globalCache) {
+int FTPWindow::SetGlobalProps(FTPCache * globalCache) {
 	m_globalCache = globalCache;
 	return 0;
 }
@@ -498,6 +509,24 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					case TVN_SELCHANGING: {
 						result = FALSE;
 						break; }
+					case TVN_BEGINDRAG: {
+						result = FALSE;
+/*
+						if (m_currentDropObject != NULL) {	//currently only one queued DnD op is supported
+							result = FALSE;
+							break;
+						}
+						NMTREEVIEW * pnmtv = (NMTREEVIEW*)lParam;
+						HTREEITEM hti = pnmtv->itemNew.hItem;
+						FileObject * fo = m_treeview.GetItemFileObject(hti);
+						if (fo != NULL) {
+							m_currentDropObject = fo;
+							m_dndWindow.Create(m_hwnd);
+							::PostMessage(m_dndWindow.GetHWND(), WM_DND, 0, 0);
+							result = TRUE;
+						}
+*/
+						break; }
 					default: {
 						doDefaultProc = true;
 						break; }
@@ -644,6 +673,129 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return result;
 }
 
+bool FTPWindow::AcceptType(LPDATAOBJECT pDataObj) {
+	FORMATETC fmtetc;
+
+	fmtetc.ptd	    = NULL;
+	fmtetc.dwAspect = DVASPECT_CONTENT;
+	fmtetc.lindex   = -1;
+	fmtetc.tymed	= TYMED_HGLOBAL;
+	fmtetc.cfFormat = CF_HDROP;
+
+	if (pDataObj->QueryGetData(&fmtetc) == NOERROR)
+		return true;
+
+	return false;
+}
+
+HRESULT FTPWindow::OnDragEnter(LPDATAOBJECT /*pDataObj*/, DWORD /*grfKeyState*/, POINTL /*pt*/, LPDWORD /*pdwEffect*/) {
+	return S_OK;
+}
+
+HRESULT FTPWindow::OnDragOver(DWORD /*grfKeyState*/, POINTL pt, LPDWORD pdwEffect) {
+	FileObject * fo = m_treeview.GetItemByPoint(pt);
+
+	if (fo && fo->isDir()) {
+		*pdwEffect = DROPEFFECT_COPY;
+		TreeView_Select(m_treeview.GetHWND(), fo->GetData(), TVGN_DROPHILITE);
+		m_currentDropObject = fo;
+		return S_OK;
+	} else {
+		TreeView_Select(m_treeview.GetHWND(), NULL, TVGN_DROPHILITE);
+		m_currentDropObject = NULL;
+	}
+
+	return S_OK;
+}
+
+HRESULT FTPWindow::OnDragLeave() {
+	TreeView_Select(m_treeview.GetHWND(), NULL, TVGN_DROPHILITE);
+	return S_OK;
+}
+
+HRESULT FTPWindow::OnDrop(LPDATAOBJECT pDataObj, DWORD /*grfKeyState*/, POINTL /*pt*/, LPDWORD pdwEffect) {
+	TreeView_Select(m_treeview.GetHWND(), NULL, TVGN_DROPHILITE);
+
+	STGMEDIUM medium;
+	FORMATETC formatetc;
+	formatetc.cfFormat = CF_HDROP;
+	formatetc.tymed = TYMED_HGLOBAL;
+	formatetc.dwAspect = NULL;
+	formatetc.lindex = -1;
+	formatetc.ptd = NULL;;
+
+	HRESULT dataRes = pDataObj->GetData(&formatetc, &medium);
+	if (dataRes == S_OK) {
+		*pdwEffect = DROPEFFECT_COPY;
+		HDROP hdrop = (HDROP)GlobalLock(medium.hGlobal);
+
+		TCHAR pathToFile[MAX_PATH];
+		int filesDropped = DragQueryFile(hdrop, 0xffffffff, NULL, 0);
+		for (int i = 0; i < filesDropped; ++i) {
+			if (DragQueryFile(hdrop, i, pathToFile, MAX_PATH) != 0) {
+				//pathToFile is not checked. If it doesnt exist or its a directory or link, CreateFile either allows a handle to be opened or not
+				m_ftpSession->UploadFile(pathToFile, m_currentDropObject->GetPath(), true, 1);	//1: User specified location
+			}
+		}
+
+
+		GlobalUnlock(medium.hGlobal);
+		GlobalFree(medium.hGlobal);
+	}
+
+	return S_OK;
+}
+
+int FTPWindow::GetNrFiles() {
+	if (!m_currentDropObject)
+		return -1;
+
+	return 1;
+}
+
+int FTPWindow::GetFileDescriptor(FILEDESCRIPTOR * fd, int index) {
+	if (!m_currentDropObject)
+		return -1;
+	if (index != 0)
+		return -1;
+
+#define FD_PROGRESSUI 0x00004000
+
+	fd->dwFlags = FD_ATTRIBUTES | FD_CREATETIME | FD_ACCESSTIME | FD_WRITESTIME | FD_FILESIZE | FD_PROGRESSUI;
+	fd->nFileSizeLow = m_currentDropObject->GetSize();
+	fd->nFileSizeHigh = 0;
+	fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+	fd->ftCreationTime = m_currentDropObject->GetCTime();
+	fd->ftLastAccessTime = m_currentDropObject->GetATime();
+	fd->ftLastWriteTime = m_currentDropObject->GetMTime();
+	lstrcpyn(fd->cFileName, m_currentDropObject->GetLocalName(), MAX_PATH);
+
+	return 0;
+}
+
+int FTPWindow::StreamData(CStreamData * stream, int index) {
+	if (!m_currentDropObject)
+		return -1;
+	if (index != 0)
+		return -1;
+
+	HANDLE hWriteHandle = stream->GetWriteHandle();
+	int dldRes = m_ftpSession->DownloadFileHandle(m_currentDropObject->GetPath(), hWriteHandle);
+	if (dldRes == -1)
+		return -1;
+
+	return 0;
+}
+
+int FTPWindow::OnEndDnD() {
+	if (!m_currentDropObject)
+		return -1;
+
+	m_currentDropObject = 0;
+
+	return 0;
+}
+
 int FTPWindow::CreateMenus() {
 	//Create menu for settings button on toolbar
 	m_popupSettings = CreatePopupMenu();
@@ -728,6 +880,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 	//Set busy parameter
 	switch(queueOp->GetType()) {
 		case QueueOperation::QueueTypeDownload:
+		case QueueOperation::QueueTypeDownloadHandle:
 		case QueueOperation::QueueTypeUpload: {
 			m_busy = isStart;
 			break; }
@@ -756,7 +909,6 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 			} else {
 				if (queueOp->GetResult() != -1) {
 					OnConnect(code);
-					SetInfo(TEXT("Connected"));
 					OutMsg("Connected");
 				} else {
 					OutErr("Unable to connect");
@@ -789,6 +941,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 			if (parent)
 				OnDirectoryRefresh(parent, files, count);
 			break; }
+		case QueueOperation::QueueTypeDownloadHandle:
 		case QueueOperation::QueueTypeDownload: {
 			QueueDownload * opdld = (QueueDownload*)queueOp;
 			if (isStart)
@@ -798,18 +951,22 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 				break;	//failure
 			}
 
-			if (code == 0) {
-				//Download to cache: Open file
-				OutMsg("Download of %s succeeded, opening file.", opdld->GetExternalPath());
-				::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
-				::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
-			} else {
-				//Download to other location: Ask
-				int ret = ::MessageBox(m_hNpp, TEXT("The download is complete. Do you wish to open the file?"), TEXT("Download complete"), MB_YESNO);
-				if (ret == IDYES) {
+			if (queueOp->GetType() == QueueOperation::QueueTypeDownload) {
+				if (code == 0) {
+					//Download to cache: Open file
+					OutMsg("Download of %s succeeded, opening file.", opdld->GetExternalPath());
 					::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
 					::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
+				} else {
+					//Download to other location: Ask
+					int ret = ::MessageBox(m_hNpp, TEXT("The download is complete. Do you wish to open the file?"), TEXT("Download complete"), MB_YESNO);
+					if (ret == IDYES) {
+						::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
+						::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
+					}
 				}
+			} else {
+				OutMsg("Download of %s succeeded.", opdld->GetExternalPath());
 			}
 			break; }
 		case QueueOperation::QueueTypeUpload: {
@@ -932,6 +1089,8 @@ int FTPWindow::OnConnect(int code) {
 	if (code != 0)	//automated connect
 		return 0;
 
+
+
 	FileObject * root = m_ftpSession->GetRootObject();
 	m_treeview.AddRoot(root);
 
@@ -943,6 +1102,10 @@ int FTPWindow::OnConnect(int code) {
 	m_treeview.EnsureObjectVisible(last);
 	TreeView_Select(m_treeview.GetHWND(), last->GetData(), TVGN_CARET);
 	m_ftpSession->GetDirectory(last->GetPath());
+
+	TCHAR * info = SU::TSprintfNB(TEXT("Connected to %T"), m_ftpSession->GetCurrentProfile()->GetName());
+	SetInfo(info);
+	delete [] info;
 
 	SetToolbarState();
 

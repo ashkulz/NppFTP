@@ -50,6 +50,7 @@ public:
 
 	virtual FileObject*		GetItemFileObject(HTREEITEM item);
 	virtual bool			GetObjectItemRect(FileObject * fo, RECT * pRect);
+	virtual FileObject*		GetItemByPoint(POINTL pt);
 
 	virtual int				UpdateFileObject(FileObject * fo);
 	virtual int				UpdateDirectory(FileObject * dir);

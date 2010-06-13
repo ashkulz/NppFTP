@@ -143,7 +143,7 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		char * utf8name = SU::TCharToUtf8(di.fileName);
 		strcat(ftpfile.filePath, utf8name);
 		strcpy(ftpfile.fileName, utf8name);
-		SU::FreeUtf8(utf8name);
+		SU::FreeChar(utf8name);
 		ftpfile.fileSize = (long)di.fileSize;
 
 		FILETIME time = ConvertFiletime(di.day, di.month, di.year, di.hour, di.minute);
@@ -251,6 +251,34 @@ int FTPClientWrapperSSL::ReceiveFile(const TCHAR * localfile, const char * ftpfi
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
+int FTPClientWrapperSSL::SendFile(HANDLE hFile, const char * ftpfile) {
+
+	m_client.SetCurrentTotal(-1);
+	DWORD lowsize = ::GetFileSize(hFile, NULL);
+	m_client.SetCurrentTotal((long)lowsize);
+
+	HandleDataSource hds(hFile, true, false);
+	int retcode = m_client.SendFile(hds, ftpfile);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
+int FTPClientWrapperSSL::ReceiveFile(HANDLE hFile, const char * ftpfile) {
+	m_client.SetCurrentTotal(-1);
+	FTPFile * files = NULL;
+	int count = GetDir(ftpfile, &files);
+	if (count > 0) {
+		long size = files[0].fileSize;
+		m_client.SetCurrentTotal(size);
+	}
+	ReleaseDir(files, count);
+
+	HandleDataSource hds(hFile, false, true);
+	int retcode = m_client.ReceiveFile(hds, ftpfile);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
 int	 FTPClientWrapperSSL::DeleteFile(const char * path) {
 	int retcode = m_client.DeleteFile(path);
 
@@ -261,7 +289,7 @@ bool FTPClientWrapperSSL::IsConnected() {
 	if (!m_connected)
 		return false;
 
-	bool clientconnected = m_client.IsConnected();
+	bool clientconnected = m_client.IsConnected() == TRUE;
 	if (!clientconnected) {
 		Disconnect();	//thought to be connected, but not anymore, disconnect
 		return false;
@@ -385,6 +413,8 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 	datacpy[datalen] = 0;
 	memcpy(datacpy, data, datalen*sizeof(char));
 	if (!strncmp(datacpy, "PASS", 4)) {
+		delete [] datacpy;
+		datacpy = new char[14];
 		strcpy(datacpy, "PASS *HIDDEN*");
 	}
 	for(int i = 0; i < datalen; i++) {
@@ -518,11 +548,11 @@ int FtpSSLWrapper::OnSSLCertificate(const SSL * ssl, const X509* certificate, in
 
 		//MessageDialog md;
 		//int ret = md.Create(_MainOutputWindow, TEXT("FTP(E)S certificate verification"), TEXT("The certificate is unknown. Do you trust it?"));
-		static const TCHAR * msgString = TEXT(
-				"The certificate is invalid because of the following reason:\r\n"
-				"%s (code %d)\r\n"
-				"Do you accept it anyway? "
-				"Please note that it may have other errors as well." );
+		static const TCHAR * msgString =
+				TEXT("The certificate is invalid because of the following reason:\r\n")
+				TEXT("%s (code %d)\r\n")
+				TEXT("Do you accept it anyway? ")
+				TEXT("Please note that it may have other errors as well.");
 
 		TCHAR * msgBuf = SU::TSprintfNB(msgString, X509_verify_cert_error_string(verifyResult), verifyResult);
 		int ret = MessageBox(_MainOutputWindow, msgBuf, TEXT("FTP(E)S certificate verification"), MB_YESNO | MB_ICONWARNING);
@@ -565,7 +595,7 @@ CUT_DataSource * MemoryDataSource::clone() {
 
 int MemoryDataSource::Open(OpenMsgType type) {
 	if (type != UTM_OM_READING)
-		return UTE_ERROR;
+		return -1;
 	return UTE_SUCCESS;
 }
 
@@ -582,7 +612,7 @@ int MemoryDataSource::WriteLine(LPCSTR /*buffer*/) {
 }
 
 int MemoryDataSource::Read(LPSTR buffer, size_t count) {
-	size_t size = std::min(m_length-m_pointer, count);
+	size_t size = (std::min)(m_length-m_pointer, count);
 	if (size == 0)
 		return 0;
 
@@ -622,4 +652,74 @@ long MemoryDataSource::Seek(long offset, int origin) {
 	}
 
 	return UTE_ERROR;
+}
+
+//////////////////////////
+
+HandleDataSource::HandleDataSource(HANDLE handle, bool read, bool write) :
+	m_handle(handle),
+	m_allowRead(read),
+	m_allowWrite(write)
+{
+}
+
+HandleDataSource::~HandleDataSource() {
+}
+
+// Virtual clone constructor
+CUT_DataSource *HandleDataSource::clone() {
+	return new HandleDataSource(m_handle, m_allowRead, m_allowWrite);
+}
+
+// Opens data file type == UTM_OM_READING, UTM_OM_WRITING, UTM_OM_APPEND
+int HandleDataSource::Open(OpenMsgType type) {
+	if (type == UTM_OM_READING && !m_allowRead)
+		return -1;
+	if (type == UTM_OM_WRITING && !m_allowWrite)
+		return -1;
+	if (type == UTM_OM_APPEND)
+		return -1;
+
+	return UTE_SUCCESS;
+}
+
+// Close message
+int HandleDataSource::Close() {
+	::CloseHandle(m_handle);
+	return 0;
+}
+
+// Read one line
+int HandleDataSource::ReadLine(LPSTR /*buffer*/, size_t /*maxsize*/) {
+	return -1;
+}
+
+// Write one line
+int HandleDataSource::WriteLine(LPCSTR /*buffer*/){
+	return -1;
+}
+
+// Read data
+int HandleDataSource::Read(LPSTR buffer, size_t count) {
+	DWORD len = 0;
+	BOOL res = ReadFile(m_handle, buffer, count, &len, NULL);
+	if (res == FALSE)
+		return -1;
+
+	return len;
+}
+
+// Write data
+int HandleDataSource::Write(LPCSTR buffer, size_t count) {
+	DWORD len = 0;
+	BOOL res = WriteFile(m_handle, buffer, count, &len, NULL);
+	if (res == FALSE)
+		return -1;
+
+	return len;
+}
+
+// Move a current pointer to the specified location.
+long HandleDataSource::Seek(long /*offset*/, int /*origin*/) {
+	return -1;
 }

@@ -21,7 +21,10 @@
 
 #include "resource.h"
 #include "Commands.h"
+#include <time.h>
 #include <Windowsx.h>
+#include "Npp/Scintilla.h"
+#include "Npp/SciLexer.h"
 
 Output* _MainOutput = NULL;
 
@@ -31,10 +34,22 @@ const int WM_OUT_ADDLINE_SYST = WM_USER + 1;
 const int WM_OUT_ADDLINE_CLNT = WM_USER + 2;
 const int WM_OUT_ADDLINE_ERR = WM_USER + 3;
 
+const int STYLE_CLIENT = STYLE_LASTPREDEFINED + 1;
+const int STYLE_SYSTEM = STYLE_LASTPREDEFINED + 2;
+const int STYLE_ERROR  = STYLE_LASTPREDEFINED + 3;
+
+const int STYLE_MARGIN_CLIENT = STYLE_LASTPREDEFINED + 4;
+const int STYLE_MARGIN_SYSTEM = STYLE_LASTPREDEFINED + 5;
+const int STYLE_MARGIN_ERROR  = STYLE_LASTPREDEFINED + 6;
+
+const int STYLE_MARGINOFFSET = 3;
+
 OutputWindow::OutputWindow() :
 	DockableWindow(OUTWINDOWCLASS),
-	m_histControl(),
-	m_winThread(0)
+	m_winThread(0),
+	m_hContextMenu(NULL),
+	m_hScintilla(NULL),
+	m_maxLines(500)
 {
 	m_style = 0;
 	m_exStyle = WS_EX_NOACTIVATE;
@@ -56,47 +71,36 @@ int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 	if (res == -1)
 		return -1;
 
-	RECT rect = {0, 0, 10, 10};
-	res = m_histControl.CreateHistoryWindow(m_hwnd, WS_CHILD, rect);
-	if (res != UH_SUCCESS) {
+	m_hScintilla = ::CreateWindowEx(WS_EX_CLIENTEDGE,
+									TEXT("Scintilla"), TEXT(""),
+									WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN,
+									0, 0, 10, 10,
+									m_hwnd, NULL, m_hInstance, NULL);
+	if (m_hScintilla == NULL) {
 		DockableWindow::Destroy();
 		return -1;
 	}
 
-	m_winThread = GetCurrentThreadId();	//GetWindowThreadProcessId(m_histControl.m_hWnd, NULL);
+	m_winThread = ::GetCurrentThreadId();	//GetWindowThreadProcessId(m_histControl.m_hWnd, NULL);
 	m_hContextMenu = ::CreatePopupMenu();
-	AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_COPY,TEXT("&Copy contents to clipboard"));
-	AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_CLEAR,TEXT("Clea&r contents"));
+	::AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_COPY,TEXT("&Copy"));
+	::AppendMenu(m_hContextMenu,MF_STRING,IDM_POPUP_OUTPUT_CLEAR,TEXT("Clea&r contents"));
 
-	m_histControl.SetHistoryLength(250);
+	SetScintillaParameters();
 
-	::SetWindowLongPtr(m_histControl.m_hWnd, GWL_EXSTYLE, (LONG_PTR)WS_EX_CLIENTEDGE);
-
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(ncm);
-	BOOL ret = ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
-	if (ret != FALSE) {
-		HFONT controlFont = ::CreateFontIndirect(&ncm.lfMessageFont);
-		if (controlFont != NULL) {
-			m_histControl.SetFont(controlFont);	//m_histControl takes ownership of font object
-		}
-	}
-
-	::ShowWindow(m_histControl.m_hWnd, SW_SHOW);
-
-	Show(true);	//kinda hacky, but otherwise input might be lost, TODO?
-	Show(false);
+	::SendMessage(m_hwnd, WM_SIZE, 0, 0);
+	::ShowWindow(m_hScintilla, SW_SHOW);
 
 	return 0;
 }
 
 int OutputWindow::Destroy() {
-	DestroyWindow(m_histControl.m_hWnd);
+	DestroyWindow(m_hScintilla);
 	return DockableWindow::Destroy();
 }
 
 int OutputWindow::OnSize(int newWidth, int newHeight) {
-	BOOL res = SetWindowPos(m_histControl.m_hWnd, 0, 0, 0, newWidth, newHeight, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+	BOOL res = SetWindowPos(m_hScintilla, NULL, 0, 0, newWidth, newHeight, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
 	if (res == FALSE)
 		return -1;
 
@@ -129,7 +133,7 @@ int OutputWindow::RegisterClass() {
 
 LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	bool doDefaultProc = false;
-	LRESULT result;
+	LRESULT result = 0;
 
 	switch(uMsg) {
 		case WM_ERASEBKGND: {
@@ -144,31 +148,36 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			time_t time = (time_t)wParam;
 			AddMessage(msg, Output_System, time);
 			delete [] msg;
+			result = TRUE;
 			break; }
 		case WM_OUT_ADDLINE_CLNT: {
 			TCHAR * msg = (TCHAR*)lParam;
 			time_t time = (time_t)wParam;
 			AddMessage(msg, Output_Client, time);
 			delete [] msg;
+			result = TRUE;
 			break; }
 		case WM_OUT_ADDLINE_ERR: {
 			TCHAR * msg = (TCHAR*)lParam;
 			time_t time = (time_t)wParam;
 			AddMessage(msg, Output_Error, time);
 			delete [] msg;
+			result = TRUE;
 			break; }
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case IDM_POPUP_OUTPUT_COPY: {
-					m_histControl.CopyToClipboard();
-					return TRUE;
+					::SendMessage(m_hScintilla, SCI_COPYALLOWLINE, 0, 0);
+					result = TRUE;
 					break; }
 				case IDM_POPUP_OUTPUT_CLEAR: {
-					m_histControl.ClearHistory();
-					return TRUE;
+					::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)false, 0);
+					::SendMessage(m_hScintilla, SCI_CLEARALL, 0, 0);
+					::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)true, 0);
+					result = TRUE;
 					break; }
 				default: {
-					return FALSE;
+					result = FALSE;
 					break; }
 			}
 			break; }
@@ -179,12 +188,13 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			bool fromKeyboard = (menuPos.x == -1 && menuPos.y == -1);
 			if (fromKeyboard) {	//keyboard activation
 				RECT winRect;
-				::GetWindowRect(m_histControl.m_hWnd, &winRect);
+				::GetWindowRect(m_hScintilla, &winRect);
 				menuPos.x = winRect.left;
 				menuPos.y = winRect.top;
 				//use the top left location as the output window has no caret location
 			}
 			::TrackPopupMenu(m_hContextMenu, TPM_LEFTALIGN, menuPos.x, menuPos.y, 0, m_hwnd, NULL);
+			result = TRUE;
 			break; }
 		default:
 			doDefaultProc = true;
@@ -198,7 +208,7 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList) {
-	if (m_hwnd == NULL || m_histControl.m_hWnd == NULL)
+	if (m_hwnd == NULL || m_hScintilla == NULL)
 		return -1;
 
 	if (!message)
@@ -211,7 +221,7 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
     //if (ret == -1)	//-1 indicates truncation, not necessarily failure
 	//	return -1;
 
-	//Replace newline characters, history control ignores them, but they show up on copy/paste
+	//Replace newline characters, otherwise screw up output
 	TCHAR * curChar = msgBuffer;
 	while(*curChar) {
 		if (*curChar == TEXT('\r') || *curChar == TEXT('\n'))
@@ -248,27 +258,115 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
     return 0;
 }
 
-int OutputWindow::AddMessage(const TCHAR * message, Output_Type type, time_t time) {
-	COLORREF color = 0xFFFFFFFF;
+int OutputWindow::SetScintillaParameters() {
+	if (m_hScintilla == NULL)
+		return -1;
+
+	::SendMessage(m_hScintilla, SCI_USEPOPUP, (WPARAM)false, 0);
+
+	::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)true, 0);
+	::SendMessage(m_hScintilla, SCI_SETSCROLLWIDTH, (WPARAM)10, 0);
+	::SendMessage(m_hScintilla, SCI_SETSCROLLWIDTHTRACKING, (WPARAM)true, 0);
+
+	::SendMessage(m_hScintilla, SCI_SETUNDOCOLLECTION, (WPARAM)false, 0);
+	::SendMessage(m_hScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0);
+
+	::SendMessage(m_hScintilla, SCI_SETLEXER, SCLEX_NULL, 0);
+	::SendMessage(m_hScintilla, SCI_SETSTYLEBITS, 8, 0);
+	::SendMessage(m_hScintilla, SCI_STARTSTYLING, (WPARAM)0, (LPARAM)0xff);
+
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_DEFAULT, RGB(0, 180, 180));
+	::SendMessage(m_hScintilla, SCI_STYLECLEARALL, 0, 0);
+
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_CLIENT, RGB(0, 180, 0));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_SYSTEM, RGB(0, 0, 180));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_ERROR, RGB(255, 0, 0));
+
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_CLIENT, RGB(0, 180, 0));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_SYSTEM, RGB(0, 0, 180));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_ERROR, RGB(255, 0, 0));
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_CLIENT, RGB(245, 245, 245));
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_SYSTEM, RGB(245, 245, 245));
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_ERROR, RGB(245, 245, 245));
+
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_LINENUMBER, RGB(245, 245, 245));
+
+	::SendMessage(m_hScintilla, SCI_SETMARGINTYPEN, (WPARAM)0, (LPARAM)SC_MARGIN_TEXT);
+	int width = ::SendMessage(m_hScintilla, SCI_TEXTWIDTH, (WPARAM)STYLE_SYSTEM, (LPARAM)"88:88:88  ");
+	::SendMessage(m_hScintilla, SCI_SETMARGINWIDTHN, (WPARAM)0, (LPARAM)width);
+	::SendMessage(m_hScintilla, SCI_SETMARGINWIDTHN, (WPARAM)1, (LPARAM)0);
+	::SendMessage(m_hScintilla, SCI_SETMARGINWIDTHN, (WPARAM)2, (LPARAM)0);
+	return 0;
+}
+
+int OutputWindow::AddMessage(const TCHAR * message, Output_Type type, time_t ttime) {
+	int style = STYLE_DEFAULT;
 
 	switch(type) {
 		case Output_System:
-			color = RGB(0, 0, 180);
+			style = STYLE_SYSTEM;
 			break;
 		case Output_Client:
-			color = RGB(0, 180, 0);
+			style = STYLE_CLIENT;
 			break;
 		case Output_Error:
-			color = RGB(255, 0, 0);
+			style = STYLE_ERROR;
 			break;
 		default:
-			color = 0xFFFFFFFF;
+			style = STYLE_DEFAULT;
 			break;
 	}
 
-	int res = m_histControl.AddStampedLineT(message, color, 0xFFFFFFFF, FALSE, time);
-	if (res != UH_SUCCESS)
-		return -1;
+	char * utf8Buffer = SU::TCharToUtf8(message);
+	char * timeString = new char[11];
+
+	struct tm * systime = localtime(&ttime);
+	if(strftime(timeString, 10, "%H:%M:%S", systime) == 0) {
+		timeString[0] = 0;
+	}
+
+	int lastPos = ::SendMessage(m_hScintilla, SCI_GETTEXTLENGTH, 0, 0);
+	int curPos = ::SendMessage(m_hScintilla, SCI_GETCURRENTPOS, 0, 0);
+
+	::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)false, 0);
+	::SendMessage(m_hScintilla, SCI_APPENDTEXT, (WPARAM)strlen(utf8Buffer), (LPARAM)utf8Buffer);
+	::SendMessage(m_hScintilla, SCI_APPENDTEXT, (WPARAM)2, (LPARAM)"\r\n");
+	::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)true, 0);
+
+	::SendMessage(m_hScintilla, SCI_STARTSTYLING, (WPARAM)lastPos, (LPARAM)0xff);
+	::SendMessage(m_hScintilla, SCI_SETSTYLING, strlen(utf8Buffer)+2, style);
+
+	int lineCount = ::SendMessage(m_hScintilla, SCI_GETLINECOUNT, 0, 0);
+	lineCount--;	//ignore final newline
+
+	::SendMessage(m_hScintilla, SCI_MARGINSETTEXT, (WPARAM)lineCount-1, (LPARAM)timeString);
+	::SendMessage(m_hScintilla, SCI_MARGINSETSTYLE, (WPARAM)lineCount-1, (LPARAM)style+STYLE_MARGINOFFSET);
+
+	if (lineCount > m_maxLines) {
+		::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)false, 0);
+		int endPos = ::SendMessage(m_hScintilla, SCI_POSITIONFROMLINE, (WPARAM)1, 0);
+		char buffer[13];
+		::SendMessage(m_hScintilla, SCI_MARGINGETTEXT, (WPARAM)1, (LPARAM)buffer);
+
+		::SendMessage(m_hScintilla, SCI_SETTARGETSTART, 0, 0);
+		::SendMessage(m_hScintilla, SCI_SETTARGETEND, endPos, 0);
+		::SendMessage(m_hScintilla, SCI_REPLACETARGET, 0, (LPARAM)"");
+
+		::SendMessage(m_hScintilla, SCI_MARGINSETTEXT, (WPARAM)0, (LPARAM)buffer);
+
+		::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)true, 0);
+	}
+
+	delete [] timeString;
+
+	if (curPos == lastPos) {
+		lastPos = ::SendMessage(m_hScintilla, SCI_GETTEXTLENGTH, 0, 0);
+		::SendMessage(m_hScintilla, SCI_SETANCHOR, lastPos, 0);
+		::SendMessage(m_hScintilla, SCI_SETCURRENTPOS, lastPos, 0);
+		::SendMessage(m_hScintilla, SCI_SCROLLCARET, 0, 0);
+	}
+
+	SU::FreeChar(utf8Buffer);
 
 	return 0;
 }

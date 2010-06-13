@@ -17,6 +17,7 @@
 */
 
 #include <windows.h>
+#include <commctrl.h>
 #include "resource.h"
 #include "symbols.h"
 
@@ -41,6 +42,7 @@ IDB_BITMAP_SETTINGS BITMAP        "bitmaps\\toolbar_settings.bmp"
 IDB_BITMAP_TREEICONS BITMAP       "bitmaps\\icons_treeview.bmp"
 IDB_BITMAP_TREEICONS_MASK BITMAP  "bitmaps\\icons_treeview_mask.bmp"
 IDB_BITMAP_UPLOAD  BITMAP         "bitmaps\\toolbar_upload.bmp"
+IDB_BITMAP_PAYPAL  BITMAP         "bitmaps\\pp_favicon_x.bmp"
 
 //
 // Dialog resources
@@ -72,7 +74,7 @@ BEGIN
     LTEXT           "Username:", IDC_STATIC, 4, 60, 36, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_USERNAME, 8, 68, 78, 14, ES_AUTOHSCROLL
     LTEXT           "Password:", IDC_STATIC, 4, 88, 34, 8, SS_LEFT
-    EDITTEXT        IDC_EDIT_PASSWORD, 8, 96, 78, 14, ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PASSWORD, 8, 96, 78, 14, ES_AUTOHSCROLL | ES_PASSWORD
     LTEXT           "Timeout (seconds):", IDC_STATIC, 4, 120, 62, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_TIMEOUT, 8, 128, 36, 14, ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Initial remote directory:", IDC_STATIC, 4, 152, 80, 8, SS_LEFT
@@ -90,7 +92,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_KEYFILE, 8, 56, 160, 14, ES_AUTOHSCROLL
     PUSHBUTTON      "...", IDC_BUTTON_KEYBROWSE, 172, 56, 13, 14
     LTEXT           "Passphrase:", IDC_STATIC, 4, 76, 40, 8, SS_LEFT
-    EDITTEXT        IDC_EDIT_PASSPHRASE, 8, 84, 84, 14, ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PASSPHRASE, 8, 84, 84, 14, ES_AUTOHSCROLL | ES_PASSWORD
     //AUTOCHECKBOX    "Use agent", IDC_CHECK_AGENT, 4, 72, 49, 10, BS_AUTOCHECKBOX
 END
 
@@ -132,14 +134,17 @@ BEGIN
     PUSHBUTTON      "Delete", IDC_BUTTON_CACHE_DELETE, 168, 168, 36, 14, WS_DISABLED
 END
 
-IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 95
+IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 100
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
 CAPTION "Global settings"
 FONT 8, "Ms Shell Dlg 2", 400, 0, 1
 BEGIN
     LTEXT           "Global cache:", IDC_STATIC, 4, 4, 44, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_CACHE, 8, 12, 160, 14, ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "Close", IDC_BUTTON_CLOSE, 132, 72, 48, 14
+    LTEXT           "Master password (max 8 characters):", IDC_STATIC, 4, 32, 160, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_MASTERPASS, 8, 40, 160, 14, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "When this field is left blank, a default string will be used.\r\n""Otherwise, you will be asked for the password on each start of Notepad++.", IDC_STATIC, 8, 58, 180, 24, SS_LEFT
+    DEFPUSHBUTTON   "OK", IDC_BUTTON_CLOSE, 132, 80, 48, 14
 END
 
 IDD_DIALOG_GENERIC DIALOGEX 0, 0, 10, 10
@@ -184,6 +189,7 @@ BEGIN
     RTEXT           "0", IDC_STATIC_SSLVERSION, 68, 184, 128, 8, SS_LEFT
     RTEXT           "0", IDC_STATIC_NPPFTPVERSION, 68, 196, 128, 8, SS_LEFT
     PUSHBUTTON      "Visit NppFTP site", IDC_BUTTON_VISIT, 4, 212, 58, 14
+    PUSHBUTTON      "Donate", IDC_BUTTON_DONATE, 66, 212, 52, 14
 END
 
 IDD_DIALOG_KBINT DIALOGEX 0, 0, 186, 118

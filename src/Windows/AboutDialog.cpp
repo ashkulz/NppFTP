@@ -25,7 +25,8 @@
 #include <openssl/ssl.h>
 
 AboutDialog::AboutDialog() :
-	Dialog(IDD_DIALOG_ABOUT)
+	Dialog(IDD_DIALOG_ABOUT),
+	m_donateIcon(NULL)
 {
 }
 
@@ -33,7 +34,13 @@ AboutDialog::~AboutDialog() {
 }
 
 int AboutDialog::Create(HWND hParent) {
-	return Dialog::Create(hParent, true, TEXT("About NppFTP"));
+	m_donateIcon = (HICON)::LoadImage(m_hInstance, MAKEINTRESOURCE(IDB_BITMAP_PAYPAL), IMAGE_BITMAP, 16, 16, LR_LOADMAP3DCOLORS);
+
+	int res = Dialog::Create(hParent, true, TEXT("About NppFTP"));
+	if (res == -1)
+		return -1;
+
+	return res;
 }
 
 INT_PTR AboutDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -49,30 +56,31 @@ INT_PTR AboutDialog::OnInitDialog() {
 	::SetDlgItemText(m_hwnd, IDC_STATIC_SSLVERSION, sslVersion);
 	::SetDlgItemText(m_hwnd, IDC_STATIC_NPPFTPVERSION, nppFTPVersion);
 
-	const TCHAR * aboutMessage = TEXT(
-		"NppFTP, Copyright 2010\r\n"
-		"Created by Harry ( harrybharry@users.sourceforge.net )\r\n"
-		"\r\n"
-		"Press Show FTP Window to get started, and read the documentation (if any) when you get stuck.\r\n"
-		"For help, info and updates, visit the site by clicking the button below.\r\n"
-		"\r\n"
-		"Enjoy the comfort of transferring your files from your favorite editor! =)"
-		"\r\n\r\n"
-		"NppFTP works because of the effort put in the following libraries:\r\n"
-		"- OpenSSL\r\n"
-		"- libssh\r\n"
-		"- Ultimate TCP/IP\r\n"
-		"- TinyXML\r\n"
-		"\r\n"
-		"And not to forget:\r\n"
-		"Silk icons from famfamfam\r\n"
-	);
+	const TCHAR * aboutMessage = 
+		TEXT("NppFTP, Copyright 2010\r\n")
+		TEXT("Created by Harry ( harrybharry@users.sourceforge.net )\r\n")
+		TEXT("\r\n")
+		TEXT("Press Show FTP Window to get started, and read the documentation (if any) when you get stuck.\r\n")
+		TEXT("For help, info and updates, visit the site by clicking the button below.\r\n")
+		TEXT("\r\n")
+		TEXT("Enjoy the comfort of transferring your files from your favorite editor! =)")
+		TEXT("\r\n\r\n")
+		TEXT("NppFTP works because of the effort put in the following libraries:\r\n")
+		TEXT("- OpenSSL\r\n")
+		TEXT("- libssh\r\n")
+		TEXT("- Ultimate TCP/IP\r\n")
+		TEXT("- TinyXML\r\n")
+		TEXT("\r\n")
+		TEXT("And not to forget:\r\n")
+		TEXT("Silk icons from famfamfam\r\n");
 
 	::EnableWindow(GetDlgItem(m_hwnd, IDC_EDIT_ABOUTMSG), TRUE);
 	::SetDlgItemText(m_hwnd, IDC_EDIT_ABOUTMSG, aboutMessage);
 
 	::SetFocus(GetDlgItem(m_hwnd, IDC_BUTTON_CLOSE));
 	::SendMessage(GetDlgItem(m_hwnd, IDC_EDIT_ABOUTMSG), EM_SETSEL, 0, 0);
+
+	::SendMessage(GetDlgItem(m_hwnd, IDC_BUTTON_DONATE), BM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)m_donateIcon);
 
 	Dialog::OnInitDialog();
 
@@ -89,6 +97,10 @@ INT_PTR AboutDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_BUTTON_VISIT: {
 			ShellExecute(NULL, TEXT("open"), TEXT("http://sourceforge.net/projects/nppftp"), NULL, NULL, SW_SHOWNORMAL);
+			result = TRUE;
+			break; }
+		case IDC_BUTTON_DONATE: {
+			ShellExecute(NULL, TEXT("open"), TEXT("http://sourceforge.net/projects/nppftp/donate"), NULL, NULL, SW_SHOWNORMAL);
 			result = TRUE;
 			break; }
 		default: {

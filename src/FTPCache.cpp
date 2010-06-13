@@ -66,7 +66,7 @@ int FTPCache::DeletePathMap(int i) {
 	if (i < 0 || (size_t)i >= m_vCachePaths.size())
 		return -1;
 
-	free(m_vCachePaths[i].externalpath);	//strdup
+	SU::free(m_vCachePaths[i].externalpath);	//strdup
 	SU::FreeTChar(m_vCachePaths[i].localpath);	//StringConversion
 
 	m_vCachePaths.erase(m_vCachePaths.begin()+i);
@@ -86,7 +86,7 @@ int FTPCache::SetPathMap(PathMap pathmap, int i) {
 	if (i < 0 || (size_t)i >= m_vCachePaths.size())
 		return -1;
 
-	free(m_vCachePaths[i].externalpath);	//strdup
+	SU::free(m_vCachePaths[i].externalpath);	//strdup
 	SU::FreeTChar(m_vCachePaths[i].localpath);	//StringCOnversion
 
 	TCHAR * expPath = ExpandPath(pathmap.localpath);
@@ -114,7 +114,7 @@ int FTPCache::SwapPathMap(int indexa, int indexb) {
 
 int FTPCache::Clear() {
 	for(size_t i = 0; i < m_vCachePaths.size(); i++) {
-		free(m_vCachePaths[i].externalpath);	//strdup
+		SU::free(m_vCachePaths[i].externalpath);	//strdup
 		SU::FreeTChar(m_vCachePaths[i].localpath);	//StringCOnversion
 	}
 	m_vCachePaths.clear();
@@ -165,7 +165,7 @@ TiXmlElement* FTPCache::SaveCache(const FTPCache * cache) {
 
 		char * utf8local = SU::TCharToUtf8(cache->m_vCachePaths[i].localpath);
 		child->SetAttribute("localpath", utf8local);
-		SU::FreeUtf8(utf8local);
+		SU::FreeChar(utf8local);
 		child->SetAttribute("externalpath", cache->m_vCachePaths[i].externalpath);
 
 		cacheElem->LinkEndChild(child);

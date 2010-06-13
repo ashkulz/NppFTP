@@ -57,6 +57,10 @@ public:
 
 	virtual long			GetSize() const;
 
+	virtual FILETIME		GetCTime() const;
+	virtual FILETIME		GetMTime() const;
+	virtual FILETIME		GetATime() const;
+
 	virtual int				Sort();
 
 	static int				SortVector(FOVector & foVect);
@@ -78,6 +82,10 @@ protected:
 	void*					m_data;
 
 	long					m_size;
+
+	FILETIME				m_ctime;
+	FILETIME				m_mtime;
+	FILETIME				m_atime;
 };
 
 #endif //FILEOBJECT_H

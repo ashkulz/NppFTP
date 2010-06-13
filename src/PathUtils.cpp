@@ -91,6 +91,8 @@ const char* PU::FindExternalFilename(const char * externalpath) {
 	const char * name = strrchr(externalpath, '/');
 	if (name)
 		name++;	//skip '/'
+	else
+		return NULL;
 
 	if (name == externalpath || name[0] == '/' || name[0] == 0)
 		return NULL;
@@ -212,7 +214,7 @@ int PU::CreateLocalDir(const TCHAR * local) {
 
 int PU::CreateLocalDirFile(const TCHAR * file) {
 	TCHAR path[MAX_PATH];
-	lstrcpy(path, file);
+	lstrcpyn(path, file, MAX_PATH);
 	LPTSTR name = ::PathFindFileName(path);
 	if (!name)
 		return -1;

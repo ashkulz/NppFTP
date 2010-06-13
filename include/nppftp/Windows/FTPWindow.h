@@ -29,15 +29,19 @@
 #include "OutputWindow.h"
 #include "SettingsDialog.h"
 #include "ProfilesDialog.h"
+#include "DragDropSupport.h"
+#include "DragDropWindow.h"
 
 class FTPSession;
 
-class FTPWindow : public DockableWindow {
+class FTPWindow : public DockableWindow, public DropTargetWindow, public DropDataWindow {
 	friend class NppFTP;	//for output window/ratio
 public:
 							FTPWindow();
 	virtual					~FTPWindow();
 
+	////////////////////////
+	//DockableWindow
 	virtual int				Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand);
 	virtual int				Destroy();
 
@@ -46,7 +50,7 @@ public:
 
 	virtual int				SetSession(FTPSession * session);
 	virtual int				SetProfilesVector(vProfile * vProfiles);
-	virtual int				SetGlobalCache(FTPCache * globalCache);
+	virtual int				SetGlobalProps(FTPCache * globalCache);
 
 	virtual int				OnSize(int newWidth, int newHeight);
 	virtual int				OnProfileChange();
@@ -55,6 +59,22 @@ public:
 	static int				RegisterClass();
 
 	virtual LRESULT			MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	////////////////////////
+	//DropTargetWindow
+	virtual bool			AcceptType(LPDATAOBJECT pDataObj);
+	virtual HRESULT			OnDragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	virtual HRESULT			OnDragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+	virtual HRESULT			OnDragLeave();
+	virtual HRESULT			OnDrop(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+
+	////////////////////////
+	//DropDataWindow
+	virtual int				GetNrFiles();
+	virtual int				GetFileDescriptor(FILEDESCRIPTOR * fd, int index);
+	virtual int				StreamData(CStreamData * stream, int index);
+	virtual int				OnEndDnD();
+
 protected:
 	virtual int				CreateMenus();
 	virtual int				SetToolbarState();
@@ -110,6 +130,9 @@ protected:
 	bool					m_connecting;
 	bool					m_busy;
 	QueueOperation*			m_cancelOperation;
+
+	DragDropWindow			m_dndWindow;
+	FileObject*				m_currentDropObject;
 
 	static const TCHAR * FTPWINDOWCLASS;
 };

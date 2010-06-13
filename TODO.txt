@@ -9,3 +9,7 @@ printf, vprintf etc not really nicely used (no size checking/expanding buffers)
 StringUtils: inefficient when using tchar+CP_ACP
 
 delete opened files on disconnecting or on exiting
+
+Ordering of cache maps
+Dragging from treeview
+MS VS gives a heap corruption during ssh_userauth_none, gcc is silent. Unable to debug

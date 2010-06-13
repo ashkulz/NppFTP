@@ -36,9 +36,9 @@ protected:
 	virtual INT_PTR			OnNotify(NMHDR * pnmh);
 
 	int						SaveGlobalPath();
+	int						SaveMasterPassword();
 
 	FTPCache*				m_globalCache;
-
 };
 
 #endif //SETTINGSDIALOG_H

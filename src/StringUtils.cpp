@@ -133,7 +133,7 @@ TCHAR* SU::DupString(const TCHAR* string) {
 char * SU::strdup(const char* string) {
 	if (!string)
 		return NULL;
-	char * dupstr = (char*)malloc((strlen(string)+1)*sizeof(char));
+	char * dupstr = new char[strlen(string)+1];//(char*)malloc((strlen(string)+1)*sizeof(char));
 	strcpy(dupstr, string);
 	return dupstr;
 }
@@ -193,7 +193,7 @@ char* SU::WCharToChar(const wchar_t * wstring) {
 	return string;
 }
 
-int SU::FreeTChar(const  TCHAR * string) {
+int SU::FreeWChar(wchar_t * string) {
 	if (!string)
 		return -1;
 
@@ -201,12 +201,25 @@ int SU::FreeTChar(const  TCHAR * string) {
 	return 0;
 }
 
-int SU::FreeUtf8(const char * string) {
+int SU::FreeTChar(TCHAR * string) {
 	if (!string)
 		return -1;
 
 	delete [] string;
 	return 0;
+}
+
+int SU::FreeChar(char * string) {
+	if (!string)
+		return -1;
+
+	delete [] string;
+	return 0;
+}
+
+void SU::free(char * data) {
+	delete [] data;
+	return;
 }
 
 tstring SU::ReplaceString(const tstring & source, const tstring & find, const tstring & replace) {
@@ -233,7 +246,7 @@ tstring SU::ReplaceString(const tstring & source, const tstring & find, const ts
 #endif
 
 //update MinGW to get this in CRT
-_CRTIMP int __cdecl __MINGW_NOTHROW	_vscwprintf (const wchar_t*, __VALIST);
+//_CRTIMP int __cdecl __MINGW_NOTHROW	_vscwprintf (const wchar_t*, __VALIST);
 
 TCHAR* SU::TSprintfNB(const TCHAR * format, ...) {
 	va_list vaList;
@@ -304,4 +317,54 @@ int SU::TSprintfV(TCHAR * buffer, size_t bufferSize, const TCHAR * format, va_li
 
 	delete [] msgTchar;
 	return ret;
+}
+
+char* SU::DataToHex(const char * data_, int len) {
+	static const char * table = "0123456789ABCDEF";
+
+	const unsigned char * data = (unsigned char*)data_;
+
+	if (len == -1)
+		len = strlen(data_);
+
+	char * hexString = new char[len*2+1];
+	for(int i = 0; i < len; i++) {
+		unsigned int curVal = (unsigned int)data[i];
+		hexString[i*2] = table[curVal/16];
+		hexString[i*2+1] = table[curVal%16];
+	}
+	hexString[len*2] = 0;
+
+	return hexString;
+}
+
+char* SU::HexToData(const char * hex, int len, bool addZero) {
+	if (len == -1)
+		len = strlen(hex);
+
+	if (len%2 != 0)
+		return NULL;
+
+	len = len/2;
+	unsigned char * data = new unsigned char[len + (addZero?1:0)];
+
+	for(int i = 0; i < len; i++) {
+		data[i] = 0;
+
+		if (hex[i*2] <= '9')
+			data[i] += (hex[i*2] - '0') * 16;
+		else
+			data[i] += ((hex[i*2] - 'A') + 10) * 16;
+
+		if (hex[i*2+1] <= '9')
+			data[i] += (hex[i*2+1] - '0');
+		else
+			data[i] += (hex[i*2+1] - 'A') + 10;
+	}
+
+	if (addZero) {
+		data[len] = 0;
+	}
+
+	return (char*)data;
 }

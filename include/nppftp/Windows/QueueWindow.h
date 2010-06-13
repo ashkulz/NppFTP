@@ -42,6 +42,8 @@ private:
 	virtual int				GetItemIndex(QueueOperation * op);
 	virtual int				GetNrItems();
 
+	virtual bool			ValidType(QueueOperation::QueueType type);
+
 };
 
 #endif //QUEUEWINDOW_H

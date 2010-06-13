@@ -260,7 +260,9 @@ int Toolbar::DoDropDown(int buttonID) {
 	} else {
 		GetCursorPos(&pos);
 	}
+	::SendMessage(m_hwnd, TB_CHECKBUTTON, (WPARAM)buttonID, (LPARAM)TRUE);
 	TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_LEFTBUTTON, pos.x, pos.y, 0, m_hParent, NULL);	//TODO: does this pass the wm_command msg correctly?
+	::SendMessage(m_hwnd, TB_CHECKBUTTON, (WPARAM)buttonID, (LPARAM)FALSE);
 	return TBDDRET_DEFAULT;
 }
 

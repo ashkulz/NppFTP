@@ -31,19 +31,24 @@ public:
 	static char*			TCharToUtf8(const TCHAR * string);
 	static char*			TCharToCP(const TCHAR * string, int cp);
 
-	static TCHAR*			DupString(const TCHAR* string);
-	static char*			strdup(const char* string);
+	static TCHAR*			DupString(const TCHAR * string);
+	static char*			strdup(const char * string);
 
 	static wchar_t*			CharToWChar(const char * string);
 	static char*			WCharToChar(const wchar_t * wstring);
 
-	static int				FreeTChar(const TCHAR * string);
-	static int				FreeUtf8(const char * string);
+	static int				FreeWChar(wchar_t * string);
+	static int				FreeTChar(TCHAR * string);
+	static int				FreeChar(char * string);
+	static void				free(char * data);
 
 	static tstring			ReplaceString(const tstring & source, const tstring & find, const tstring & replace);
 	static TCHAR*			TSprintfNB(const TCHAR * format, ...);	//NB: no buffer
 	static int				TSprintf(TCHAR * buffer, size_t bufferSize, const TCHAR * format, ...);
 	static int				TSprintfV(TCHAR * buffer, size_t bufferSize, const TCHAR * format, va_list vaList);
+
+	static char*			DataToHex(const char * data, int len);	//result is always zero terminated
+	static char*			HexToData(const char * hex, int len, bool addZero = true);	//result is zero terminated if addZero == true
 private:
 };
 

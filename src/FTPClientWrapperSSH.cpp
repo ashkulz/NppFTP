@@ -24,7 +24,11 @@
 #include <fcntl.h>
 #include <libssh/keys.h>	//complete type for private_key
 
-extern TCHAR * _HostsFile;
+#ifdef strdup	//undefine strdup form libssh
+#undef strdup
+#endif //strdup
+
+extern char * _HostsFile;
 
 FTPClientWrapperSSH::FTPClientWrapperSSH(const char * host, int port, const char * user, const char * password) :
 	FTPClientWrapper(Client_SSH, host, port, user, password),
@@ -36,6 +40,8 @@ FTPClientWrapperSSH::FTPClientWrapperSSH(const char * host, int port, const char
 }
 
 FTPClientWrapperSSH::~FTPClientWrapperSSH() {
+	SU::FreeTChar(m_keyFile);
+	SU::free(m_passphrase);
 }
 
 FTPClientWrapper* FTPClientWrapperSSH::Clone() {
@@ -222,19 +228,82 @@ int FTPClientWrapperSSH::MkFile(const char * path) {
 }
 
 int FTPClientWrapperSSH::SendFile(const TCHAR * localfile, const char * ftpfile) {
+	HANDLE hFile = OpenFile(localfile, false);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		return OnReturn(-1);
+	}
+
+	return SendFile(hFile, ftpfile);
+}
+
+int FTPClientWrapperSSH::ReceiveFile(const TCHAR * localfile, const char * ftpfile) {
+	HANDLE hFile = OpenFile(localfile, true);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		return OnReturn(-1);
+	}
+
+	return ReceiveFile(hFile, ftpfile);
+}
+
+int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 	int retcode = 0;
 	int res = TRUE;
-	HANDLE hFile = INVALID_HANDLE_VALUE;
+	sftp_file sfile = NULL;
+	const int bufsize = 4096;
+	char buf[bufsize];
+	DWORD len = 0;
+	long totalReceived = 0;
+	long totalSize = -1;
+
+	sfile = sftp_open(m_sftpsession, ftpfile, (O_RDONLY), 0664);	//default rw-rw-r-- permission
+	if (sfile == NULL) {
+		OutErr("[SFTP] File not opened %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
+		return OnReturn(-1);
+	}
+
+	sftp_attributes fattr = sftp_stat(m_sftpsession, ftpfile);
+	if (fattr == NULL) {
+		totalSize = -1;
+	} else {
+		totalSize = (long)fattr->size;
+		sftp_attributes_free(fattr);
+	}
+
+	if (m_aborting) {
+		CloseHandle(hFile);
+		sftp_close(sfile);
+		return OnReturn(-1);
+	}
+
+	retcode = sftp_read(sfile, buf, bufsize);
+	while(retcode > 0 && !m_aborting) {
+		res = WriteFile(hFile, buf, retcode, &len, NULL);
+		if (res == FALSE)
+			break;
+
+		totalReceived += len;
+
+		if (m_progmon)
+			m_progmon->OnDataReceived(totalReceived, totalSize);
+
+		retcode = sftp_read(sfile, buf, bufsize);
+	}
+
+	sftp_close(sfile);
+	CloseHandle(hFile);
+
+	return OnReturn((res == FALSE || retcode < 0 || m_aborting)?-1:0);
+}
+
+int FTPClientWrapperSSH::SendFile(HANDLE hFile, const char * ftpfile) {
+	int retcode = 0;
+	int res = TRUE;
 	sftp_file sfile = NULL;
 	const int bufsize = 4096;
 	char buf[bufsize];
 	DWORD len = 0;
 	long totalSent = 0;
 	long totalSize = -1;
-
-	hFile = OpenFile(localfile, false);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return OnReturn(-1);
 
 	DWORD highsize;
 	DWORD lowsize = ::GetFileSize(hFile, &highsize);
@@ -272,63 +341,7 @@ int FTPClientWrapperSSH::SendFile(const TCHAR * localfile, const char * ftpfile)
 	CloseHandle(hFile);
 
 	return OnReturn((res == FALSE || retcode < 0 || m_aborting)?-1:0);
-}
 
-int FTPClientWrapperSSH::ReceiveFile(const TCHAR * localfile, const char * ftpfile) {
-	int retcode = 0;
-	int res = TRUE;
-	HANDLE hFile = INVALID_HANDLE_VALUE;
-	sftp_file sfile = NULL;
-	const int bufsize = 4096;
-	char buf[bufsize];
-	DWORD len = 0;
-	long totalReceived = 0;
-	long totalSize = -1;
-
-	sfile = sftp_open(m_sftpsession, ftpfile, (O_RDONLY), 0664);	//default rw-rw-r-- permission
-	if (sfile == NULL) {
-		OutErr("[SFTP] File not opened %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
-		return OnReturn(-1);
-	}
-
-	sftp_attributes fattr = sftp_stat(m_sftpsession, ftpfile);
-	if (fattr == NULL) {
-		totalSize = -1;
-	} else {
-		totalSize = (long)fattr->size;
-		sftp_attributes_free(fattr);
-	}
-
-	hFile = OpenFile(localfile, true);
-	if (hFile == INVALID_HANDLE_VALUE || m_aborting) {
-		sftp_close(sfile);
-		return OnReturn(-1);
-	}
-
-	if (m_aborting) {
-		CloseHandle(hFile);
-		sftp_close(sfile);
-		return OnReturn(-1);
-	}
-
-	retcode = sftp_read(sfile, buf, bufsize);
-	while(retcode > 0 && !m_aborting) {
-		res = WriteFile(hFile, buf, retcode, &len, NULL);
-		if (res == FALSE)
-			break;
-
-		totalReceived += len;
-
-		if (m_progmon)
-			m_progmon->OnDataReceived(totalReceived, totalSize);
-
-		retcode = sftp_read(sfile, buf, bufsize);
-	}
-
-	sftp_close(sfile);
-	CloseHandle(hFile);
-
-	return OnReturn((res == FALSE || retcode < 0 || m_aborting)?-1:0);
 }
 
 int FTPClientWrapperSSH::DeleteFile(const char * path) {
@@ -360,7 +373,7 @@ int FTPClientWrapperSSH::SetKeyFile(const TCHAR * keyFile) {
 }
 
 int FTPClientWrapperSSH::SetPassphrase(const char * passphrase) {
-	free(m_passphrase);
+	SU::free(m_passphrase);
 	m_passphrase = SU::strdup(passphrase);
 	return 0;
 }
@@ -504,7 +517,7 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		authres = authenticate_password(session);
 	}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_UNKNOWN)) {
+	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods == SSH_AUTH_METHOD_UNKNOWN)) {
 		OutErr("[SFTP] Unknown authentication method.");
 		return -1;
 	}
@@ -530,7 +543,7 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 
 	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
 	ssh_private_key privkey = privatekey_from_file(session, keyfile, 0, m_passphrase);
-	SU::FreeUtf8(keyfile);
+	SU::FreeChar(keyfile);
 
 	if (privkey == NULL)
 		return SSH_AUTH_ERROR;

@@ -117,6 +117,10 @@ INT_PTR Dialog::OnInitDialog() {
 }
 
 INT_PTR Dialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
+	if (ctrlId == IDCANCEL) {
+		EndDialog(m_hwnd, 99);
+		return TRUE;
+	}
 	return FALSE;
 }
 
@@ -131,8 +135,24 @@ LRESULT Dialog::EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_GETDLGCODE: {
 			LRESULT lres = DLGC_WANTMESSAGE | DLGC_HASSETSEL;
 			lres &= ~DLGC_WANTTAB;
-			if (lParam && ((MSG *)lParam)->message == WM_KEYDOWN && ((MSG *)lParam)->wParam == VK_TAB) {
-				lres &= ~DLGC_WANTMESSAGE;
+
+			if (lParam && ((MSG *)lParam)->message == WM_KEYDOWN) {
+				WPARAM key = ((MSG *)lParam)->wParam;
+
+				switch(key) {
+					case VK_RETURN: {
+						LONG style = ::GetWindowLongPtr(hwnd, GWL_STYLE);
+						if (style & ES_WANTRETURN)
+							break;
+						//fallthrough
+						}
+					case VK_TAB:
+					case VK_ESCAPE: {
+						lres &= ~DLGC_WANTMESSAGE;
+						break; }
+					default: {
+						break; }
+				}
 			}
 			return lres;
 			break; }

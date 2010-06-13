@@ -133,6 +133,10 @@ bool FTPSession::IsConnected() {
 	return m_running;
 }
 
+const FTPProfile* FTPSession::GetCurrentProfile() {
+	return m_currentProfile;
+}
+
 int FTPSession::Connect() {
 	if (!m_running)
 		return -1;
@@ -197,6 +201,23 @@ int FTPSession::DownloadFile(const char * sourcefile, const TCHAR * target, bool
 	if (targetIsDir) {
 		delete [] targetfile;
 	}
+
+	return 0;
+}
+
+int FTPSession::DownloadFileHandle(const char * sourcefile, HANDLE target) {
+	if (!m_running)
+		return -1;
+
+	if (sourcefile == NULL || target == NULL)
+		return -1;
+
+	TCHAR * sourcenamelocal = SU::Utf8ToTChar(PU::FindExternalFilename(sourcefile));
+	Transfer_Mode tMode = m_currentProfile->GetFileTransferMode(sourcenamelocal);
+	SU::FreeTChar(sourcenamelocal);
+
+	QueueDownloadHandle * dldop = new QueueDownloadHandle(m_hNotify, sourcefile, target, tMode);
+	m_transferQueue->AddQueueOp(dldop);
 
 	return 0;
 }

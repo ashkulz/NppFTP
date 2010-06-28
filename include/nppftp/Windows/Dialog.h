@@ -21,7 +21,7 @@
 
 #include "Window.h"
 
-const int EN_KEYPRESS = WM_USER + 600;
+const int EN_USERCHANGE = WM_USER + 600;
 const int EN_KEYRETURN = WM_USER + 601;
 
 class Dialog : public Window {

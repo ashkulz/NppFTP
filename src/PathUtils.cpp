@@ -304,6 +304,76 @@ int PU::BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner) {
 	BOOL bResult = SHGetPathFromIDList(pidl, buffer);
 	CoTaskMemFree(pidl);
 
+	if (bResult == FALSE)
+		return -1;
+
+	return 0;
+}
+
+int PU::SimplifyExternalPath(const char * path, const char * currentDir, char * buffer, int bufSize) {
+	if (buffer == NULL || bufSize <= 1)
+		return -1;
+
+	if (currentDir == NULL && path[0] != '/')	//relative paths only supported if curDir is given
+		return -1;
+
+	int pathlen = strlen(path);
+	int dirlen = strlen(currentDir);
+	char * temp = new char[pathlen+dirlen+2];	//pathlen + '/' + dirlen + '\0'
+	temp[0] = 0;
+	if (path[0] != '/') {
+		strcpy(temp, currentDir);
+		strcat(temp, "/");
+	}
+	strcat(temp, path);
+
+	std::vector<const char*> dirs;
+	const char * name = strtok(temp,"/");
+	while (name != NULL) {
+		dirs.push_back(name);
+		name = strtok(NULL, "/");
+	}
+
+	size_t size = dirs.size();
+	size_t i = 0;
+	while(i < size) {
+		if (!strcmp(dirs[i], ".")) {
+			dirs.erase(dirs.begin()+i);
+			size--;
+			continue;
+		}
+		if (!strcmp(dirs[i], "..")) {
+			dirs.erase(dirs.begin()+i);
+			size--;
+			if (i > 0) {
+				dirs.erase(dirs.begin()+i-1);
+				size--;
+				i--;
+			}
+			continue;
+		}
+
+		i++;
+	}
+
+	buffer[0] = '/';
+	buffer[1] = 0;
+	int totalLen = 1;
+	i = 0;
+	for(; i < dirs.size(); i++) {
+		size_t len = strlen(dirs[i]);
+		if (totalLen+len >= bufSize)
+			return -1;
+		strcat(buffer, dirs[i]);
+		totalLen += len;
+		if (i != dirs.size()-1) {
+			strcat(buffer, "/");
+			totalLen += 1;
+		}
+	}
+
+	delete [] temp;
+
 	return 0;
 }
 

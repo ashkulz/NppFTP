@@ -191,27 +191,28 @@ FTPCache* FTPCache::LoadCache(const TiXmlElement * cacheElem) {
 		localpathstr = child->Attribute("localpath");
 		if (!localpathstr)
 			continue;
+		TCHAR * localpath = SU::Utf8ToTChar(localpathstr);
+		if (!localpath)
+			continue;
 
 		externalpathstr = child->Attribute("externalpath");
 		if (!externalpathstr)
 			continue;
 
-		cache->AddPathMap(localpathstr, externalpathstr);
+		cache->AddPathMap(localpath, externalpathstr);
+		SU::FreeTChar(localpath);
 	}
 
 	return cache;
 }
 
-int FTPCache::AddPathMap(const char * localpath, const char * externalpath) {
+int FTPCache::AddPathMap(const TCHAR * localpath, const char * externalpath) {
 	if (localpath == 0 || externalpath == 0)
 		return -1;
 
 	PathMap map;
 	map.externalpath = SU::strdup(externalpath);
-	map.localpath = SU::Utf8ToTChar(localpath);
-
-	if (map.localpath == NULL)
-		return -1;
+	map.localpath = SU::DupString(localpath);
 
 	TCHAR * expPath = ExpandPath(map.localpath);
 	if (expPath == NULL) {

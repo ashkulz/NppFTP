@@ -34,6 +34,7 @@ private:
 							FTPProfile();
 public:
 							FTPProfile(const TCHAR * name);	//create new profile
+							FTPProfile(const TCHAR * name, const FTPProfile* other);	//clone profile
 							~FTPProfile();
 
 	virtual FTPClientWrapper*	CreateWrapper();
@@ -60,6 +61,9 @@ public:
 	int						SetTransferMode(Transfer_Mode mode);
 	Connection_Mode			GetConnectionMode() const;
 	int						SetConnectionMode(Connection_Mode mode);
+
+	int						GetDataPortRange(int * min, int * max) const;
+	int						SetDataPortRange(int min, int max);
 
 	const char*				GetInitialDir() const;
 	int						SetInitialDir(const char * dir);
@@ -120,6 +124,9 @@ private:
 	Security_Mode			m_securityMode;
 	Transfer_Mode			m_transferMode;
 	Connection_Mode			m_connectionMode;
+
+	int						m_dataPortMin;
+	int						m_dataPortMax;
 
 	char*					m_initialDir;
 

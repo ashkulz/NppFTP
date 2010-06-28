@@ -104,7 +104,6 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 
 	/* reading the whole directory, file by file */
 	while((sfile = sftp_readdir(m_sftpsession, dir)) && !m_aborting) {
-		file.fileName[0] = 0;
 		file.filePath[0] = 0;
 
 		if (!strcmp(sfile->name, ".") || !strcmp(sfile->name, ".."))
@@ -115,7 +114,6 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 			strcat(file.filePath, "/");
 		}
 		strcat(file.filePath, sfile->name);
-		strcpy(file.fileName, sfile->name);
 		file.fileSize = (long)sfile->size;
 
 		file.mtime = ConvertFiletime(sfile->mtime, sfile->mtime_nseconds);

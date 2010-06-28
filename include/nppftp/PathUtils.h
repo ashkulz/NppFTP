@@ -44,6 +44,8 @@ public:
 	static int				GetOpenFilename(TCHAR * buffer, int bufSize, HWND hOwner);	//if buffer[0] != 0, buffer contains initial name
 	static int				GetSaveFilename(TCHAR * buffer, int bufSize, HWND hOwner);	//if buffer[0] != 0, buffer contains initial name
 	static int				BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner);
+
+	static int				SimplifyExternalPath(const char * path, const char * currentDir, char * buffer, int bufSize);
 private:
 	static bool				IsValidLocalChar(const TCHAR localchar);
 };

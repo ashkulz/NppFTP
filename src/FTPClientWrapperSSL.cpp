@@ -94,21 +94,25 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 	int retcode = 0;
 	CUT_DIRINFO di;
 	FTPFile * ftpfiles;
-/*
-	char curpath[MAX_PATH];
-	retcode = m_client.GetCurDir(curpath, MAX_PATH);
-	if (retcode != UTE_SUCCESS)
-		return OnReturn(-1);
+
+	//store original directory
+	//commented out: Cwd is not used in NppFTP at the moment
+	//char curpath[MAX_PATH];
+	//retcode = m_client.GetCurDir(curpath, MAX_PATH);
+	//if (retcode != UTE_SUCCESS)
+	//	return OnReturn(-1);
 
 	// change the current working directory to the one specified
 	retcode = m_client.ChDir(path);
 	if (retcode != UTE_SUCCESS)
 		return OnReturn(-1);
-*/
-	retcode = m_client.GetDirInfo(path);
-/*
-	m_client.ChDir(curpath);
-*/
+
+	retcode = m_client.GetDirInfo();//path);
+
+	//return to original directory
+	//commented out: Cwd is not used in NppFTP at the moment
+	//m_client.ChDir(curpath);
+
 	if (retcode != UTE_SUCCESS) {
 		return OnReturn(-1);
 	}
@@ -133,17 +137,42 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		FTPFile ftpfile;
 
 		ftpfile.filePath[0] = 0;
-		ftpfile.fileName[0] = 0;
+
+		char * utf8name = SU::TCharToUtf8(di.fileName);
+		char nameCpy[MAX_PATH+1];	//buffer used to handle symlinks
+
+		strcpy(nameCpy, utf8name);
+		SU::FreeChar(utf8name);
+
+		char * linkLocation = strstr(nameCpy, " -> ");
+		if (linkLocation != NULL) {
+			*linkLocation = 0;
+		}
 
 		strcpy(ftpfile.filePath, path);
 		if (!endslash) {
 			strcat(ftpfile.filePath, "/");
 		}
+		strcat(ftpfile.filePath, nameCpy);
+/*
+		char * fullName = nameCpy;
+		if (linkLocation != NULL) {
+			fullName = linkLocation+4;	//find path link refers to, by skipping " -> " part
+			char buffer[MAX_PATH];
+			PU::SimplifyExternalPath(fullName, path, buffer, MAX_PATH);
+			OutMsg("Link path: %s \\ %s to %s", path, fullName, buffer);
+			strcpy(ftpfile.filePath, buffer);
 
-		char * utf8name = SU::TCharToUtf8(di.fileName);
-		strcat(ftpfile.filePath, utf8name);
-		strcpy(ftpfile.fileName, utf8name);
-		SU::FreeChar(utf8name);
+		} else {
+			strcpy(ftpfile.filePath, path);
+			if (!endslash) {
+				strcat(ftpfile.filePath, "/");
+			}
+			strcat(ftpfile.filePath, nameCpy);
+		}
+*/
+
+
 		ftpfile.fileSize = (long)di.fileSize;
 
 		FILETIME time = ConvertFiletime(di.day, di.month, di.year, di.hour, di.minute);
@@ -359,6 +388,11 @@ int FTPClientWrapperSSL::SetTransferMode(Transfer_Mode tMode) {
 	return 0;
 }
 
+int FTPClientWrapperSSL::SetPortRange(int min, int max) {
+	m_client.SetDataPortRange(min, max);
+
+	return 0;
+}
 
 int FTPClientWrapperSSL::Quote(const char * quote) {
 	int retcode = m_client.Quote(quote);

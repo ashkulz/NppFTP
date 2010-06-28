@@ -933,7 +933,8 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 			}
 			if (queueResult == -1) {
 				OutErr("Failure retrieving contents of directory %s", dirop->GetDirPath());
-				break;	//failure
+				//break commented: even if failed, update the treeview etc., count should result in 0 anyway
+				//break;	//failure
 			}
 			FTPFile* files = (FTPFile*)queueData;
 			int count = dirop->GetFileCount();
@@ -1067,6 +1068,7 @@ int FTPWindow::OnDirectoryRefresh(FileObject * parent, FTPFile * files, int coun
 	}
 	parent->Sort();
 	//The treeview is out of sync here, make sure no GUI calls go between this function and the next call
+	m_treeview.UpdateFileObject(parent);
 	m_treeview.FillTreeDirectory(parent);
 	m_treeview.ExpandDirectory(parent);
 

@@ -188,9 +188,15 @@ LRESULT Dialog::EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_CHAR: {
 			if (hParent) {
 				int id = (int)::GetWindowLongPtr(hwnd, GWL_ID);
-				::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_KEYPRESS), (LPARAM) hwnd);
+				::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_USERCHANGE), (LPARAM) hwnd);
 			}
 		break; }
+		case WM_PASTE: {
+			if (hParent) {
+				int id = (int)::GetWindowLongPtr(hwnd, GWL_ID);
+				::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_USERCHANGE), (LPARAM) hwnd);
+			}
+			break; }
 	}
 
 	return res;

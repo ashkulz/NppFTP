@@ -46,6 +46,7 @@ protected:
 	int						LoadCacheMaps();
 	int						EnableCacheMapUI();
 	int						OnCacheMapSelect();
+	int						UpdateCacheMapSpinner();
 
 	vProfile*				m_profiles;
 	FTPProfile*				m_currentProfile;

@@ -32,8 +32,8 @@ const TBBUTTON defaultButtons[] = {
 	{    IDB_BITMAP_UPLOAD,   IDB_BUTTON_TOOLBAR_UPLOAD,               0,      BTNS_BUTTON, {0,0}, 0, 0},
 	{   IDB_BITMAP_REFRESH,  IDB_BUTTON_TOOLBAR_REFRESH,               0,      BTNS_BUTTON, {0,0}, 0, 0},
 	{     IDB_BITMAP_ABORT,    IDB_BUTTON_TOOLBAR_ABORT,               0,      BTNS_BUTTON, {0,0}, 0, 0},
-	{                    0,                           0, TBSTATE_ENABLED,      TBSTYLE_SEP, {0,0}, 0, 0},
-	{IDB_BITMAP_RAWCOMMAND,   IDB_BUTTON_TOOLBAR_RAWCMD,               0,      BTNS_BUTTON, {0,0}, 0, 0},
+	//{                    0,                           0, TBSTATE_ENABLED,      TBSTYLE_SEP, {0,0}, 0, 0},
+	//{IDB_BITMAP_RAWCOMMAND,   IDB_BUTTON_TOOLBAR_RAWCMD,               0,      BTNS_BUTTON, {0,0}, 0, 0},
 	{                    0,                           0, TBSTATE_ENABLED,      TBSTYLE_SEP, {0,0}, 0, 0},
 	{  IDB_BITMAP_SETTINGS, IDB_BUTTON_TOOLBAR_SETTINGS,               0, TBSTYLE_DROPDOWN, {0,0}, 0, 0},
 	{  IDB_BITMAP_MESSAGES, IDB_BUTTON_TOOLBAR_MESSAGES, TBSTATE_ENABLED,      BTNS_BUTTON, {0,0}, 0, 0}
@@ -46,8 +46,8 @@ const TCHAR* tooltips[] = {
 	TEXT("Upload file"),
 	TEXT("Refresh"),
 	TEXT("Abort"),
-	TEXT("-"),
-	TEXT("Send quote"),
+	//TEXT("-"),
+	//TEXT("Send quote"),
 	TEXT("-"),
 	TEXT("Settings"),
 	TEXT("Show messages window")

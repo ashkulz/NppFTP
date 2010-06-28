@@ -52,7 +52,7 @@ public:
 	static TiXmlElement*	SaveCache(const FTPCache * cache);
 	static FTPCache*		LoadCache(const TiXmlElement * cacheElem);
 private:
-	int						AddPathMap(const char * localpath, const char * externalpath);	//localpath in UTF-8
+	int						AddPathMap(const TCHAR * localpath, const char * externalpath);	//localpath in UTF-8
 
 	virtual bool			IsPathPrefixLocal(const TCHAR * localpath, const TCHAR * prefix, const TCHAR ** postfix) const;
 	virtual bool			IsPathPrefixExternal(const char * localpath, const char * prefix, const char ** postfix) const;

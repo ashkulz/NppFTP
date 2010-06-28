@@ -220,6 +220,7 @@ public:
 	virtual int				SetMode(CUT_FTPClient::FTPSMode mode);
 	virtual int				SetConnectionMode(Connection_Mode cMode);
 	virtual int				SetTransferMode(Transfer_Mode tMode);
+	virtual int				SetPortRange(int min, int max);
 
 	virtual int				Quote(const char * quote);
 protected:

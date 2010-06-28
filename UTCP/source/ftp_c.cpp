@@ -112,7 +112,9 @@ CUT_FTPClient::CUT_FTPClient() :
     m_nDirInfoCount(0),                 // Number of DirInfo items - 0
 
     m_sMode(FTP),
-    m_dataSecLevel(0)					//Default is clear data
+    m_dataSecLevel(0),					//Default is clear data
+    m_nDataPortMin(10000),
+    m_nDataPortMax(32000)
 {
 
     // initialize pointer
@@ -349,8 +351,10 @@ int CUT_FTPClient::ReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
 
     //setup the next port number
     m_nDataPort++;
-    if(m_nDataPort > 32000 || m_nDataPort < 0)
-        m_nDataPort = 10000;
+    //if(m_nDataPort > 32000 || m_nDataPort < 0)
+    //    m_nDataPort = 10000;
+	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+		m_nDataPort = m_nDataPortMin;
 
     //check for a return of 2??
     rt = GetResponseCode(this);
@@ -924,8 +928,10 @@ int CUT_FTPClient::SendFile(CUT_DataSource & source, LPCSTR destFile)
 
     //setup the next port number
     m_nDataPort++;
-    if(m_nDataPort > 32000 || m_nDataPort < 0)
-        m_nDataPort = 10000;
+    //if(m_nDataPort > 32000 || m_nDataPort < 0)
+    //    m_nDataPort = 10000;
+	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+		m_nDataPort = m_nDataPortMin;
 
     //check for a return of 2??
     rt = GetResponseCode(this);
@@ -1842,6 +1848,35 @@ int CUT_FTPClient::GetDataSecure() {
 	return m_dataSecLevel;
 }
 
+int CUT_FTPClient::SetDataPortRange(int min, int max) {
+	m_nDataPortMin = min;
+	m_nDataPortMax = max;
+
+	if (m_nDataPortMin < 1000)
+		m_nDataPortMin = 1000;
+	if (m_nDataPortMin > 65000)
+		m_nDataPortMin = 65000;
+
+	if (m_nDataPortMax < m_nDataPortMin)
+		m_nDataPortMax = m_nDataPortMin+1;
+
+	if (m_nDataPortMax > 65001)
+		m_nDataPortMax = 65001;
+
+	m_nDataPort = m_nDataPortMin + GetTickCount()%(m_nDataPortMax-m_nDataPortMin);
+
+	return UTE_SUCCESS;
+}
+
+int CUT_FTPClient::GetDataPortRange(int * min, int * max) {
+	if (!min || !max)
+		return UTE_ERROR;
+
+	*min = m_nDataPortMin;
+	*max = m_nDataPortMax;
+
+	return UTE_SUCCESS;
+}
 
 /***************************************
 GetDirInfo
@@ -1857,6 +1892,9 @@ Return
     UTE_LIST_FAILED                 - LIST command failed
     UTE_ABORTED                     - aborted
 ****************************************/
+int CUT_FTPClient::GetDirInfo(){
+	return GetDirInfo((LPCSTR)NULL);
+}
 #if defined _UNICODE
 int CUT_FTPClient::GetDirInfo(LPCWSTR path){
 	if (path == NULL)
@@ -1897,8 +1935,10 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
 
     //setup the next port number
     m_nDataPort++;
-    if(m_nDataPort > 32000 || m_nDataPort < 0)
-        m_nDataPort = 10000;
+    //if(m_nDataPort > 32000 || m_nDataPort < 0)
+    //    m_nDataPort = 10000;
+    	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+		m_nDataPort = m_nDataPortMin;
 
     //send the port command
     Send(m_szBuf);
@@ -1912,7 +1952,10 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
         }
 
     //send the list command
-    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    if (path != NULL)
+		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+	else
+		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
     Send(m_szBuf);
 
     //wait for a connection on the data port
@@ -2085,7 +2128,10 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
 
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.
-    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    if (path != NULL)
+		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+	else
+		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
     Send(m_szBuf);
 
     // connect to the server supplied port to establish the

@@ -270,8 +270,9 @@ const char* QueueDownload::GetExternalPath() {
 
 QueueDownloadHandle::QueueDownloadHandle(HWND hNotify, const char * externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode, void * notifyData) :
 	QueueOperation(QueueTypeDownloadHandle, hNotify, notifyCode, notifyData),
-	m_tMode(tMode),
-	m_hFile(hFile)
+	m_hFile(hFile),
+	m_tMode(tMode)
+
 {
 	m_externalFile = SU::strdup(externalFile);
 }

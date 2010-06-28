@@ -159,6 +159,8 @@ protected: // changed to protected to allow for inheritance
 
 	FTPSMode			m_sMode;
 	int					m_dataSecLevel;
+	int					m_nDataPortMin;
+	int					m_nDataPortMax;
 
 	/////////////////////
 	// helper functions
@@ -302,10 +304,14 @@ public:
 	int		SetDataSecure(int level);
 	int		GetDataSecure();
 
+	int		SetDataPortRange(int min, int max);
+	int		GetDataPortRange(int * min, int * max);
+
 	// Get the current Directory information
-	virtual int		GetDirInfo(LPCSTR path = NULL);
+	virtual int		GetDirInfo();
+	virtual int		GetDirInfo(LPCSTR path);
 #if defined _UNICODE
-	virtual int		GetDirInfo(LPCWSTR path = NULL);
+	virtual int		GetDirInfo(LPCWSTR path);
 #endif
 
 	//  Get the number of entries in the Directory information

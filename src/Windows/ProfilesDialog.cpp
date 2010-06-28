@@ -85,6 +85,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				FTPProfile::SortVector(*m_profiles);
 				newProfile->AddRef();
 				m_ftpWindow->OnProfileChange();
+				OnSelectProfile(newProfile);
 				LoadProfiles();
 			}
 			break; }
@@ -132,14 +133,30 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			LoadProfiles();
 			break; }
+		case IDC_BUTTON_PROFILE_COPY: {
+			InputDialog id;
+			TCHAR * newname = SU::TSprintfNB(TEXT("Copy of %T"), m_currentProfile->GetName());
+			int res = id.Create(m_hwnd, TEXT("Copying profile"), TEXT("Please enter the name of the new profile"), newname);
+			SU::FreeTChar(newname);
+			if (res == 1) {
+				FTPProfile * newProfile = new FTPProfile(id.GetValue(), m_currentProfile);
+				newProfile->SetCacheParent(m_globalCache);
+				m_profiles->push_back(newProfile);
+				FTPProfile::SortVector(*m_profiles);
+				newProfile->AddRef();
+				m_ftpWindow->OnProfileChange();
+				OnSelectProfile(newProfile);
+				LoadProfiles();
+			}
+			break; }
 		case IDC_EDIT_HOSTNAME: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
 				m_currentProfile->SetHostname(aTextBuffer);
 			}
 			break; }
 		case IDC_EDIT_PORT: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				BOOL success = FALSE;
 				int port = GetDlgItemInt(m_hPageConnection, ctrlId, &success, FALSE);
 				if (success)
@@ -147,19 +164,19 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			break; }
 		case IDC_EDIT_USERNAME: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
 				m_currentProfile->SetUsername(aTextBuffer);
 			}
 			break; }
 		case IDC_EDIT_PASSWORD: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
 				m_currentProfile->SetPassword(aTextBuffer);
 			}
 			break; }
 		case IDC_EDIT_TIMEOUT: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				BOOL success = FALSE;
 				int timeout = GetDlgItemInt(m_hPageConnection, ctrlId, &success, FALSE);
 				if (success)
@@ -167,7 +184,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			break; }
 		case IDC_EDIT_INITDIR: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
 				m_currentProfile->SetInitialDir(aTextBuffer);
 			}
@@ -201,13 +218,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 
 		case IDC_EDIT_KEYFILE: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
 				m_currentProfile->SetKeyFile(TTextBuffer);
 			}
 			break; }
 		case IDC_EDIT_PASSPHRASE: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
 				m_currentProfile->SetPassphrase(aTextBuffer);
 			}
@@ -327,9 +344,23 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			break; }
 
+		case IDC_EDIT_PORT_MIN:
+		case IDC_EDIT_PORT_MAX: {
+			if (notifCode == EN_USERCHANGE) {
+				BOOL success = FALSE;
+				int min = GetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MIN, &success, FALSE);
+				if (!success)
+					break;
+				int max = GetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MAX, &success, FALSE);
+				if (!success)
+					break;
+				m_currentProfile->SetDataPortRange(min, max);
+			}
+			break; }
+
 		case IDC_EDIT_CACHELOCAL:
 		case IDC_EDIT_CACHEEXTERNAL: {
-			if (notifCode == EN_KEYPRESS) {
+			if (notifCode == EN_USERCHANGE) {
 				EnableCacheMapUI();
 			}
 			break; }
@@ -344,12 +375,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			pathmap.externalpath = SU::strdup(external);
 			if (ctrlId == IDC_BUTTON_CACHE_ADD) {
 				m_currentProfile->GetCache()->AddPathMap(pathmap);
+				LoadCacheMaps();
 			} else if (ctrlId == IDC_BUTTON_CACHE_EDIT) {
 				HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
 				int selectedindex = ListView_GetNextItem(hListview, -1, LVNI_ALL|LVNI_SELECTED);
 				m_currentProfile->GetCache()->SetPathMap(pathmap, selectedindex);
+				LoadCacheMaps();
 			}
-			LoadCacheMaps();
 			break; }
 		case IDC_BUTTON_CACHE_DELETE: {
 			HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
@@ -380,7 +412,7 @@ INT_PTR ProfilesDialog::OnNotify(NMHDR * pnmh) {
 	if (pnmh->idFrom == IDC_LIST_CACHE) {
 		NMLISTVIEW * pnml = (NMLISTVIEW*)pnmh;
 		if (pnml->hdr.code == LVN_ITEMCHANGED) {
-			if (pnml->uChanged & LVIS_SELECTED) {
+			if (pnml->uChanged & LVIF_STATE && pnml-> uNewState & LVIS_SELECTED) {
 				OnCacheMapSelect();
 			}
 		}
@@ -391,6 +423,30 @@ INT_PTR ProfilesDialog::OnNotify(NMHDR * pnmh) {
 			m_pageAuthentication.Show(index == 1);
 			m_pageTransfer.Show(index == 2);
 			m_pageCache.Show(index == 3);
+		}
+	} else if (pnmh->idFrom == IDC_SPIN_CACHE) {
+		NMUPDOWN * pnmud = (NMUPDOWN*)pnmh;
+		if (pnmh->code == UDN_DELTAPOS) {
+			if (!m_currentProfile)
+				return TRUE;
+
+			HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
+
+			FTPCache * cache = m_currentProfile->GetCache();
+
+			int count = cache->GetPathMapCount();
+			int selectedindex = ListView_GetNextItem(hListview, -1, LVNI_ALL|LVNI_SELECTED);
+			int newindex = selectedindex+(pnmud->iDelta<0?-1:1);
+			if (newindex < 0 || newindex > count-1)
+				return TRUE;	//cannot accept move
+
+			cache->SwapPathMap(selectedindex, newindex);
+
+			LoadCacheMaps();
+
+			ListView_SetItemState(hListview, newindex, LVIS_FOCUSED | LVIS_SELECTED, 0x000F);
+
+			return FALSE;
 		}
 	}
 
@@ -459,6 +515,8 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_ASCII), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
@@ -478,8 +536,6 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	lvc.cx = 110;
 	lvc.pszText = TEXT("External path");
 	ListView_InsertColumn(hListCache, 1, &lvc);
-
-	::ShowWindow(::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE), SW_HIDE);
 
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);
 	ComboBox_AddString(hCombobox, TEXT("FTP"));
@@ -564,6 +620,8 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_LIST_BINARY), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_ASCII), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), enableSettings);
 
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_LIST_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE), enableSettings);
@@ -581,6 +639,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	BOOL enableProfileBtn = (profile!=NULL)?TRUE:FALSE;
 	::EnableWindow(::GetDlgItem(m_hwnd, IDC_BUTTON_PROFILE_RENAME), enableProfileBtn);
 	::EnableWindow(::GetDlgItem(m_hwnd, IDC_BUTTON_PROFILE_DELETE), enableProfileBtn);
+	::EnableWindow(::GetDlgItem(m_hwnd, IDC_BUTTON_PROFILE_COPY), enableProfileBtn);
 
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_HOSTNAME, m_currentProfile->GetHostname());
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_PORT, m_currentProfile->GetPort(), FALSE);
@@ -608,6 +667,13 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 
 	CheckRadioButton(m_hPageTransfer, IDC_RADIO_ACTIVE, IDC_RADIO_PASSIVE, isActive?IDC_RADIO_ACTIVE:IDC_RADIO_PASSIVE);
 	CheckRadioButton(m_hPageTransfer, IDC_RADIO_ASCII, IDC_RADIO_BINARY, isAscii?IDC_RADIO_ASCII:IDC_RADIO_BINARY);
+
+
+	int min;
+	int max;
+	m_currentProfile->GetDataPortRange(&min, &max);
+	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MIN, min, FALSE);
+	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MAX, max, FALSE);
 
 	LoadFiletypes();
 	LoadCacheMaps();
@@ -680,11 +746,21 @@ int ProfilesDialog::LoadFiletypes() {
 
 int ProfilesDialog::LoadCacheMaps() {
 	HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
-	ListView_DeleteAllItems(hListview);
+	if (!m_currentProfile) {
+		ListView_DeleteAllItems(hListview);
+		return 0;
+	}
 
 	FTPCache * cache = m_currentProfile->GetCache();
-	if (!cache)
-		return -1;
+
+	int curSelection = ListView_GetNextItem(hListview, -1, LVNI_ALL|LVNI_SELECTED);
+
+	if (curSelection >= cache->GetPathMapCount())
+		curSelection = cache->GetPathMapCount()-1;
+	if (curSelection == -1)
+		curSelection = 0;
+
+	ListView_DeleteAllItems(hListview);
 
 	LVITEM lvi;
 	lvi.mask = LVIF_TEXT | LVIF_STATE;
@@ -695,7 +771,7 @@ int ProfilesDialog::LoadCacheMaps() {
 
 	for(int i = 0; i < cache->GetPathMapCount(); i++) {
 		const PathMap & pathmap = cache->GetPathMap(i);
-		lvi.state = (i == 0)?LVIS_SELECTED:0;
+		lvi.state = (i == curSelection)?LVIS_SELECTED:0;
 		lvi.iItem = i;
 		lvi.iSubItem = 0;
 		lvi.pszText = (TCHAR*)pathmap.localpath;
@@ -749,6 +825,25 @@ int ProfilesDialog::OnCacheMapSelect() {
 		::SetDlgItemText(m_hPageCache, IDC_EDIT_CACHELOCAL, pathmap.localpath);
 		::SetDlgItemTextA(m_hPageCache, IDC_EDIT_CACHEEXTERNAL, pathmap.externalpath);
 	}
+	UpdateCacheMapSpinner();
 
+	return 0;
+}
+
+int ProfilesDialog::UpdateCacheMapSpinner() {
+	HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
+	HWND hSpin = ::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE);
+	FTPCache * cache = m_currentProfile->GetCache();
+	int count = cache->GetPathMapCount();
+
+	int selectedindex = ListView_GetNextItem(hListview, -1, LVNI_ALL|LVNI_SELECTED);
+	if (selectedindex == -1) {
+		::SendMessage(hSpin, UDM_SETRANGE, 0, MAKELPARAM(0,0) );
+		::SendMessage(hSpin, UDM_SETPOS, 0, 0);
+
+	} else {
+		::SendMessage(hSpin, UDM_SETRANGE, 0, MAKELPARAM(0,count-1) );
+		::SendMessage(hSpin, UDM_SETPOS, 0, selectedindex );
+	}
 	return 0;
 }

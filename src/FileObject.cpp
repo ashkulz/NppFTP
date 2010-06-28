@@ -54,6 +54,7 @@ FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 
 FileObject::FileObject(FTPFile * ftpfile) :
 	m_childCount(0),
+	m_parent(NULL),
 	m_data(NULL)
 {
 	m_isDir = (ftpfile->fileType != FTPTypeFile);
@@ -221,5 +222,5 @@ bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
 	} else {
 		res = lstrcmpiA(fo1->GetPath(), fo2->GetPath());
 	}
-	return (res < 0);
+	return (res <= 0);
 }

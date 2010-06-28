@@ -35,6 +35,8 @@ FTPProfile::FTPProfile() :
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
+	m_dataPortMin(10000),
+	m_dataPortMax(32000),
 	m_initialDir(NULL),
 	m_keyFile(NULL),
 	m_passphrase(NULL),
@@ -49,6 +51,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
+	m_dataPortMin(10000),
+	m_dataPortMax(32000),
 	m_useAgent(false),
 	m_acceptedMethods(Method_Password)
 {
@@ -64,6 +68,39 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_passphrase = SU::strdup("");
 
 	m_cache->SetEnvironment(m_hostname, m_username);
+}
+
+FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
+	m_port(other->m_port),
+	m_timeout(other->m_timeout),
+	m_securityMode(other->m_securityMode),
+	m_transferMode(other->m_transferMode),
+	m_connectionMode(other->m_connectionMode),
+	m_dataPortMin(other->m_dataPortMin),
+	m_dataPortMax(other->m_dataPortMax),
+	m_useAgent(other->m_useAgent),
+	m_acceptedMethods(other->m_acceptedMethods)
+{
+	m_cache = new FTPCache();
+
+	m_name = SU::DupString(name);
+	m_hostname = SU::strdup(other->m_hostname);
+	m_username = SU::strdup(other->m_username);
+	m_password = SU::strdup(other->m_password);
+	m_initialDir = SU::strdup(other->m_initialDir);
+
+	m_keyFile = SU::DupString(other->m_keyFile);
+	m_passphrase = SU::strdup(other->m_passphrase);
+
+	m_cache->SetEnvironment(m_hostname, m_username);
+
+	for(int i = 0; i < other->m_cache->GetPathMapCount(); i++) {
+		PathMap map;
+		const PathMap & othermap = other->m_cache->GetPathMap(i);
+		map.localpath = SU::DupString(othermap.localpath);
+		map.externalpath = SU::strdup(othermap.externalpath);
+		m_cache->AddPathMap(map);
+	}
 }
 
 FTPProfile::~FTPProfile() {
@@ -108,28 +145,34 @@ FTPProfile::~FTPProfile() {
 FTPClientWrapper* FTPProfile::CreateWrapper() {
 	FTPClientWrapper * wrapper = NULL;
 	switch(m_securityMode) {
-		case Mode_SFTP:
-			wrapper = new FTPClientWrapperSSH(m_hostname, m_port, m_username, m_password);
-			((FTPClientWrapperSSH*)wrapper)->SetKeyFile(m_keyFile);
-			((FTPClientWrapperSSH*)wrapper)->SetPassphrase(m_passphrase);
-			((FTPClientWrapperSSH*)wrapper)->SetUseAgent(m_useAgent);
-			((FTPClientWrapperSSH*)wrapper)->SetAcceptedMethods(m_acceptedMethods);
-			break;
+		case Mode_SFTP: {
+			FTPClientWrapperSSH * SSHwrapper = new FTPClientWrapperSSH(m_hostname, m_port, m_username, m_password);
+			wrapper = SSHwrapper;
+			SSHwrapper->SetKeyFile(m_keyFile);
+			SSHwrapper->SetPassphrase(m_passphrase);
+			SSHwrapper->SetUseAgent(m_useAgent);
+			SSHwrapper->SetAcceptedMethods(m_acceptedMethods);
+			break; }
 		case Mode_FTP:
-			wrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
-			((FTPClientWrapperSSL*)wrapper)->SetMode(CUT_FTPClient::FTP);
-			((FTPClientWrapperSSL*)wrapper)->SetConnectionMode(m_connectionMode);
-			break;
 		case Mode_FTPS:
-			wrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
-			((FTPClientWrapperSSL*)wrapper)->SetMode(CUT_FTPClient::FTPS);
-			((FTPClientWrapperSSL*)wrapper)->SetConnectionMode(m_connectionMode);
-			break;
-		case Mode_FTPES:
-			wrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
-			((FTPClientWrapperSSL*)wrapper)->SetMode(CUT_FTPClient::FTPES);
-			((FTPClientWrapperSSL*)wrapper)->SetConnectionMode(m_connectionMode);
-			break;
+		case Mode_FTPES: {
+			FTPClientWrapperSSL * SSLwrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
+			wrapper = SSLwrapper;
+			switch(m_securityMode) {
+				case Mode_FTP:
+					SSLwrapper->SetMode(CUT_FTPClient::FTP);
+					break;
+				case Mode_FTPS:
+					SSLwrapper->SetMode(CUT_FTPClient::FTPS);
+					break;
+				case Mode_FTPES:
+					SSLwrapper->SetMode(CUT_FTPClient::FTPES);
+					break;
+
+			}
+			SSLwrapper->SetConnectionMode(m_connectionMode);
+			SSLwrapper->SetPortRange(m_dataPortMin, m_dataPortMax);
+			break; }
 		case Mode_SecurityMax:
 		default:
 			return NULL;
@@ -240,6 +283,34 @@ int FTPProfile::SetConnectionMode(Connection_Mode mode) {
 		return -1;
 
 	m_connectionMode = mode;
+	return 0;
+}
+
+int FTPProfile::GetDataPortRange(int * min, int * max) const {
+	if (!min || !max)
+		return -1;
+
+	*min = m_dataPortMin;
+	*max = m_dataPortMax;
+
+	return 0;
+}
+
+int FTPProfile::SetDataPortRange(int min, int max) {
+	m_dataPortMin = min;
+	m_dataPortMax = max;
+
+	if (m_dataPortMin < 1000)
+		m_dataPortMin = 1000;
+	if (m_dataPortMin > 65000)
+		m_dataPortMin = 65000;
+
+	if (m_dataPortMax < m_dataPortMin)
+		m_dataPortMax = m_dataPortMin+1;
+
+	if (m_dataPortMax > 65001)
+		m_dataPortMax = 65001;
+
 	return 0;
 }
 
@@ -481,6 +552,9 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 		profileElem->Attribute("transferMode", (int*)(&profile->m_transferMode));
 		profileElem->Attribute("connectionMode", (int*)(&profile->m_connectionMode));
 
+		profileElem->Attribute("dataPortMin", (int*)(&profile->m_dataPortMin));
+		profileElem->Attribute("dataPortMax", (int*)(&profile->m_dataPortMax));
+
 		const TiXmlElement * cacheElem = profileElem->FirstChildElement(FTPCache::CacheElem);
 		if (!cacheElem)
 			break;
@@ -564,6 +638,9 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	profileElem->SetAttribute("transferMode", m_transferMode);
 	profileElem->SetAttribute("connectionMode", m_connectionMode);
 
+	profileElem->SetAttribute("dataPortMin", m_dataPortMin);
+	profileElem->SetAttribute("dataPortMax", m_dataPortMax);
+
 	profileElem->SetAttribute("initialDir", m_initialDir);
 
 	char * utf8keyfile = SU::TCharToUtf8(m_keyFile);
@@ -616,6 +693,15 @@ int FTPProfile::Sanitize() {
 
 	if (m_connectionMode < 0 || m_connectionMode >= Mode_ConnectionMax)
 		m_connectionMode = Mode_Passive;
+
+	if (m_dataPortMin < 1000)
+		m_dataPortMin = 1000;
+	if (m_dataPortMin > 65000)
+		m_dataPortMin = 65000;
+	if (m_dataPortMax < m_dataPortMin)
+		m_dataPortMax = m_dataPortMin;
+	if (m_dataPortMax > 65001)
+		m_dataPortMax = 65001;
 
 	m_acceptedMethods = (AuthenticationMethods)(m_acceptedMethods & Method_All);
 

@@ -37,6 +37,7 @@ FTPProfile::FTPProfile() :
 	m_connectionMode(Mode_Passive),
 	m_dataPortMin(10000),
 	m_dataPortMax(32000),
+	m_ftpListParams(NULL),
 	m_initialDir(NULL),
 	m_keyFile(NULL),
 	m_passphrase(NULL),
@@ -64,6 +65,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_password = SU::strdup("");
 	m_initialDir = SU::strdup("");
 
+	m_ftpListParams = SU::strdup("");
+
 	m_keyFile = SU::DupString(TEXT(""));
 	m_passphrase = SU::strdup("");
 
@@ -88,6 +91,8 @@ FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_username = SU::strdup(other->m_username);
 	m_password = SU::strdup(other->m_password);
 	m_initialDir = SU::strdup(other->m_initialDir);
+
+	m_ftpListParams = SU::strdup(other->m_ftpListParams);
 
 	m_keyFile = SU::DupString(other->m_keyFile);
 	m_passphrase = SU::strdup(other->m_passphrase);
@@ -124,6 +129,11 @@ FTPProfile::~FTPProfile() {
 	if (m_cache) {
 		delete m_cache;
 		m_cache = NULL;
+	}
+
+	if (m_ftpListParams) {
+		SU::free(m_ftpListParams);
+		m_ftpListParams = NULL;
 	}
 
 	if (m_initialDir) {
@@ -172,6 +182,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 			}
 			SSLwrapper->SetConnectionMode(m_connectionMode);
 			SSLwrapper->SetPortRange(m_dataPortMin, m_dataPortMax);
+			SSLwrapper->SetListParams(m_ftpListParams);
 			break; }
 		case Mode_SecurityMax:
 		default:
@@ -311,6 +322,17 @@ int FTPProfile::SetDataPortRange(int min, int max) {
 	if (m_dataPortMax > 65001)
 		m_dataPortMax = 65001;
 
+	return 0;
+}
+
+const char * FTPProfile::GetListParams() const {
+	return m_ftpListParams;
+}
+
+int FTPProfile::SetListParams(const char * listParams) {
+	if (m_ftpListParams)
+		SU::free(m_ftpListParams);
+	m_ftpListParams = SU::strdup(listParams);
 	return 0;
 }
 
@@ -541,7 +563,10 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			profile->m_password = SU::strdup("");
 		} else {
 			char * decryptpass = Encryption::Decrypt(NULL, -1, attrstr, true);
-			profile->m_password = SU::strdup(decryptpass);
+			if (decryptpass)
+				profile->m_password = SU::strdup(decryptpass);
+			else
+				profile->m_password = SU::strdup("");
 			Encryption::FreeData(decryptpass);
 		}
 
@@ -554,6 +579,12 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 
 		profileElem->Attribute("dataPortMin", (int*)(&profile->m_dataPortMin));
 		profileElem->Attribute("dataPortMax", (int*)(&profile->m_dataPortMax));
+
+		attrstr = profileElem->Attribute("listParams");
+		if (!attrstr)
+			profile->m_ftpListParams = SU::strdup("");
+		else
+			profile->m_ftpListParams = SU::strdup(attrstr);
 
 		const TiXmlElement * cacheElem = profileElem->FirstChildElement(FTPCache::CacheElem);
 		if (!cacheElem)
@@ -640,6 +671,8 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 
 	profileElem->SetAttribute("dataPortMin", m_dataPortMin);
 	profileElem->SetAttribute("dataPortMax", m_dataPortMax);
+
+	profileElem->SetAttribute("listParams", m_ftpListParams);
 
 	profileElem->SetAttribute("initialDir", m_initialDir);
 

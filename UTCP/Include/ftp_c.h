@@ -269,6 +269,12 @@ public:
 	virtual int		RmDir(LPCWSTR directory);
 #endif
 
+	// get size of a file
+	virtual int		GetSize(LPCSTR path, long * size);
+#if defined _UNICODE
+	virtual int		GetSize(LPCWSTR path, long * size);
+#endif
+
 	// Send a No Operation command
 	virtual int		NoOp();
 

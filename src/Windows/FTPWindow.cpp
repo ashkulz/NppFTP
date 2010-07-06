@@ -48,7 +48,7 @@ FTPWindow::FTPWindow() :
 	m_dndWindow(this),
 	m_currentDropObject(NULL)
 {
-	m_exStyle = WS_EX_NOACTIVATE;
+	m_exStyle = 0;
 	m_style = 0;
 
 	//Create background brush
@@ -159,7 +159,7 @@ int FTPWindow::Show(bool show) {
 		m_outputWindow.Show(false);
 	}
 
-	Focus();
+	//Focus();
 
 	return 0;
 }
@@ -269,6 +269,12 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
 
 	switch(uMsg) {
+		case WM_SETFOCUS: {
+			//Why restore focus here? This window should never be able to get focus in the first place
+			HWND hPrev = (HWND)wParam;
+			if (hPrev != NULL)
+				::SetFocus(hPrev);
+			break; }
 		case WM_ERASEBKGND: {
 			HDC hDC = (HDC) wParam;
 			RECT rectClient;

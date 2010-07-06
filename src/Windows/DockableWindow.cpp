@@ -131,17 +131,13 @@ LRESULT DockableWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_NOTIFY: {
 			NMHDR nmh = (NMHDR) *((NMHDR*)lParam);
 			if (nmh.hwndFrom == m_hNpp) {
-				switch(nmh.code) {
-					case DMN_DOCK:
-					case DMN_FLOAT: {
-						::SendMessage(m_hwnd, WM_SIZE, 0, 0);
-						Redraw();
-						result = TRUE;
-						break; }
-					case DMN_CLOSE: {
-						Show(false);
-						result = TRUE;
-						break; }
+				if (nmh.code == DMN_CLOSE) {
+					Show(false);
+					result = TRUE;
+				} else if (nmh.code & DMN_DOCK || nmh.code & DMN_FLOAT) {
+					::SendMessage(m_hwnd, WM_SIZE, 0, 0);
+					Redraw();
+					result = TRUE;
 				}
 			} else {
 				result = Window::MessageProc(uMsg, wParam, lParam);

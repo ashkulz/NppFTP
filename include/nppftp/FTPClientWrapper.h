@@ -60,6 +60,8 @@ protected:
 	virtual int				OnLoadCertificates(SSL_CTX * ctx);
 	virtual int				OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult);
 
+	virtual int				OnError(int error);
+
 	BOOL					m_isAborted;
 	ProgressMonitor*		m_progmon;
 	long					m_currentTotal;	//kinda hacky
@@ -221,11 +223,13 @@ public:
 	virtual int				SetConnectionMode(Connection_Mode cMode);
 	virtual int				SetTransferMode(Transfer_Mode tMode);
 	virtual int				SetPortRange(int min, int max);
+	virtual int				SetListParams(const char * params);
 
 	virtual int				Quote(const char * quote);
 protected:
 	FtpSSLWrapper			m_client;
 	CUT_FTPClient::FTPSMode	m_mode;
+	char*					m_ftpListParams;
 
 	FILETIME				ConvertFiletime(int day, int month, int year, int hour, int minute);
 };

@@ -65,6 +65,9 @@ public:
 	int						GetDataPortRange(int * min, int * max) const;
 	int						SetDataPortRange(int min, int max);
 
+	const char*				GetListParams() const;
+	int						SetListParams(const char * listParams);
+
 	const char*				GetInitialDir() const;
 	int						SetInitialDir(const char * dir);
 
@@ -127,6 +130,8 @@ private:
 
 	int						m_dataPortMin;
 	int						m_dataPortMax;
+
+	char*					m_ftpListParams;
 
 	char*					m_initialDir;
 

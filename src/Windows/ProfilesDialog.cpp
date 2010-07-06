@@ -33,9 +33,11 @@ ProfilesDialog::ProfilesDialog() :
 	m_pageConnection(IDD_DIALOG_PROFILESCONNECTION),
 	m_pageAuthentication(IDD_DIALOG_PROFILESAUTHENTICATION),
 	m_pageTransfer(IDD_DIALOG_PROFILESTRANSFERS),
+	m_pageFTP(IDD_DIALOG_PROFILESFTP),
 	m_pageCache(IDD_DIALOG_PROFILESCACHE),
 	m_hPageConnection(NULL),
 	m_hPageTransfer(NULL),
+	m_hPageFTP(NULL),
 	m_hPageCache(NULL)
 {
 }
@@ -287,8 +289,6 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				m_currentProfile->SetTransferMode(Mode_Binary);
 			}
 			break; }
-
-
 		case IDC_EDIT_ASCII: {
 			if (notifCode == EN_KEYRETURN) {
 				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
@@ -343,7 +343,6 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				}
 			}
 			break; }
-
 		case IDC_EDIT_PORT_MIN:
 		case IDC_EDIT_PORT_MAX: {
 			if (notifCode == EN_USERCHANGE) {
@@ -355,6 +354,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				if (!success)
 					break;
 				m_currentProfile->SetDataPortRange(min, max);
+			}
+			break; }
+
+		case IDC_EDIT_LISTPARAMS: {
+			if (notifCode == EN_USERCHANGE) {
+				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
+				m_currentProfile->SetListParams(aTextBuffer);
 			}
 			break; }
 
@@ -422,7 +428,8 @@ INT_PTR ProfilesDialog::OnNotify(NMHDR * pnmh) {
 			m_pageConnection.Show(index == 0);
 			m_pageAuthentication.Show(index == 1);
 			m_pageTransfer.Show(index == 2);
-			m_pageCache.Show(index == 3);
+			m_pageFTP.Show(index == 3);
+			m_pageCache.Show(index == 4);
 		}
 	} else if (pnmh->idFrom == IDC_SPIN_CACHE) {
 		NMUPDOWN * pnmud = (NMUPDOWN*)pnmh;
@@ -470,19 +477,24 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	tci.pszText = (TCHAR*)TEXT("Transfers");
 	TabCtrl_InsertItem(hTab, 3, &tci);
 
-	tci.pszText = (TCHAR*)TEXT("Cache");
+	tci.pszText = (TCHAR*)TEXT("FTP Misc.");
 	TabCtrl_InsertItem(hTab, 4, &tci);
+
+	tci.pszText = (TCHAR*)TEXT("Cache");
+	TabCtrl_InsertItem(hTab, 5, &tci);
 
 	TabCtrl_SetCurSel(hTab, 0);
 
 	m_pageConnection.Create(m_hwnd, m_hwnd, TEXT(""));
 	m_pageAuthentication.Create(m_hwnd, m_hwnd, TEXT(""));
 	m_pageTransfer.Create(m_hwnd, m_hwnd, TEXT(""));
+	m_pageFTP.Create(m_hwnd, m_hwnd, TEXT(""));
 	m_pageCache.Create(m_hwnd, m_hwnd, TEXT(""));
 
 	PF::EnableThemeDialogTexture(m_pageConnection.GetHWND(), ETDT_ENABLETAB);
 	PF::EnableThemeDialogTexture(m_pageAuthentication.GetHWND(), ETDT_ENABLETAB);
 	PF::EnableThemeDialogTexture(m_pageTransfer.GetHWND(), ETDT_ENABLETAB);
+	PF::EnableThemeDialogTexture(m_pageFTP.GetHWND(), ETDT_ENABLETAB);
 	PF::EnableThemeDialogTexture(m_pageCache.GetHWND(), ETDT_ENABLETAB);
 	//PF::EnableThemeDialogTexture(m_hwnd, ETDT_ENABLETAB);
 
@@ -494,11 +506,13 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	m_pageConnection.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
 	m_pageAuthentication.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
 	m_pageTransfer.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
+	m_pageFTP.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
 	m_pageCache.Move(tabRect.left, tabRect.top, tabRect.right-tabRect.left, tabRect.bottom-tabRect.top);
 
 	m_hPageConnection = m_pageConnection.GetHWND();
 	m_hPageAuthentication = m_pageAuthentication.GetHWND();
-	m_hPageTransfer= m_pageTransfer.GetHWND();
+	m_hPageTransfer = m_pageTransfer.GetHWND();
+	m_hPageFTP = m_pageFTP.GetHWND();
 	m_hPageCache = m_pageCache.GetHWND();
 
 	m_pageConnection.Show(true);
@@ -517,6 +531,8 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+
+	::SetWindowLongPtr(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
@@ -623,6 +639,8 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), enableSettings);
 
+		::EnableWindow(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), enableSettings);
+
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_LIST_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), enableSettings);
@@ -674,6 +692,8 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	m_currentProfile->GetDataPortRange(&min, &max);
 	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MIN, min, FALSE);
 	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MAX, max, FALSE);
+
+	::SetDlgItemTextA(m_hPageFTP, IDC_EDIT_LISTPARAMS, m_currentProfile->GetListParams());
 
 	LoadFiletypes();
 	LoadCacheMaps();

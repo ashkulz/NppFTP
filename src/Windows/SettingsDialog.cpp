@@ -108,12 +108,5 @@ int SettingsDialog::SaveMasterPassword() {
 	::GetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password, Encryption::KeySize);
 	Encryption::SetDefaultKey(password);
 
-
-	char * challenge = Encryption::Encrypt(NULL, -1, "NppFTP", -1);
-	OutMsg("challenge %s", challenge);
-	char * data = Encryption::Decrypt(NULL, -1, challenge, true);
-	OutMsg("data %s", data);
-
-
 	return 0;
 }

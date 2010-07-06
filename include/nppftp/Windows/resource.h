@@ -83,6 +83,8 @@
 	#define IDC_EDIT_BINARY				155
 	#define IDC_EDIT_PORT_MIN			186
 	#define IDC_EDIT_PORT_MAX			187
+#define IDD_DIALOG_PROFILESFTP			188
+	#define IDC_EDIT_LISTPARAMS			189
 #define IDD_DIALOG_PROFILESCACHE		156
 	#define IDC_LIST_CACHE				157
 	#define IDC_SPIN_CACHE				158
@@ -112,4 +114,4 @@
 	#define IDC_EDIT_PROMPTMAX			182
 	#define IDC_EDIT_ANSWERMAX			183
 	#define IDC_STATIC_MARKER			184
-//next id: 188
+//next id:								190

@@ -52,7 +52,7 @@ OutputWindow::OutputWindow() :
 	m_maxLines(500)
 {
 	m_style = 0;
-	m_exStyle = WS_EX_NOACTIVATE;
+	m_exStyle = 0;
 
 	_MainOutput = this;
 }
@@ -136,6 +136,12 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
 
 	switch(uMsg) {
+		case WM_SETFOCUS: {
+			//Why restore focus here? This window should never be able to get focus in the first place
+			HWND hPrev = (HWND)wParam;
+			if (hPrev != NULL)
+				::SetFocus(hPrev);
+			break; }
 		case WM_ERASEBKGND: {
 			HDC hDC = (HDC) wParam;
 			RECT rectClient;

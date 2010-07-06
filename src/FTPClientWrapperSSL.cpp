@@ -24,24 +24,31 @@
 
 FTPClientWrapperSSL::FTPClientWrapperSSL(const char * host, int port, const char * user, const char * password) :
 	FTPClientWrapper(Client_SSL, host, port, user, password),
-	m_mode(CUT_FTPClient::FTP)
+	m_mode(CUT_FTPClient::FTP),
+	m_ftpListParams(NULL)
 {
 	m_client.setsMode(m_mode);
 }
 
 FTPClientWrapperSSL::~FTPClientWrapperSSL()
 {
+	if (m_ftpListParams) {
+		SU::free(m_ftpListParams);
+		m_ftpListParams = NULL;
+	}
 }
 
 FTPClientWrapper* FTPClientWrapperSSL::Clone() {
 	FTPClientWrapperSSL* wrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
 	wrapper->SetMode(m_mode);
+	if (m_ftpListParams)
+		wrapper->m_ftpListParams = SU::strdup(m_ftpListParams);
 	wrapper->SetTimeout(m_timeout);
 	wrapper->SetProgressMonitor(m_progmon);
 	wrapper->SetCertificates(m_certificates);
 
-	wrapper->m_client.SetFireWallMode(wrapper->m_client.GetFireWallMode());
-	wrapper->m_client.SetTransferType(wrapper->m_client.GetTransferType());
+	wrapper->m_client.SetFireWallMode(m_client.GetFireWallMode());
+	wrapper->m_client.SetTransferType(m_client.GetTransferType());
 
 	return wrapper;
 }
@@ -107,7 +114,7 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 	if (retcode != UTE_SUCCESS)
 		return OnReturn(-1);
 
-	retcode = m_client.GetDirInfo();//path);
+	retcode = m_client.GetDirInfo(m_ftpListParams);//path);
 
 	//return to original directory
 	//commented out: Cwd is not used in NppFTP at the moment
@@ -266,14 +273,11 @@ int FTPClientWrapperSSL::ReceiveFile(const TCHAR * localfile, const char * ftpfi
 	if (res == -1)
 		return -1;
 
+	long size = 0;
 	m_client.SetCurrentTotal(-1);
-	FTPFile * files = NULL;
-	int count = GetDir(ftpfile, &files);
-	if (count > 0) {
-		long size = files[0].fileSize;
+	int sizeres = m_client.GetSize(ftpfile, &size);
+	if (sizeres == UTE_SUCCESS)
 		m_client.SetCurrentTotal(size);
-	}
-	ReleaseDir(files, count);
 
 	int retcode = m_client.ReceiveFile(ftpfile, localfile);
 
@@ -293,14 +297,11 @@ int FTPClientWrapperSSL::SendFile(HANDLE hFile, const char * ftpfile) {
 }
 
 int FTPClientWrapperSSL::ReceiveFile(HANDLE hFile, const char * ftpfile) {
+	long size = 0;
 	m_client.SetCurrentTotal(-1);
-	FTPFile * files = NULL;
-	int count = GetDir(ftpfile, &files);
-	if (count > 0) {
-		long size = files[0].fileSize;
+	int sizeres = m_client.GetSize(ftpfile, &size);
+	if (sizeres == UTE_SUCCESS)
 		m_client.SetCurrentTotal(size);
-	}
-	ReleaseDir(files, count);
 
 	HandleDataSource hds(hFile, false, true);
 	int retcode = m_client.ReceiveFile(hds, ftpfile);
@@ -391,6 +392,13 @@ int FTPClientWrapperSSL::SetTransferMode(Transfer_Mode tMode) {
 int FTPClientWrapperSSL::SetPortRange(int min, int max) {
 	m_client.SetDataPortRange(min, max);
 
+	return 0;
+}
+
+int FTPClientWrapperSSL::SetListParams(const char * params) {
+	if (m_ftpListParams)
+		SU::free(m_ftpListParams);
+	m_ftpListParams = SU::strdup(params);
 	return 0;
 }
 
@@ -499,7 +507,7 @@ int FtpSSLWrapper::GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen) {
 			break;
 	}
 
-	ClearResponseList();
+	//ClearResponseList();
 
 	return res;
 }
@@ -604,6 +612,11 @@ int FtpSSLWrapper::OnSSLCertificate(const SSL * ssl, const X509* certificate, in
 		}
 	}
 	return UTE_SUCCESS;
+}
+
+int FtpSSLWrapper::OnError(int error) {
+	ClearResponseList();
+	return CUT_FTPClient::OnError(error);
 }
 
 ////////////////////////

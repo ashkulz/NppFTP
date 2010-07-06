@@ -1385,6 +1385,31 @@ int CUT_FTPClient::RmDir(LPCSTR directory){
         return OnError(UTE_SUCCESS);
     return OnError(UTE_SVR_REQUEST_DENIED);
 }
+
+int CUT_FTPClient::GetSize(LPCSTR path, long * size) {
+	int     rt;
+
+	_snprintf(m_szBuf,sizeof(m_szBuf)-1,"SIZE %s\r\n",path);
+	Send(m_szBuf);
+	//check for a return of 213
+    rt = GetResponseCode(this);
+    if(rt == 0)
+        return OnError(UTE_NO_RESPONSE);   //no response
+    else if(rt == 213) {
+    	//Response is a single line with "213 SIZE", so can safely substring
+    	LPCSTR response = GetMultiLineResponse(0);
+    	response += 4;	//skip "213 "
+    	*size = atol(response);
+
+        return OnError(UTE_SUCCESS);
+    }
+    return OnError(UTE_SVR_NOT_SUPPORTED);
+}
+
+#if defined _UNICODE
+int CUT_FTPClient::GetSize(LPCWSTR path, long * size) {
+	return GetSize(AC(path), size);}
+#endif
 /***************************************
 NoOp
     Performs a No-op operation. This is

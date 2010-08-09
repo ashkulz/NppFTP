@@ -157,6 +157,43 @@ int FTPCache::GetLocalPathFromExternal(const char * externalpath, TCHAR * localb
 	return m_cacheParent->GetLocalPathFromExternal(externalpath, localbuf, localsize);
 }
 
+int FTPCache::ClearCurrentCache(bool permanent) {
+	SHFILEOPSTRUCT shfop;
+	TCHAR * dirPath = new TCHAR[MAX_PATH+1];
+
+	ZeroMemory(&shfop, sizeof(shfop));
+	shfop.hwnd = _MainOutputWindow;
+	shfop.wFunc = FO_DELETE;
+	shfop.pFrom = dirPath;
+	shfop.pTo = NULL;
+	shfop.fFlags = FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR | FOF_NOERRORUI | FOF_SILENT;// | FOF_WANTNUKEWARNING;
+	if (!permanent) {
+		shfop.fFlags |= FOF_ALLOWUNDO;	//use recycle bin
+	}
+	shfop.lpszProgressTitle = NULL;
+
+
+
+	for(size_t i = 0; i < m_vCachePaths.size(); i++) {
+		OutMsg("[Cache] Clearing cache in '%T'", m_vCachePaths[i].localpathExpanded);
+		lstrcpy(dirPath, m_vCachePaths[i].localpathExpanded);
+		int len = lstrlen(dirPath);
+		dirPath[len+1] = 0;
+		int res = SHFileOperation(&shfop);
+		if (res != 0) {
+			//Error may also be triggered if cache is empty, so stay silent
+			//OutErr("Failure clearing cache: %d", res);
+		}
+	}
+
+	delete [] dirPath;
+
+	if (m_cacheParent)
+		return m_cacheParent->ClearCurrentCache(permanent);
+
+	return 0;
+}
+
 TiXmlElement* FTPCache::SaveCache(const FTPCache * cache) {
 	TiXmlElement * cacheElem = new TiXmlElement(FTPCache::CacheElem);
 

@@ -49,7 +49,8 @@ OutputWindow::OutputWindow() :
 	m_winThread(0),
 	m_hContextMenu(NULL),
 	m_hScintilla(NULL),
-	m_maxLines(500)
+	m_maxLines(500),
+	m_hNotify(NULL)
 {
 	m_style = 0;
 	m_exStyle = 0;
@@ -60,7 +61,7 @@ OutputWindow::OutputWindow() :
 OutputWindow::~OutputWindow() {
 }
 
-int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
+int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand, HWND hNotify) {
 	SetTitle(TEXT("NppFTP"));
 	SetInfo(TEXT("Output"));
 	SetLocation(DWS_DF_CONT_BOTTOM);
@@ -70,6 +71,8 @@ int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 	int res = DockableWindow::Create(hParent, hNpp, MenuID, MenuCommand);
 	if (res == -1)
 		return -1;
+
+	m_hNotify = hNotify;
 
 	m_hScintilla = ::CreateWindowEx(WS_EX_CLIENTEDGE,
 									TEXT("Scintilla"), TEXT(""),
@@ -97,6 +100,15 @@ int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 int OutputWindow::Destroy() {
 	DestroyWindow(m_hScintilla);
 	return DockableWindow::Destroy();
+}
+
+int OutputWindow::Show(bool show) {
+	int res = DockableWindow::Show(show);
+
+	if (m_hNotify != NULL)
+		::SendMessage(m_hNotify, WM_OUTPUTSHOWN, (WPARAM)show?TRUE:FALSE, 0);
+
+	return res;
 }
 
 int OutputWindow::OnSize(int newWidth, int newHeight) {
@@ -365,11 +377,19 @@ int OutputWindow::AddMessage(const TCHAR * message, Output_Type type, time_t tti
 
 	delete [] timeString;
 
-	if (curPos == lastPos) {
+	if (curPos == lastPos || curPos == lastPos - 2) {	//if at last line, scroll the caret
 		lastPos = ::SendMessage(m_hScintilla, SCI_GETTEXTLENGTH, 0, 0);
 		::SendMessage(m_hScintilla, SCI_SETANCHOR, lastPos, 0);
 		::SendMessage(m_hScintilla, SCI_SETCURRENTPOS, lastPos, 0);
-		::SendMessage(m_hScintilla, SCI_SCROLLCARET, 0, 0);
+		//::SendMessage(m_hScintilla, SCI_SCROLLCARET, 0, 0);
+	}
+
+	//if the last line is in view, scroll the view
+	int visible = ::SendMessage(m_hScintilla, SCI_LINESONSCREEN, 0, 0);
+	int firstvisible = ::SendMessage(m_hScintilla, SCI_GETFIRSTVISIBLELINE, 0, 0);
+	int lastline = lineCount-1;	//ignore very last line
+	if ((firstvisible+visible+1) >= lastline) {
+		::SendMessage(m_hScintilla, SCI_LINESCROLL, 0, (LPARAM)1);	//scroll down one line, as one line was added
 	}
 
 	SU::FreeChar(utf8Buffer);

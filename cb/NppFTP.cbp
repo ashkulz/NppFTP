@@ -144,6 +144,7 @@
 		<Unit filename="..\include\nppftp\FTPProfile.h" />
 		<Unit filename="..\include\nppftp\FTPQueue.h" />
 		<Unit filename="..\include\nppftp\FTPSession.h" />
+		<Unit filename="..\include\nppftp\FTPSettings.h" />
 		<Unit filename="..\include\nppftp\FileObject.h" />
 		<Unit filename="..\include\nppftp\Monitor.h" />
 		<Unit filename="..\include\nppftp\NppFTP.h" />
@@ -193,6 +194,7 @@
 		<Unit filename="..\src\FTPProfile.cpp" />
 		<Unit filename="..\src\FTPQueue.cpp" />
 		<Unit filename="..\src\FTPSession.cpp" />
+		<Unit filename="..\src\FTPSettings.cpp" />
 		<Unit filename="..\src\FTPTest.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>

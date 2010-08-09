@@ -278,7 +278,7 @@ public:
 #endif // _UNICODE
 
     // Checks to see if a connection is still alive
-    BOOL IsConnected();
+    virtual BOOL IsConnected();
 
     // Access functions
     SOCKET GetSocket() const;

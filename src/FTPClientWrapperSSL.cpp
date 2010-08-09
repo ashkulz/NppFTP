@@ -341,7 +341,7 @@ int FTPClientWrapperSSL::OnReturn(int ret) {
 	ret = FTPClientWrapper::OnReturn(ret);
 	m_client.SetAborted(FALSE);
 
-	m_client.ClearResponseList();
+	//m_client.ClearResponseList();
 
 	return ret;
 }
@@ -484,11 +484,6 @@ int FtpSSLWrapper::SetCurrentTotal(long total) {
 	return 0;
 }
 
-int FtpSSLWrapper::ClearResponseList() {
-	m_listResponse.ClearList();
-	return 0;
-}
-
 int FtpSSLWrapper::SetCertificates(vX509 * x509Vect) {
 	m_certificates = x509Vect;
 	return 0;
@@ -497,17 +492,19 @@ int FtpSSLWrapper::SetCertificates(vX509 * x509Vect) {
 int FtpSSLWrapper::GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen) {
 	int res = CUT_FTPClient::GetResponseCode(ws, string, maxlen);
 
+	if (res == 0) {
+		//OutErr("[FTP] No response from server");
+		return res;
+	}
+
 	int index = 0;
-	for(;;){
+	for(;; index++){
 		const char * pbuf = GetMultiLineResponse(index);
-		index++;
 		if(pbuf != NULL)
 			OutClnt("%s", pbuf);
 		else
 			break;
 	}
-
-	//ClearResponseList();
 
 	return res;
 }
@@ -614,10 +611,35 @@ int FtpSSLWrapper::OnSSLCertificate(const SSL * ssl, const X509* certificate, in
 	return UTE_SUCCESS;
 }
 
-int FtpSSLWrapper::OnError(int error) {
-	ClearResponseList();
-	return CUT_FTPClient::OnError(error);
+BOOL FtpSSLWrapper::IsConnected() {
+	if (IsDataWaiting())
+		PeekResponseCode(this);
+
+	BOOL connected = CUT_WSClient::IsConnected();
+	if (connected == FALSE)
+		return FALSE;
+
+	//also test if sending is possible
+
+    fd_set writeSet;
+    struct timeval tv;
+
+    tv.tv_sec = 0;      // do not block - for polling
+    tv.tv_usec = 0;
+
+    FD_ZERO(&writeSet);  // always reinit
+
+    FD_SET(m_socket,&writeSet);
+
+	int rt1 = select(-1,NULL,&writeSet,NULL,&tv);
+
+    if(rt1 == SOCKET_ERROR || rt1 == 0) {
+		return FALSE;
+    }
+
+    return TRUE;
 }
+
 
 ////////////////////////
 

@@ -61,6 +61,7 @@
 	#define IDC_EDIT_PORT				133
 	#define IDC_EDIT_USERNAME			134
 	#define IDC_EDIT_PASSWORD			135
+	#define IDC_CHECK_ASKPASSWORD		192
 	#define IDC_EDIT_TIMEOUT			136
 	#define IDC_EDIT_INITDIR			137
 	#define IDC_COMBO_SECURITY			138
@@ -98,6 +99,8 @@
 #define IDD_DIALOG_GLOBAL				166
 	#define IDC_EDIT_CACHE				167
 	#define IDC_EDIT_MASTERPASS			168
+	#define IDC_CHECK_CLEARCACHE		190
+	#define IDC_CHECK_CLEARNORECYCLE	191
 	//#define IDC_BUTTON_CLOSE			169
 #define IDD_DIALOG_ABOUT				170
 	#define IDC_STATIC_SSHVERSION		171
@@ -114,4 +117,4 @@
 	#define IDC_EDIT_PROMPTMAX			182
 	#define IDC_EDIT_ANSWERMAX			183
 	#define IDC_STATIC_MARKER			184
-//next id:								190
+//next id:								193

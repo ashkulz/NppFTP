@@ -1951,7 +1951,11 @@ BOOL CUT_WSClient::IsConnected(){
         switch(error) {
         case WSAEWOULDBLOCK:
             SetBlockingMode(CUT_BLOCKING);  // back to blocking mode
-            rt2 = 0;            // no data - set rt2 to 0 and continue
+            //NppFTP: settings this to 0 will cause a disconnected state to be reported
+            //even if the connection is still alive and waiting for data
+            //set to 1 instead
+            rt2 = 1;
+            //rt2 = 0;            // no data - set rt2 to 0 and continue
                                 // Alternative - use a small
                                 // timeout value in tv ....
             break;

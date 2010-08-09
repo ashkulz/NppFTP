@@ -23,7 +23,7 @@
 
 FTPSession::FTPSession() :
 	m_currentProfile(NULL),
-	m_ftpGlobalCache(NULL),
+	m_ftpSettings(NULL),
 
 	m_mainWrapper(NULL),
 	m_transferWrapper(NULL),
@@ -50,12 +50,12 @@ FTPSession::~FTPSession() {
 	Clear();
 }
 
-int FTPSession::Init(FTPWindow * ftpWindow, FTPCache * cache) {
+int FTPSession::Init(FTPWindow * ftpWindow, FTPSettings * ftpSettings) {
 	if (m_isInit)
 		return -1;
 
 	m_ftpWindow = ftpWindow;
-	m_ftpGlobalCache = cache;
+	m_ftpSettings = ftpSettings;
 	m_hNotify = m_ftpWindow->GetHWND();
 	m_isInit = true;
 
@@ -86,9 +86,15 @@ int FTPSession::StartSession(FTPProfile * sessionProfile) {
 	m_currentProfile = sessionProfile;
 	m_currentProfile->AddRef();
 
-	m_ftpGlobalCache->SetEnvironment(m_currentProfile->GetHostname(), m_currentProfile->GetUsername());
+	m_ftpSettings->GetGlobalCache()->SetEnvironment(m_currentProfile->GetHostname(), m_currentProfile->GetUsername());
 
 	m_mainWrapper = m_currentProfile->CreateWrapper();
+	if (m_mainWrapper == NULL) {
+		m_currentProfile->Release();
+		m_currentProfile = NULL;
+		return -1;
+	}
+
 	m_mainWrapper->SetCertificates(m_certificates);
 	m_transferWrapper = m_mainWrapper->Clone();
 
@@ -438,23 +444,27 @@ int FTPSession::Clear() {
 	QueueDisconnect * opdisc = new QueueDisconnect(m_hNotify);
 
 	if (m_transferWrapper) {
-		if (m_transferWrapper->IsConnected()) {
+		//Always perform disconnect operation, if if no connection present
+		//Allows for cleanup
+		//if (m_transferWrapper->IsConnected()) {
 			opdisc->SetClient(m_transferWrapper);
 			opdisc->SendNotification(QueueOperation::QueueEventStart);
 			opdisc->Perform();
 			opdisc->SendNotification(QueueOperation::QueueEventEnd);
-		}
+		//}
 		delete m_transferWrapper;
 		m_transferWrapper = NULL;
 	}
 
 	if (m_mainWrapper) {
-		if (m_mainWrapper->IsConnected()) {
+		//Always perform disconnect operation, if if no connection present
+		//Allows for cleanup
+		//if (m_mainWrapper->IsConnected()) {
 			opdisc->SetClient(m_mainWrapper);
 			opdisc->SendNotification(QueueOperation::QueueEventStart);
 			opdisc->Perform();
 			opdisc->SendNotification(QueueOperation::QueueEventEnd);
-		}
+		//}
 		delete m_mainWrapper;
 		m_mainWrapper = NULL;
 	}

@@ -25,6 +25,7 @@
 #include "Treeview.h"
 #include "QueueWindow.h"
 #include "FTPProfile.h"
+#include "FTPSettings.h"
 #include "QueueOperation.h"
 #include "OutputWindow.h"
 #include "SettingsDialog.h"
@@ -48,9 +49,7 @@ public:
 	virtual int				Show(bool show);
 	virtual int				Focus();
 
-	virtual int				SetSession(FTPSession * session);
-	virtual int				SetProfilesVector(vProfile * vProfiles);
-	virtual int				SetGlobalProps(FTPCache * globalCache);
+	virtual int				Init(FTPSession * session, vProfile * vProfiles, FTPSettings * ftpSettings);
 
 	virtual int				OnSize(int newWidth, int newHeight);
 	virtual int				OnProfileChange();
@@ -125,7 +124,7 @@ protected:
 
 	FTPSession*				m_ftpSession;
 	vProfile*				m_vProfiles;
-	FTPCache*				m_globalCache;
+	FTPSettings*			m_ftpSettings;
 
 	bool					m_connecting;
 	bool					m_busy;

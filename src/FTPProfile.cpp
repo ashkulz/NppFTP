@@ -20,6 +20,7 @@
 #include "FTPProfile.h"
 
 #include "Encryption.h"
+#include "InputDialog.h"
 #include <algorithm>
 
 const char * FTPProfile::ProfilesElement = "Profiles";
@@ -31,6 +32,7 @@ FTPProfile::FTPProfile() :
 	m_port(0),
 	m_username(NULL),
 	m_password(NULL),
+	m_askPassword(false),
 	m_timeout(30),
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
@@ -154,9 +156,23 @@ FTPProfile::~FTPProfile() {
 
 FTPClientWrapper* FTPProfile::CreateWrapper() {
 	FTPClientWrapper * wrapper = NULL;
+
+	char * password = NULL;
+	if (m_askPassword) {
+		InputDialog passDialog;
+		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter password"), TEXT("Please enter the password to connect to the server"), TEXT(""));
+		if (ret == 1) {
+			password = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
+		} else {
+			return NULL;
+		}
+	} else {
+		password = SU::strdup(m_password);
+	}
+
 	switch(m_securityMode) {
 		case Mode_SFTP: {
-			FTPClientWrapperSSH * SSHwrapper = new FTPClientWrapperSSH(m_hostname, m_port, m_username, m_password);
+			FTPClientWrapperSSH * SSHwrapper = new FTPClientWrapperSSH(m_hostname, m_port, m_username, password);
 			wrapper = SSHwrapper;
 			SSHwrapper->SetKeyFile(m_keyFile);
 			SSHwrapper->SetPassphrase(m_passphrase);
@@ -166,7 +182,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		case Mode_FTP:
 		case Mode_FTPS:
 		case Mode_FTPES: {
-			FTPClientWrapperSSL * SSLwrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, m_password);
+			FTPClientWrapperSSL * SSLwrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, password);
 			wrapper = SSLwrapper;
 			switch(m_securityMode) {
 				case Mode_FTP:
@@ -186,12 +202,14 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 			break; }
 		case Mode_SecurityMax:
 		default:
+			SU::free(password);
 			return NULL;
 			break;
 
 	}
 
 	wrapper->SetTimeout(m_timeout);
+	SU::free(password);
 
 	return wrapper;
 }
@@ -246,6 +264,15 @@ const char* FTPProfile::GetPassword() const {
 int FTPProfile::SetPassword(const char * password) {
 	SU::free(m_password);
 	m_password = SU::strdup(password);
+	return 0;
+}
+
+bool FTPProfile::GetAskPassword() const {
+	return m_askPassword;
+}
+
+int FTPProfile::SetAskPassword(bool askPassword) {
+	m_askPassword = askPassword;
 	return 0;
 }
 
@@ -570,6 +597,8 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			Encryption::FreeData(decryptpass);
 		}
 
+		profileElem->Attribute("askPassword", (int*)(&profile->m_askPassword));
+
 		profileElem->Attribute("timeout", &profile->m_timeout);
 
 		//TODO: this is rather risky casting, check if the compiler accepts it
@@ -659,9 +688,11 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	profileElem->SetAttribute("port", m_port);
 	profileElem->SetAttribute("username", m_username);
 
-	char * encryptPass = Encryption::Encrypt(NULL, -1, m_password, -1);
+	char * encryptPass = Encryption::Encrypt(NULL, -1, m_askPassword?"":m_password, -1);	//when asking for password, do not store the password
 	profileElem->SetAttribute("password", encryptPass);
 	Encryption::FreeData(encryptPass);
+
+	profileElem->SetAttribute("askPassword", m_askPassword);
 
 	profileElem->SetAttribute("timeout", m_timeout);
 

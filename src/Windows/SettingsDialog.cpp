@@ -25,25 +25,25 @@
 
 SettingsDialog::SettingsDialog() :
 	Dialog(IDD_DIALOG_GLOBAL),
-	m_globalCache(NULL)
+	m_ftpSettings(NULL)
 {
 }
 
 SettingsDialog::~SettingsDialog() {
 }
 
-int SettingsDialog::Create(HWND hParent, FTPCache * globalCache) {
-	m_globalCache = globalCache;
+int SettingsDialog::Create(HWND hParent, FTPSettings * ftpSettings) {
+	m_ftpSettings = ftpSettings;
+
 	return Dialog::Create(hParent, true, NULL);
 }
 
 INT_PTR SettingsDialog::OnInitDialog() {
-	const PathMap & pathmap = m_globalCache->GetPathMap(0);
+	const TCHAR * cachePath = m_ftpSettings->GetGlobalCachePath();
 
 	Edit_LimitText(::GetDlgItem(m_hwnd, IDC_EDIT_MASTERPASS), Encryption::KeySize);
 
-	::SetDlgItemText(m_hwnd, IDC_EDIT_CACHE, pathmap.localpath);
-
+	::SetDlgItemText(m_hwnd, IDC_EDIT_CACHE, cachePath);
 
 	if (!Encryption::IsDefaultKey()) {
 		char password[Encryption::KeySize+1];
@@ -51,6 +51,10 @@ INT_PTR SettingsDialog::OnInitDialog() {
 		password[Encryption::KeySize] = 0;
 		::SetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password);
 	}
+
+	Button_SetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARCACHE), (m_ftpSettings->GetClearCache())?TRUE:FALSE);
+	Button_SetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE), (m_ftpSettings->GetClearCachePermanent())?TRUE:FALSE);
+	::EnableWindow( ::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE), (m_ftpSettings->GetClearCache()) );
 
 	return Dialog::OnInitDialog();
 }
@@ -76,7 +80,14 @@ INT_PTR SettingsDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 		case IDC_BUTTON_CLOSE: {
 			SaveGlobalPath();
 			SaveMasterPassword();
+			SaveClearCache();
 			EndDialog(m_hwnd, 0);
+			break; }
+		case IDC_CHECK_CLEARCACHE: {
+			if (notifCode == BN_CLICKED) {
+				LRESULT checked = Button_GetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARCACHE));
+				::EnableWindow( ::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE), (checked == BST_CHECKED) );
+			}
 			break; }
 		default: {
 			return Dialog::OnCommand(ctrlId, notifCode, idHwnd);
@@ -94,11 +105,7 @@ int SettingsDialog::SaveGlobalPath() {
 	TCHAR TTextBuffer[MAX_PATH];
 	::GetDlgItemText(m_hwnd, IDC_EDIT_CACHE, TTextBuffer, MAX_PATH);
 
-	const PathMap & pathmaporig = m_globalCache->GetPathMap(0);
-	PathMap pathnew;
-	pathnew.localpath = SU::DupString(TTextBuffer);
-	pathnew.externalpath = SU::strdup(pathmaporig.externalpath);
-	m_globalCache->SetPathMap(pathnew, 0);
+	m_ftpSettings->SetGlobalCachePath(TTextBuffer);
 
 	return 0;
 }
@@ -110,3 +117,13 @@ int SettingsDialog::SaveMasterPassword() {
 
 	return 0;
 }
+
+int SettingsDialog::SaveClearCache() {
+	LRESULT checked = Button_GetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARCACHE));
+	m_ftpSettings->SetClearCache(checked == BST_CHECKED);
+	checked = Button_GetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE));
+	m_ftpSettings->SetClearCachePermanent(checked == BST_CHECKED);
+
+	return 0;
+}
+

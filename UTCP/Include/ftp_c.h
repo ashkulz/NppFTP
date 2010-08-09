@@ -42,6 +42,7 @@ CUT_FTPClient
 	Added SSL secure functionality
 	Make certain helper functions virtual
 	GetDirInfo accepts path parameter
+	Add PeekResponseCode
 */
 
 #ifndef  __CUT_FTP_CLIENT
@@ -154,6 +155,8 @@ protected: // changed to protected to allow for inheritance
 	CUT_StringList		m_listResponse;				//multi-line response string list
 	CUT_DIRINFOA		*m_DirInfo;					//directory information list
 	int					m_nDirInfoCount;			//number of directory items in the list
+	int					m_lastResponseCode;			//last response code received
+	bool				m_cachedResponse;			//If true, the last response was cached and no receive has to be performed
 
 	char				m_szBuf[MAX_PATH+1];			//general purpose buffer - reduce,reuse,recycle
 
@@ -168,6 +171,9 @@ protected: // changed to protected to allow for inheritance
 
 	// Get  the response code received from the server for the last comnmand issued along with the server response octet string
 	virtual int		GetResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
+	// Same as GetResponseCode, but the next call to GetResponseCode will return the same as PeekResponseCode
+	// Not the same as winsock peek!
+	virtual int		PeekResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
 
 	// Clear the current list of directory information
 	virtual int		ClearDirInfo();

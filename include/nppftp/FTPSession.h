@@ -19,6 +19,7 @@
 #ifndef FTPSESSION_H
 #define FTPSESSION_H
 
+#include "FTPSettings.h"
 #include "FTPProfile.h"
 #include "FTPCache.h"
 #include "FTPQueue.h"
@@ -31,7 +32,7 @@ public:
 							FTPSession();
 							~FTPSession();
 
-	int						Init(FTPWindow * ftpWindow, FTPCache * cache);
+	int						Init(FTPWindow * ftpWindow, FTPSettings * ftpSettings);
 	int						Deinit();
 
 	int						SetCertificates(vX509 * x509Vect);
@@ -68,7 +69,7 @@ private:
 	int						Clear();
 
 	FTPProfile*				m_currentProfile;
-	FTPCache*				m_ftpGlobalCache;
+	FTPSettings*			m_ftpSettings;
 
 	FTPClientWrapper*		m_mainWrapper;
 	FTPClientWrapper*		m_transferWrapper;

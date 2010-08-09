@@ -1,2 +1,2 @@
-#define IDT_VERSION_TEXT	"0.2.2 ANSI"
-#define IDT_VERSION_NUM		0,2,2,0
+#define IDT_VERSION_TEXT	"0.23 ANSI"
+#define IDT_VERSION_NUM		0,2,3,0

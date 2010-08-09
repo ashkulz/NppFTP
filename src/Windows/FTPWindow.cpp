@@ -41,7 +41,7 @@ FTPWindow::FTPWindow() :
 	m_localFileExists(false),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
-	m_globalCache(NULL),
+	m_ftpSettings(NULL),
 	m_connecting(false),
 	m_busy(false),
 	m_cancelOperation(NULL),
@@ -95,7 +95,7 @@ int FTPWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 		return -1;
 	}
 
-	res = m_outputWindow.Create(hNpp, hNpp, 99, -1);	//99, pretty sure to be out of bounds
+	res = m_outputWindow.Create(hNpp, hNpp, 99, -1, m_hwnd);	//99, pretty sure to be out of bounds
 	if (res != 0) {
 		Destroy();
 		return -1;
@@ -156,7 +156,12 @@ int FTPWindow::Show(bool show) {
 			m_outputWindow.Show(true);
 		}
 	} else {
-		m_outputWindow.Show(false);
+		//hiding output window causes m_outputShown to be reset, so set it back to true again
+		if (m_outputShown) {
+			m_outputWindow.Show(false);
+			m_outputShown = true;
+			m_ftpSettings->SetOutputShown(true);
+		}
 	}
 
 	//Focus();
@@ -168,21 +173,15 @@ int FTPWindow::Focus() {
 	return m_treeview.Focus();
 }
 
-int FTPWindow::SetSession(FTPSession * ftpSession) {
-	m_ftpSession = ftpSession;
-	return 0;
-}
-
-int FTPWindow::SetProfilesVector(vProfile * vProfiles) {
+int FTPWindow::Init(FTPSession * session, vProfile * vProfiles, FTPSettings * ftpSettings) {
+	m_ftpSession = session;
 	m_vProfiles = vProfiles;
+	m_ftpSettings = ftpSettings;
 
 	OnProfileChange();
+	m_splitter.SetRatio(m_ftpSettings->GetSplitRatio());
+	m_outputShown = m_ftpSettings->GetOutputShown();
 
-	return 0;
-}
-
-int FTPWindow::SetGlobalProps(FTPCache * globalCache) {
-	m_globalCache = globalCache;
 	return 0;
 }
 
@@ -296,6 +295,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			break; }
 		case WM_LBUTTONUP: {
 			m_splitter.OnButtonUp();
+			m_ftpSettings->SetSplitRatio(m_splitter.GetRatio());
 			break; }
 		case WM_MOUSEMOVE: {
 			if (wParam & MK_LBUTTON) {
@@ -425,18 +425,23 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					result = TRUE;
 					break; }
 				case IDM_POPUP_SETTINGSGENERAL: {
-					m_settingsDialog.Create(m_hwnd, m_globalCache);
+					m_settingsDialog.Create(m_hwnd, m_ftpSettings);
 					result = TRUE;
 					break; }
 				case IDM_POPUP_SETTINGSPROFILE: {
-					m_profilesDialog.Create(m_hwnd, this, m_vProfiles, m_globalCache);
+					m_profilesDialog.Create(m_hwnd, this, m_vProfiles, m_ftpSettings->GetGlobalCache());
 					result = TRUE;
 					break; }
 				default: {
 					unsigned int value = LOWORD(wParam);
 					if (!m_busy && value >= IDM_POPUP_PROFILE_FIRST && value <= IDM_POPUP_PROFILE_MAX) {
 						FTPProfile * profile = m_vProfiles->at(value - IDM_POPUP_PROFILE_FIRST);
-						m_ftpSession->StartSession(profile);
+						int ret = m_ftpSession->StartSession(profile);
+						if (ret == -1) {
+							OutErr("[NppFTP] Cannot start FTP session");
+							result = TRUE;
+							break;
+						}
 						m_ftpSession->Connect();
 						result = TRUE;
 					} else {
@@ -639,6 +644,17 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 			::TrackPopupMenu(hContext, TPM_LEFTALIGN, menuPos.x, menuPos.y, 0, m_hwnd, NULL);
 			result = TRUE;
+			break; }
+		case WM_OUTPUTSHOWN: {
+			if (wParam == TRUE) {
+				m_outputShown = true;
+				m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_MESSAGES, TRUE);
+				m_ftpSettings->SetOutputShown(true);
+			} else {
+				m_outputShown = false;
+				m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_MESSAGES, FALSE);
+				m_ftpSettings->SetOutputShown(false);
+			}
 			break; }
 		case NotifyMessageStart:
 		case NotifyMessageEnd: {
@@ -1123,6 +1139,10 @@ int FTPWindow::OnConnect(int code) {
 int FTPWindow::OnDisconnect(int /*code*/) {
 	m_currentSelection = NULL;
 	m_treeview.ClearAll();
+
+	if (m_ftpSettings->GetClearCache()) {
+		m_ftpSession->GetCurrentProfile()->GetCache()->ClearCurrentCache( m_ftpSettings->GetClearCachePermanent() );
+	}
 
 	SetInfo(TEXT("Disconnected"));
 

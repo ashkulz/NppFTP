@@ -28,9 +28,10 @@ public:
 							OutputWindow();
 	virtual					~OutputWindow();
 
-	virtual int				Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand);
+	virtual int				Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand, HWND hNotify);
 	virtual int				Destroy();
 
+	virtual int				Show(bool show);
 	virtual int				OnSize(int newWidth, int newHeight) ;
 
 	static int				RegisterClass();
@@ -47,6 +48,7 @@ protected:
 	HMENU					m_hContextMenu;
 	HWND					m_hScintilla;
 	int						m_maxLines;
+	HWND					m_hNotify;
 
 	static const TCHAR * OUTWINDOWCLASS;
 };

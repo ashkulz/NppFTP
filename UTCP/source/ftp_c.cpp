@@ -33,6 +33,7 @@ Modification made April 2010:
 -Add SetDataSecure
 -Rewritten FTP secure handshake
 -GetMultiLineResponse was made virtual
+-Clear response list when calling GetResponseCode
 */
 
 #ifdef _WINSOCK_2_0_
@@ -110,6 +111,8 @@ CUT_FTPClient::CUT_FTPClient() :
     m_nFirewallMode(FALSE),             // No firewall mode by default
     m_DirInfo(NULL),                    // Initialize DirInfo pointer
     m_nDirInfoCount(0),                 // Number of DirInfo items - 0
+    m_lastResponseCode(0),
+    m_cachedResponse(false),
 
     m_sMode(FTP),
     m_dataSecLevel(0),					//Default is clear data
@@ -174,6 +177,8 @@ int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LP
     // clear response list
     m_listResponse.ClearList();
     m_szResponse [0]= NULL;
+    m_lastResponseCode = 0;
+    m_cachedResponse = false;
 
 	if (m_sMode != FTP) {
 		if (m_sMode == FTPS) {	//in case of implicit SSL, negatiate security version with v23
@@ -2489,13 +2494,40 @@ RETURN
 ****************************************/
 int CUT_FTPClient::GetResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
 
+	if (m_cachedResponse) {
+		m_cachedResponse = false;
+
+		//copy the rest of the data
+		const char * pbuf = GetMultiLineResponse(0);
+		if(string != NULL && pbuf != NULL) {
+			maxlen--;
+			strncpy(string, &pbuf[4], maxlen);
+			string[maxlen - 1]  =0;
+			}
+
+		return m_lastResponseCode;
+	}
+
+	int code = PeekResponseCode(ws, string, maxlen);
+	m_cachedResponse = false;
+
+	return code;
+}
+
+int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
     char c;
     int  code;
-    int  once = TRUE;
+    //int  once = TRUE;
     char mlCode[5];
 
-    if(ws->ReceiveLine(m_szBuf,sizeof(m_szBuf),m_wsData.GetReceiveTimeOut ()/1000) <= 0)
+	m_cachedResponse = true;
+
+    m_listResponse.ClearList();
+
+    if(ws->ReceiveLine(m_szBuf,sizeof(m_szBuf),m_wsData.GetReceiveTimeOut ()/1000) <= 0) {
+    	m_lastResponseCode = 0;
         return 0;  //no response
+    }
 
     CUT_StrMethods::RemoveCRLF(m_szBuf);
 
@@ -2515,12 +2547,12 @@ int CUT_FTPClient::GetResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
         while(strstr(m_szBuf,mlCode) != m_szBuf) {
 
             //clear the multi-line response list the first time through
-            if(once) {
+            /*if(once) {
                 once = FALSE;
 
                 // clear response list
                 m_listResponse.ClearList();
-                }
+                }*/
 
             m_listResponse.AddString(m_szBuf);
 
@@ -2545,6 +2577,7 @@ int CUT_FTPClient::GetResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
         string[maxlen - 1]  =0;
         }
 
+	m_lastResponseCode = code;
     return code;
 }
 

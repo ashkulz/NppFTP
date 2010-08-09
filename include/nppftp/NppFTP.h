@@ -45,17 +45,15 @@ private:
 	int						LoadSettings();		//-1 error, 0 success, 1 unable to load
 	int						SaveSettings();
 
+	FTPSettings*			m_ftpSettings;
 	FTPSession*				m_ftpSession;
 	FTPWindow*				m_ftpWindow;
-
-	bool					m_outputShown;
-	double					m_splitRatio;
 
 	vProfile				m_profiles;
 	bool					m_activeSession;
 
 	TCHAR*					m_configStore;
-	FTPCache				m_globalCache;
+
 
 	NppData					m_nppData;
 

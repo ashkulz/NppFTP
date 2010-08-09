@@ -44,9 +44,9 @@ public:
 	virtual int				SetAborted(BOOL aborted);
 	virtual int				SetCurrentTotal(long total);
 
-	virtual int				ClearResponseList();
-
 	virtual int				SetCertificates(vX509 * x509Vect);
+
+	virtual BOOL			IsConnected();
 protected:
 	virtual int				GetResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
 
@@ -59,8 +59,6 @@ protected:
 
 	virtual int				OnLoadCertificates(SSL_CTX * ctx);
 	virtual int				OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult);
-
-	virtual int				OnError(int error);
 
 	BOOL					m_isAborted;
 	ProgressMonitor*		m_progmon;

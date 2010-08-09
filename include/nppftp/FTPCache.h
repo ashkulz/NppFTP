@@ -49,6 +49,8 @@ public:
 	virtual int				GetExternalPathFromLocal(const TCHAR * localpath, char * extbuf, int extsize) const;
 	virtual int				GetLocalPathFromExternal(const char * externalpath, TCHAR * localbuf, int localsize) const;
 
+	virtual int				ClearCurrentCache(bool permanent);
+
 	static TiXmlElement*	SaveCache(const FTPCache * cache);
 	static FTPCache*		LoadCache(const TiXmlElement * cacheElem);
 private:

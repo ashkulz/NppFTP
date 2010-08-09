@@ -51,6 +51,8 @@ public:
 	int						SetUsername(const char * username);
 	const char*				GetPassword() const;
 	int						SetPassword(const char * password);
+	bool					GetAskPassword() const;
+	int						SetAskPassword(bool askPassword);
 
 	int						GetTimeout() const;
 	int						SetTimeout(int timeout);
@@ -121,6 +123,7 @@ private:
 	int						m_port;
 	char*					m_username;
 	char*					m_password;
+	bool					m_askPassword;
 
 	int						m_timeout;
 

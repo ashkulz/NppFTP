@@ -20,14 +20,14 @@
 #define SETTINGSDIALOG_H
 
 #include "Dialog.h"
-#include "FTPCache.h"
+#include "FTPSettings.h"
 
 class SettingsDialog : public Dialog {
 public:
 							SettingsDialog();
 	virtual					~SettingsDialog();
 
-	virtual int				Create(HWND hParent, FTPCache * globalCache);
+	virtual int				Create(HWND hParent, FTPSettings * ftpSettings);
 protected:
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR			OnInitDialog();
@@ -37,8 +37,9 @@ protected:
 
 	int						SaveGlobalPath();
 	int						SaveMasterPassword();
+	int						SaveClearCache();
 
-	FTPCache*				m_globalCache;
+	FTPSettings*			m_ftpSettings;
 };
 
 #endif //SETTINGSDIALOG_H

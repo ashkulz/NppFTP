@@ -177,6 +177,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				m_currentProfile->SetPassword(aTextBuffer);
 			}
 			break; }
+		case IDC_CHECK_ASKPASSWORD: {
+			if (notifCode == BN_CLICKED) {
+				LRESULT checked = Button_GetCheck(::GetDlgItem(m_hPageConnection, IDC_CHECK_ASKPASSWORD));
+				::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), !(checked == BST_CHECKED));
+				m_currentProfile->SetAskPassword(checked == BST_CHECKED);
+			}
+			break; }
 		case IDC_EDIT_TIMEOUT: {
 			if (notifCode == EN_USERCHANGE) {
 				BOOL success = FALSE;
@@ -616,6 +623,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_PORT), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_USERNAME), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_CHECK_ASKPASSWORD), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY), enableSettings);
@@ -663,6 +671,8 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_PORT, m_currentProfile->GetPort(), FALSE);
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_USERNAME, m_currentProfile->GetUsername());
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_PASSWORD, m_currentProfile->GetPassword());
+	Button_SetCheck(::GetDlgItem(m_hPageConnection, IDC_CHECK_ASKPASSWORD), (m_currentProfile->GetAskPassword())?TRUE:FALSE);
+	::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), !(m_currentProfile->GetAskPassword()));
 
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_TIMEOUT, m_currentProfile->GetTimeout(), FALSE);
 

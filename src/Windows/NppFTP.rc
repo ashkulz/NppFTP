@@ -76,6 +76,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_USERNAME, 8, 68, 78, 14, ES_AUTOHSCROLL
     LTEXT           "Password:", IDC_STATIC, 4, 88, 34, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_PASSWORD, 8, 96, 78, 14, ES_AUTOHSCROLL | ES_PASSWORD
+    AUTOCHECKBOX    "Ask for password", IDC_CHECK_ASKPASSWORD, 94, 96, 80, 8
     LTEXT           "Timeout (seconds):", IDC_STATIC, 4, 120, 62, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_TIMEOUT, 8, 128, 36, 14, ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Initial remote directory:", IDC_STATIC, 4, 152, 80, 8, SS_LEFT
@@ -148,17 +149,19 @@ BEGIN
     PUSHBUTTON      "Delete", IDC_BUTTON_CACHE_DELETE, 168, 168, 36, 14, WS_DISABLED
 END
 
-IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 100
+IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 128
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
 CAPTION "Global settings"
 FONT 8, "Ms Shell Dlg 2", 400, 0, 1
 BEGIN
     LTEXT           "Global cache:", IDC_STATIC, 4, 4, 44, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_CACHE, 8, 12, 160, 14, ES_AUTOHSCROLL
-    LTEXT           "Master password (max 8 characters):", IDC_STATIC, 4, 32, 160, 8, SS_LEFT
-    EDITTEXT        IDC_EDIT_MASTERPASS, 8, 40, 160, 14, ES_AUTOHSCROLL | ES_PASSWORD
-    LTEXT           "When this field is left blank, a default string will be used.\r\n""Otherwise, you will be asked for the password on each start of Notepad++.", IDC_STATIC, 8, 58, 180, 24, SS_LEFT
-    DEFPUSHBUTTON   "OK", IDC_BUTTON_CLOSE, 132, 80, 48, 14
+    AUTOCHECKBOX    "Clear ENTIRE cache on disconnect (Use with care!)", IDC_CHECK_CLEARCACHE, 4, 30, 174, 8
+    AUTOCHECKBOX    "Do not use the recycle bin (delete permanently)", IDC_CHECK_CLEARNORECYCLE, 12, 42, 170, 8
+    LTEXT           "Master password (max 8 characters):", IDC_STATIC, 4, 56, 160, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_MASTERPASS, 8, 64, 160, 14, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "When this field is left blank, a default string will be used.\r\nOtherwise, you will be asked for the password on each start of Notepad++.", IDC_STATIC, 8, 82, 180, 24, SS_LEFT
+    DEFPUSHBUTTON   "OK", IDC_BUTTON_CLOSE, 132, 104, 48, 14
 END
 
 IDD_DIALOG_GENERIC DIALOGEX 0, 0, 10, 10

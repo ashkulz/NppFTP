@@ -26,6 +26,7 @@
 #define EN_RETURN			WM_USER + 501
 #define WM_MOVESPLITTER		WM_USER + 503
 #define WM_DND				WM_USER + 504
+#define WM_OUTPUTSHOWN		WM_USER + 505
 
 //output popup menu
 #define IDM_POPUP_COPY				10001

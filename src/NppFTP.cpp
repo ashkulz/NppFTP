@@ -23,6 +23,7 @@
 #include "InputDialog.h"
 #include "Encryption.h"
 #include "DragDropWindow.h"
+#include "FTPSettings.h"
 #include <commctrl.h>
 
 HWND _MainOutputWindow = NULL;
@@ -30,18 +31,13 @@ char * _HostsFile = NULL;
 TCHAR * _ConfigPath = NULL;
 
 NppFTP::NppFTP() :
+	m_ftpSettings(NULL),
 	m_ftpSession(NULL),
 	m_ftpWindow(NULL),
-	m_outputShown(false),
-	m_splitRatio(0.5),
 	m_activeSession(false),
 	m_configStore(NULL)
 {
-	PathMap globalPathmap;
-	globalPathmap.localpath = SU::DupString(TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%"));
-	globalPathmap.externalpath = SU::strdup("/");
-	m_globalCache.Clear();
-	m_globalCache.AddPathMap(globalPathmap);
+	m_ftpSettings = new FTPSettings();
 }
 
 NppFTP::~NppFTP() {
@@ -54,6 +50,8 @@ NppFTP::~NppFTP() {
 
 	if (m_configStore)
 		delete [] m_configStore;
+
+	delete m_ftpSettings;
 }
 
 int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem funcItem) {
@@ -93,23 +91,18 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 		return -1;
 	}
 
-	res = m_ftpSession->Init(m_ftpWindow, &m_globalCache);
+	res = m_ftpSession->Init(m_ftpWindow, m_ftpSettings);
 	if (res == -1) {
 		m_ftpWindow->Destroy();
 		return -1;
 	}
 
-	res = m_ftpWindow->SetSession(m_ftpSession);
+	res = m_ftpWindow->Init(m_ftpSession, &m_profiles, m_ftpSettings);
 	if (res == -1) {
 		m_ftpSession->Deinit();
 		m_ftpWindow->Destroy();
 		return -1;
 	}
-
-	res = m_ftpWindow->SetProfilesVector(&m_profiles);
-	res = m_ftpWindow->SetGlobalProps(&m_globalCache);
-	m_ftpWindow->m_outputShown = m_outputShown;
-	m_ftpWindow->m_splitter.SetRatio(m_splitRatio);
 
 	res = m_ftpSession->SetCertificates(&m_certificates);
 
@@ -223,72 +216,7 @@ int NppFTP::LoadSettings() {
 		return result;
 	}
 
-	int outState = 0;
-	const char * outstr = ftpElem->Attribute("outputShown", &outState);
-	if (!outstr) {
-		outState = 0;
-	}
-	m_outputShown = (outState != 0);
-	double ratio = 0.5;
-	const char * ratiostr = ftpElem->Attribute("windowRatio", &ratio);
-	if (!ratiostr) {
-		ratio = 0.5;
-	}
-	m_splitRatio = ratio;
-
-	//Imperative that masterpassword be set beforel oading all profiles
-	const char * passstr = ftpElem->Attribute("MasterPass");
-	if (passstr) {
-		InputDialog inputPass;
-		const TCHAR * query = TEXT("Please enter master password");
-		bool success = false;
-		while(!success) {
-			int res = inputPass.Create(m_nppData._nppHandle, TEXT("NppFTP: Master password required"), query, TEXT(""));
-			if (res == 1) {
-				char * localPass = SU::TCharToCP(inputPass.GetValue(), CP_ACP);
-				char * challenge = Encryption::Decrypt(localPass, -1, passstr, true);
-
-				if (strcmp(challenge, "NppFTP")) {
-					query = TEXT("Wrong password.\r\nPlease enter master password");
-				} else {
-					Encryption::SetDefaultKey(localPass, -1);
-					success = true;
-				}
-
-				Encryption::FreeData(challenge);
-				SU::FreeChar(localPass);
-			} else {
-				break;
-			}
-		}
-		if (!success) {
-			MessageBox(m_nppData._nppHandle,
-							TEXT("Incorrect password entered.\r\n")
-							TEXT("The passwords will most likely be corrupted and you have to reenter them")
-						, TEXT("NppFTP: Password manager error"), MB_OK);
-		}
-
-	}
-
-	const char * defaultCacheutf8 = ftpElem->Attribute("defaultCache");
-	TCHAR * defaultCache;
-	if (defaultCacheutf8) {
-		defaultCache = SU::Utf8ToTChar(defaultCacheutf8);
-	} else {
-		TCHAR * defaultCacheTmp = new TCHAR[MAX_PATH];
-		lstrcpy(defaultCacheTmp, m_configStore);
-		::PathAppend(defaultCacheTmp, TEXT("Cache"));
-		defaultCache = SU::DupString(defaultCacheTmp);
-		delete [] defaultCacheTmp;
-	}
-
-	PathMap globalPathmap;
-	globalPathmap.localpath = SU::DupString(defaultCache);
-	globalPathmap.externalpath = SU::strdup("/");
-	m_globalCache.Clear();
-	m_globalCache.AddPathMap(globalPathmap);
-
-	SU::FreeTChar(defaultCache);
+	m_ftpSettings->LoadSettings(ftpElem);
 
 	TiXmlElement * profilesElem = ftpElem->FirstChildElement(FTPProfile::ProfilesElement);
 	if (!profilesElem) {
@@ -298,7 +226,7 @@ int NppFTP::LoadSettings() {
 		m_profiles = FTPProfile::LoadProfiles(profilesElem);
 		for(size_t i = 0; i < m_profiles.size(); i++) {
 			m_profiles.at(i)->AddRef();
-			m_profiles.at(i)->SetCacheParent(&m_globalCache);
+			m_profiles.at(i)->SetCacheParent(m_ftpSettings->GetGlobalCache());
 		}
 	}
 
@@ -344,27 +272,10 @@ int NppFTP::SaveSettings() {
 	TiXmlElement * ftpElem = new TiXmlElement("NppFTP");
 	settingsDoc->LinkEndChild(ftpElem);
 
-	if (m_globalCache.GetPathMapCount() > 0) {
-		const PathMap & map = m_globalCache.GetPathMap(0);
-		char * defaultCacheutf8 = SU::TCharToUtf8(map.localpath);
-		ftpElem->SetAttribute("defaultCache", defaultCacheutf8);
-		SU::FreeChar(defaultCacheutf8);
-	}
-
-	bool shown = (m_ftpWindow != NULL)?m_ftpWindow->m_outputShown:false;
-	ftpElem->SetAttribute("outputShown", shown?1:0);
-	ftpElem->SetDoubleAttribute("windowRatio", m_ftpWindow->m_splitter.GetRatio());
-
-	if (!Encryption::IsDefaultKey()) {
-		char * challenge = Encryption::Encrypt(NULL, -1, "NppFTP", -1);
-		ftpElem->SetAttribute("MasterPass", challenge);
-		Encryption::FreeData(challenge);
-	}
+	m_ftpSettings->SaveSettings(ftpElem);
 
 	TiXmlElement * profilesElem = FTPProfile::SaveProfiles(m_profiles);
 	ftpElem->LinkEndChild(profilesElem);
-
-
 
 	ftpElem = new TiXmlElement("NppFTP");
 	certificatesDoc->LinkEndChild(ftpElem);

@@ -114,7 +114,10 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 	if (retcode != UTE_SUCCESS)
 		return OnReturn(-1);
 
-	retcode = m_client.GetDirInfo(m_ftpListParams);//path);
+	if (strlen(m_ftpListParams) > 0)
+		retcode = m_client.GetDirInfo(m_ftpListParams);//path);
+	else
+		retcode = m_client.GetDirInfo();//path);
 
 	//return to original directory
 	//commented out: Cwd is not used in NppFTP at the moment

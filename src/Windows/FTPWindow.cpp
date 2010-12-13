@@ -894,7 +894,7 @@ int FTPWindow::SetToolbarState() {
 	return 0;
 }
 
-int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool isStart) {
+int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isStart) {
 	int result = 0;
 	void * queueData = queueOp->GetData();
 	int queueResult = queueOp->GetResult();
@@ -971,6 +971,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 				break;
 			if (queueResult == -1) {
 				OutErr("Download of %s failed", opdld->GetExternalPath());
+				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
 
@@ -998,6 +999,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * /*data*/, bool
 				break;
 			if (queueResult == -1) {
 				OutErr("Upload of %S failed", opuld->GetLocalPath());
+				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
 
@@ -1093,6 +1095,18 @@ int FTPWindow::OnDirectoryRefresh(FileObject * parent, FTPFile * files, int coun
 	m_treeview.UpdateFileObject(parent);
 	m_treeview.FillTreeDirectory(parent);
 	m_treeview.ExpandDirectory(parent);
+
+	return 0;
+}
+
+int FTPWindow::OnError(QueueOperation * /*queueOp*/, int /*code*/, void * /*data*/, bool /*isStart*/) {
+	::MessageBeep(MB_ICONERROR);
+	if (!IsVisible())
+		Show(true);
+	if (!m_outputShown)
+		m_outputWindow.Show(true);
+
+	m_outputWindow.ScrollLastLine();
 
 	return 0;
 }

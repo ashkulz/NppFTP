@@ -13,7 +13,7 @@
 #define HAVE_OPENSSL_AES_H 1
 
 /* Define to 1 if you have the <wspiapi.h> header file. */
-//#cmakedefine HAVE_WSPIAPI_H 1
+#define HAVE_WSPIAPI_H 1
 
 /* Define to 1 if you have the <openssl/blowfish.h> header file. */
 #define HAVE_OPENSSL_BLOWFISH_H 1

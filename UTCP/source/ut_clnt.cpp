@@ -73,7 +73,8 @@ CUT_WSClient::CUT_WSClient() :
 
 	m_meth(NULL),
 	m_ctx(NULL),
-	m_ssl(NULL)
+	m_ssl(NULL),
+	m_reuseSession(NULL)
 
 {
 	static bool isSSLInit = false;
@@ -667,6 +668,11 @@ int CUT_WSClient::ConnectSSL() {
 
 	SSL_set_fd(m_ssl, m_socket);
 
+	//Session reuse mod: If m_reuseSession is set, set it as the current SSL session
+	//m_reuseSession should be set just prior to a Connect() call.
+	if (m_reuseSession != NULL) {
+		SSL_set_session(m_ssl, m_reuseSession);
+	}
 	int rc = SSL_connect(m_ssl);
 	if (rc < 1) {
 		char buf[256];
@@ -810,6 +816,16 @@ int CUT_WSClient::SSLReceive(LPSTR buffer, int maxSize, bool peek) {
 	} else {
 		return SocketRecv(m_socket, (char *)buffer, maxSize, peek?MSG_PEEK:0);
 	}
+}
+
+SSL_SESSION * CUT_WSClient::SSLGetCurrentSession() {
+	return SSL_get_session(m_ssl);
+}
+
+int CUT_WSClient::SSLSetReuseSession(SSL_SESSION * reuseSession) {
+	m_reuseSession = reuseSession;
+
+	return UTE_SUCCESS;
 }
 
 /***************************************************
@@ -1605,7 +1621,7 @@ int CUT_WSClient::Receive(CUT_Queue & dest, int timeOut, long lMaxToReceive){
 
 	//we cannot receive more than the free size of the queue
 	if(lMaxToReceive > 0)
-		lMaxToReceive = min(lMaxToReceive, dest.GetFreeSize());
+		lMaxToReceive = min(lMaxToReceive, (long)dest.GetFreeSize());
 	else
 		lMaxToReceive = dest.GetFreeSize();
 

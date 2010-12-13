@@ -41,8 +41,8 @@ Add OpenSSL secure functionality
 #include "UTDataSource.h"
 #include "UT_Queue.h"
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
+#include "openssl/ssl.h"
+#include "openssl/err.h"
 
 //async notification defines
 #define CUT_SET_THIS_PTR        WM_USER+127
@@ -176,9 +176,12 @@ protected:
 	SSL_METHOD *	m_meth;
 	SSL_CTX *		m_ctx;
 	SSL *			m_ssl;
+	SSL_SESSION *	m_reuseSession;
 
 	virtual int SSLSend(LPCSTR data, int len);
 	virtual int SSLReceive(LPSTR buffer, int maxSize, bool peek = false);
+	virtual SSL_SESSION * SSLGetCurrentSession();
+	virtual int SSLSetReuseSession(SSL_SESSION * reuseSession);	//use NULL to disable
 
     // This function is used to process async winsock
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);

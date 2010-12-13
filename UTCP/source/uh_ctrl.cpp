@@ -131,7 +131,7 @@ int CUH_Control::CreateHistoryWindow(HWND parent,DWORD style,RECT &rect){
         return UH_ERROR;
 
     #ifdef WIN32
-        HINSTANCE hInstance = (HINSTANCE)(ULONG_PTR)GetWindowLong(parent,GWL_HINSTANCE);
+        HINSTANCE hInstance = (HINSTANCE)(ULONG_PTR)GetWindowLong(parent,GWLP_HINSTANCE);
     #else
         HINSTANCE hInstance = (HINSTANCE)GetWindowWord(parent,GWW_HINSTANCE);
     #endif

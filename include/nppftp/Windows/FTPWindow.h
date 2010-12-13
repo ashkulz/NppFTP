@@ -80,6 +80,7 @@ protected:
 
 	virtual int				OnEvent(QueueOperation * queueOp, int code, void * data, bool isStart);
 	virtual int				OnDirectoryRefresh(FileObject * parent, FTPFile * files, int count);
+	virtual int				OnError(QueueOperation * queueOp, int code, void * data, bool isStart);
 
 	virtual int				OnItemActivation();
 

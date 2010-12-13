@@ -811,7 +811,7 @@ int	CUT_MapFileDataSource::Open(OpenMsgType type)
 		m_lnActualSize.QuadPart = m_lnSize.QuadPart;
 
 	// Initialize increment value. Size divided by 8 ( or shifted by 3)
-	m_lnIncrement.QuadPart = max(Int64ShraMod32(m_lnSize.QuadPart, 3), 4096);
+	m_lnIncrement.QuadPart = max(Int64ShraMod32(m_lnSize.QuadPart, 3), LONGLONG(4096));
 
 	// If file is opened in append mode - increase it size
 	if(type == UTM_OM_APPEND || (type == UTM_OM_WRITING && m_lnSize.HighPart == 0 && m_lnSize.LowPart == 0 ))

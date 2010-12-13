@@ -196,6 +196,8 @@
 		<Unit filename="..\src\FTPSession.cpp" />
 		<Unit filename="..\src\FTPSettings.cpp" />
 		<Unit filename="..\src\FTPTest.cpp">
+			<Option compile="0" />
+			<Option link="0" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="..\src\FileObject.cpp" />

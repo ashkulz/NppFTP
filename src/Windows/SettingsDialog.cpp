@@ -112,7 +112,7 @@ int SettingsDialog::SaveGlobalPath() {
 
 int SettingsDialog::SaveMasterPassword() {
 	char password[Encryption::KeySize+1];
-	::GetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password, Encryption::KeySize);
+	::GetDlgItemTextA(m_hwnd, IDC_EDIT_MASTERPASS, password, Encryption::KeySize+1);
 	Encryption::SetDefaultKey(password);
 
 	return 0;

@@ -50,6 +50,7 @@ FTPProfile::FTPProfile() :
 
 FTPProfile::FTPProfile(const TCHAR * name) :
 	m_port(21),
+	m_askPassword(false),
 	m_timeout(30),
 	m_securityMode(Mode_FTP),
 	m_transferMode(Mode_Binary),
@@ -160,7 +161,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 	char * password = NULL;
 	if (m_askPassword) {
 		InputDialog passDialog;
-		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter password"), TEXT("Please enter the password to connect to the server"), TEXT(""));
+		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter password"), TEXT("Please enter the password to connect to the server"), TEXT(""), true);
 		if (ret == 1) {
 			password = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
 		} else {

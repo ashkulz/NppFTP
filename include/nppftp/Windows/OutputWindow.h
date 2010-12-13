@@ -32,7 +32,7 @@ public:
 	virtual int				Destroy();
 
 	virtual int				Show(bool show);
-	virtual int				OnSize(int newWidth, int newHeight) ;
+	virtual int				OnSize(int newWidth, int newHeight);
 
 	static int				RegisterClass();
 
@@ -40,6 +40,8 @@ public:
 
 							//message: %T is tchar (%s or %S), %s is char, %S is wchar_t
 	virtual int				OutVA(Output_Type type, const TCHAR * message, va_list vaList);
+
+	virtual int				ScrollLastLine();
 protected:
 	virtual int				SetScintillaParameters();
 	virtual int				AddMessage(const TCHAR * message, Output_Type type, time_t time);

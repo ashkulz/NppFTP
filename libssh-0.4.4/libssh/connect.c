@@ -34,6 +34,9 @@
  *  http://msdn.microsoft.com/en-us/library/aa383745.aspx
  *  http://blogs.msdn.com/oldnewthing/archive/2007/04/11/2079137.aspx
  */
+
+#include "config.h"
+
 #undef _WIN32_WINNT
 #ifdef HAVE_WSPIAPI_H
 #define _WIN32_WINNT 0x0500 /* _WIN32_WINNT_WIN2K */
@@ -205,7 +208,7 @@ static int ssh_connect_ai_timeout(ssh_session session, const char *host,
   struct timeval to;
   fd_set set;
   int rc = 0;
-  unsigned int len = sizeof(rc);
+  int len = sizeof(rc);
 
   enter_function();
 

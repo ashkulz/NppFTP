@@ -238,7 +238,7 @@ typedef enum {
 
 
         // Include extended error
-        #include <UTExtErr.h>
+        #include "UTExtErr.h"
 
         // always leave this last - doubles as constant for string
         // array declaration.
@@ -478,7 +478,7 @@ private:
 
 		// Include extended error strings
         #define _EXT_ERR_STRINGS
-        #include <UTExtErr.h>
+        #include "UTExtErr.h"
 	}
 
 

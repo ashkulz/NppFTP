@@ -481,7 +481,7 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 
 	authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_ERROR) {
-		OutErr("[SFTP] Authentication failed.");
+		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
 		return -1;
 	} else if (authres == SSH_AUTH_SUCCESS) {
 		OutMsg("[SFTP] Authenticated without credentials.");
@@ -500,6 +500,11 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		return -1;
 	}
 
+	if (methods == SSH_AUTH_METHOD_UNKNOWN) {
+		OutErr("[SFTP] Unknown authentication method.");
+		return -1;
+	}
+
 	//Filter out methods client does not wish to use
 	methods &= m_acceptedMethods;
 
@@ -515,8 +520,8 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		authres = authenticate_password(session);
 	}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods == SSH_AUTH_METHOD_UNKNOWN)) {
-		OutErr("[SFTP] Unknown authentication method.");
+	if (methods == 0) {
+		OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
 		return -1;
 	}
 
@@ -540,7 +545,11 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	int type = 0;
 
 	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
-	ssh_private_key privkey = privatekey_from_file(session, keyfile, 0, m_passphrase);
+	ssh_private_key privkey = NULL;
+	if (m_passphrase[0] == 0)	//in case the passphrase is empty, use NULL instead
+		privkey = privatekey_from_file(session, keyfile, 0, NULL);
+	else
+		privkey = privatekey_from_file(session, keyfile, 0, m_passphrase);
 	SU::FreeChar(keyfile);
 
 	if (privkey == NULL)
@@ -639,47 +648,50 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 	}
 	hashHex = ssh_get_hexa(hash, hlen);
 
+	bool askSavekey = false;
+
 	switch(state){
 		case SSH_SERVER_KNOWN_OK:
 			OutMsg("[SFTP] Host key accepted");
 			result = 0;
 			break; /* ok */
-		case SSH_SERVER_KNOWN_CHANGED:
-			OutErr("[SFTP] The host key had changed, and is now: %s", hashHex);
-			OutErr("For security reasons, connection will be stopped.");
-			result = -1;
-			break;
-		case SSH_SERVER_FOUND_OTHER:
-			OutErr("[SFTP] The host key for this server was not found but an other type of key exists.");
-			OutErr("For security reasons, connection will be stopped.");
-			result = -1;
-			break;
 		case SSH_SERVER_FILE_NOT_FOUND:
 			OutMsg("[SFTP] Creating known hosts file.");
 			/* fallback to SSH_SERVER_NOT_KNOWN behavior */
 		case SSH_SERVER_NOT_KNOWN: {
-			//MessageDialog md;
 			SU::TSprintf(errMessage, 512, TEXT("The server is unknown. Do you trust the host key\r\n%s ?"), hashHex);
-			//int res = md.Create(_MainOutputWindow, TEXT("SFTP authentication"), errMessage);
-			int res = ::MessageBox(_MainOutputWindow, errMessage, TEXT("SFTP authentication"), MB_YESNO);
-			if (res == IDYES) {
-				if (ssh_write_knownhost(session) < 0) {
-					OutErr("[SFTP] Writing known hosts file failed: %s", strerror(errno));
-					result = -1;
-				}
-				OutMsg("[SFTP] Host key written to file");
-				result = 0;
-			} else {
-				OutErr("[SFTP] Rejected host key");
-				result = -1;
-			}
-
+			askSavekey = true;
 			break; }
+		case SSH_SERVER_KNOWN_CHANGED: {
+			SU::TSprintf(errMessage, 512, TEXT("The host key had changed, and is now: %s\r\nDo you trust this new host key?"), hashHex);
+			askSavekey = true;
+			break; }
+		case SSH_SERVER_FOUND_OTHER:
+			SU::TSprintf(errMessage, 512, TEXT("A different type of host key was returned by the server than that was stored, and now reads: %s\r\nDo you trust this different host key?"), hashHex);
+			askSavekey = true;
+			break;
 		case SSH_SERVER_ERROR:
 		default:
 			OutErr("[SFTP] SSH_SERVER_ERROR: %s",ssh_get_error(session));
 			result = -1;
 			break;
+	}
+
+	if (askSavekey) {
+		int res = ::MessageBox(_MainOutputWindow, errMessage, TEXT("SFTP authentication"), MB_YESNO|MB_DEFBUTTON2);
+		if (res == IDYES) {
+			if (ssh_write_knownhost(session) < 0) {
+				OutErr("[SFTP] Writing known hosts file failed: %s", strerror(errno));
+				OutErr("[SFTP] The session will continue but the key will not be stored");
+				result = 0;	//return 0 even if an error occured
+			} else {
+				OutMsg("[SFTP] Host key written to file");
+				result = 0;
+			}
+		} else {
+			OutErr("[SFTP] Rejected host key");
+			result = -1;
+		}
 	}
 
 	free(hash);

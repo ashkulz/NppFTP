@@ -524,25 +524,25 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	m_pageConnection.Show(true);
 
-	_EditDefaultProc = (WNDPROC)::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_HOSTNAME), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PORT), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_USERNAME), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	_EditDefaultProc = (WNDPROC)::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_HOSTNAME), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PORT), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_USERNAME), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
-	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_KEYFILE), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_KEYFILE), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
-	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_ASCII), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_ASCII), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_BINARY), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MIN), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
-	::SetWindowLongPtr(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
-	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
-	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), GWL_WNDPROC, (DWORD)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
 
 	HWND hListCache = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);

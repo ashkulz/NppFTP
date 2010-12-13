@@ -329,6 +329,8 @@ int CUT_FTPClient::ReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
     if ( m_nFirewallMode )
         return ReceiveFilePASV(dest, sourceFile);
 
+	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
     for(loop=0; loop < 128; loop++) {
@@ -461,6 +463,9 @@ int CUT_FTPClient::ResumeReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
 
     if ( m_nFirewallMode )
         return ResumeReceiveFilePASV(dest, sourceFile);
+
+	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
     for(loop=0; loop < 128; loop++) {
@@ -628,6 +633,8 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
     //send the port command
     Send("PASV\r\n");
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     // we need to get the full IP address and port number from the
     // PASV return line, so that we can originate the data connection.
 
@@ -771,6 +778,8 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
     //send the port command
     Send("PASV\r\n");
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     // we need to get the full IP address and port number from the
     // PASV return line, so that we can originate the data connection.
 
@@ -905,6 +914,8 @@ int CUT_FTPClient::SendFile(CUT_DataSource & source, LPCSTR destFile)
 
     if (m_nFirewallMode)
         return SendFilePASV(source, destFile);
+
+	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
@@ -1056,6 +1067,8 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
 
     //send the port command
     Send("PASV\r\n");
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     // we need to get the full IP address and port number from the
     // PASV return line, so that we can originate the data connection.
@@ -1941,6 +1954,8 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
     if (m_nFirewallMode)
         return GetDirInfoPASV(path);
 
+	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 50 times then fail
     for(loop=0;loop<128;loop++) {
@@ -2110,6 +2125,8 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
 
     //send the port command
     Send("PASV\r\n");
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
 
     // we need to get the full IP address and port number from the

@@ -74,10 +74,10 @@ INT_PTR CALLBACK Dialog::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 			if (!dlg)
 				return FALSE;
 			dlg->m_hwnd = hwnd;
-			::SetWindowLongPtr(hwnd, DWL_USER, reinterpret_cast<LONG_PTR>(dlg));
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(dlg));
 			return dlg->OnInitDialog();
 		default :
-			dlg = (Dialog*)::GetWindowLongPtr(hwnd, DWL_USER);
+			dlg = (Dialog*)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (!dlg)
 				return FALSE;
 			return dlg->DlgMsgProc(uMsg, wParam, lParam);

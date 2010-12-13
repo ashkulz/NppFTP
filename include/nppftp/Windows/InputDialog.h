@@ -27,7 +27,7 @@ public:
 	virtual					~InputDialog();
 
 							//Returns: 1 on input, 2 on no input
-	virtual int				Create(HWND hParent, const TCHAR * title, const TCHAR * comment, const TCHAR * initialValue);
+	virtual int				Create(HWND hParent, const TCHAR * title, const TCHAR * comment, const TCHAR * initialValue, bool password=false);
 
 	virtual const TCHAR*	GetValue();
 protected:
@@ -39,6 +39,8 @@ protected:
 
 	HWND					m_commentCtrl;
 	HWND					m_valueCtrl;
+
+	bool					m_password;
 };
 
 #endif //INPUTDIALOG_H

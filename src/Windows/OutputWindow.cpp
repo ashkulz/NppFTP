@@ -276,6 +276,13 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
     return 0;
 }
 
+int OutputWindow::ScrollLastLine() {
+	int nrLines = (int)::SendMessage(m_hScintilla, SCI_GETLINECOUNT, 0, 0);
+	::SendMessage(m_hScintilla, SCI_LINESCROLL, 0, (LPARAM)nrLines);	//scrolling the amount of lines available ensures the last one becomes visible
+
+	return 0;
+}
+
 int OutputWindow::SetScintillaParameters() {
 	if (m_hScintilla == NULL)
 		return -1;

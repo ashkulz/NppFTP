@@ -95,9 +95,10 @@ int Window::GetWidth() {
 int Window::GetHeight() {
 	RECT rc;
 	::GetClientRect(m_hwnd, &rc);
-	if (::IsWindowVisible(m_hwnd) == TRUE)
+	//commented check: only usefull for rebars
+	//if (::IsWindowVisible(m_hwnd) == TRUE)
 		return (rc.bottom - rc.top);
-	return 0;
+	//return 0;
 }
 
 int Window::OnSize(int /*newWidth*/, int /*newHeight*/) {
@@ -173,11 +174,11 @@ LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 		case WM_NCCREATE:
 			window = (Window*)(((LPCREATESTRUCT)lParam)->lpCreateParams);
 			//window.setHWND(hwnd);
-			::SetWindowLongPtr(hwnd, GWL_USERDATA, reinterpret_cast<LONG_PTR>(window));
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
 
 			return TRUE;
 		default :
-			window = (Window*)::GetWindowLongPtr(hwnd, GWL_USERDATA);
+			window = (Window*)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (!window)
 				return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
 			return window->MessageProc(uMsg, wParam, lParam);

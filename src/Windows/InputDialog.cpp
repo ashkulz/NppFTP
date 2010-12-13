@@ -19,12 +19,14 @@
 #include "StdInc.h"
 #include "InputDialog.h"
 
+#include <Windowsx.h>
 #include "resource.h"
 
 InputDialog::InputDialog() :
 	Dialog(IDD_DIALOG_INPUT),
 	m_commentCtrl(NULL),
-	m_valueCtrl(NULL)
+	m_valueCtrl(NULL),
+	m_password(false)
 {
 	m_comment = SU::DupString(TEXT(""));
 	m_value = SU::DupString(TEXT(""));
@@ -35,11 +37,12 @@ InputDialog::~InputDialog() {
 	SU::FreeTChar(m_value);
 }
 
-int InputDialog::Create(HWND hParent, const TCHAR * title, const TCHAR * comment, const TCHAR * initialValue) {
+int InputDialog::Create(HWND hParent, const TCHAR * title, const TCHAR * comment, const TCHAR * initialValue, bool password) {
 	SU::FreeTChar(m_comment);
 	m_comment = SU::DupString(comment);
 	SU::FreeTChar(m_value);
 	m_value = SU::DupString(initialValue);
+	m_password = password;
 
 	int res = Dialog::Create(hParent, true, title);
 
@@ -95,5 +98,10 @@ INT_PTR InputDialog::OnInitDialog() {
 
 	SetWindowText(m_commentCtrl, m_comment);
 	SetWindowText(m_valueCtrl, m_value);
+
+	if (m_password) {
+		Edit_SetPasswordChar(::GetDlgItem(m_hwnd, IDC_EDIT_INPUT), (UINT)'*');
+	}
+
 	return TRUE;
 }

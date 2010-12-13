@@ -19,6 +19,8 @@
 #ifndef DRAGDROPSUPPORT_H
 #define DRAGDROPSUPPORT_H
 
+#include <shlobj.h>
+
 //Based on microsoft classes from DragDrop example files from FTP, altered for personal use
 //These classes represent various DnD items in NppFTP, and the means to support them
 

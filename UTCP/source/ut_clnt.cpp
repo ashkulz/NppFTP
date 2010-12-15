@@ -819,7 +819,10 @@ int CUT_WSClient::SSLReceive(LPSTR buffer, int maxSize, bool peek) {
 }
 
 SSL_SESSION * CUT_WSClient::SSLGetCurrentSession() {
-	return SSL_get_session(m_ssl);
+	if (m_ssl)
+		return SSL_get_session(m_ssl);
+	else
+		return NULL;
 }
 
 int CUT_WSClient::SSLSetReuseSession(SSL_SESSION * reuseSession) {

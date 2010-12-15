@@ -56,6 +56,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-static-libgcc" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
 					<Add library="uuid" />
@@ -89,6 +90,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-static-libgcc" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
 					<Add library="uuid" />

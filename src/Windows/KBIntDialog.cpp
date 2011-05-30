@@ -133,8 +133,9 @@ INT_PTR KBIntDialog::OnInitDialog() {
 
 		if (!echo) {
 			HWND hCurAnswer = ::GetDlgItem(m_hwnd, IDC_EDIT_ANSWER1+(i*2));
-			LONG_PTR style = ::GetWindowLongPtr(hCurAnswer, GWL_STYLE);
-			::SetWindowLongPtr(hCurAnswer, GWL_STYLE, style|ES_PASSWORD);
+			//LONG_PTR style = ::GetWindowLongPtr(hCurAnswer, GWL_STYLE);
+			//::SetWindowLongPtr(hCurAnswer, GWL_STYLE, style|ES_PASSWORD);
+			::SendMessage(hCurAnswer, EM_SETPASSWORDCHAR, (WPARAM)'*', 0);
 		}
 
 	}

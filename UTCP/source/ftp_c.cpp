@@ -34,6 +34,9 @@ Modification made April 2010:
 -Rewritten FTP secure handshake
 -GetMultiLineResponse was made virtual
 -Clear response list when calling GetResponseCode
+
+Modification made May 2012:
+-Clear recieve buffer if failed to initiate a data connection for STOR, RETR or LIST.
 */
 
 #ifdef _WINSOCK_2_0_
@@ -714,6 +717,7 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
+		ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -839,6 +843,7 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
+		ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -1127,6 +1132,7 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
+		ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -2186,6 +2192,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
+		ClearReceiveBuffer();
         return OnError(error);
         }
 

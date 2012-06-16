@@ -64,6 +64,7 @@ protected:
 	virtual int				RedrawItem(HTREEITEM item);
 
 	TreeImageList*			m_treeImagelist;
+	HTREEITEM               curSelectedItem;
 };
 
 class TreeImageList {

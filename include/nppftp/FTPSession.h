@@ -45,6 +45,7 @@ public:
 
 	int						Connect();
 	int						GetDirectory(const char * dir);
+	int                     GetDirectoryHierarchy(const char * dir);
 
 	int						DownloadFileCache(const char * sourcefile);	//return 0 on download, -1 on error, 1 when no cache match was found
 	int						DownloadFile(const char * sourcefile, const TCHAR * target, bool targetIsDir, int code = 1);

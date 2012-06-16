@@ -33,6 +33,7 @@
 #define IDI_ICON_FOLDERS				113
 #define IDI_ICON_MESSAGES				114
 #define IDB_BITMAP_PAYPAL				115
+#define IDB_BITMAP_OPENDIR				194
 
 #define IDC_STATIC						(-1)
 

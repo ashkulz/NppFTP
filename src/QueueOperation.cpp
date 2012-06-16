@@ -369,6 +369,18 @@ QueueGetDir::QueueGetDir(HWND hNotify, const char * dirPath, int notifyCode, voi
 	m_dirPath = SU::strdup(dirPath);
 }
 
+QueueGetDir::QueueGetDir(HWND hNotify, const char * dirPath, std::vector<char*> inputParentDirs, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeDirectoryGet, hNotify, notifyCode, notifyData),
+	m_fileCount(0)
+{
+
+    int i;
+	m_dirPath = SU::strdup(dirPath);
+
+	for(i=0; i<inputParentDirs.size(); i++)
+        parentDirs.push_back (inputParentDirs[i]);
+}
+
 QueueGetDir::~QueueGetDir() {
 	if (m_data) {
 		FTPFile* files = (FTPFile*)m_data;
@@ -377,6 +389,10 @@ QueueGetDir::~QueueGetDir() {
 	}
 
 	SU::free(m_dirPath);
+
+	int i;
+	for(i=0; i<parentDirs.size(); i++)
+        SU::free(parentDirs[i]);
 }
 
 int QueueGetDir::Perform() {
@@ -386,6 +402,25 @@ int QueueGetDir::Perform() {
 			return m_result;
 		m_result = -1;
 	}
+
+    if (parentDirs.size() > 0) {
+
+        int i;
+        for(i=0; i<parentDirs.size(); i++) {
+
+            FTPFile* files;
+            char* currentDir = parentDirs[i];
+            int result = m_client->GetDir(currentDir, &files);
+            if (result == -1)
+                return result;
+
+            FTPDir* thisFtpDir  = new FTPDir;
+            thisFtpDir->count   = result;
+            thisFtpDir->dirPath = currentDir;
+            thisFtpDir->files   = files;
+            parentDirObjs.push_back(thisFtpDir);
+        }
+    }
 
 	FTPFile* files;
 	m_result = m_client->GetDir(m_dirPath, &files);
@@ -415,6 +450,10 @@ char * QueueGetDir::GetDirPath() {
 
 int QueueGetDir::GetFileCount() {
 	return m_fileCount;
+}
+
+std::vector<FTPDir*> QueueGetDir::GetParentDirObjs() {
+    return parentDirObjs;
 }
 
 //////////////////////////////////////

@@ -30,4 +30,10 @@ struct FTPFile {
 	FTPFileType				fileType;				// flag if the entry is directory, file or a link
 };
 
+struct FTPDir {
+    struct FTPFile*         files;
+    char*                   dirPath;	// dir path
+    int                     count;
+};
+
 #endif //FTPFILE_H

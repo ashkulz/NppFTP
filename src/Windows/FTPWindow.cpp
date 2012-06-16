@@ -329,6 +329,24 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					//disconnect();
 					result = TRUE;
 					break;}
+
+                case IDB_BUTTON_TOOLBAR_OPENDIR: {
+
+                    // Show the dialog to get input directory name from the user.
+                    InputDialog id;
+                    int res = id.Create(m_hwnd, TEXT("Open Directory"), TEXT("Enter directory name:"), TEXT(""));
+                    if (res != 1) {
+                        return 0;
+                    }
+
+                    // Read the input directory name.
+                    const TCHAR *dirName    = id.GetValue();
+                    char *dirNameCP         = SU::TCharToCP(dirName, CP_ACP);
+
+                    m_ftpSession->GetDirectoryHierarchy(dirNameCP);
+                    break;
+                }
+
 				case IDM_POPUP_DOWNLOADFILE:
 				case IDB_BUTTON_TOOLBAR_DOWNLOAD: {
 					SHORT state = GetKeyState(VK_CONTROL);
@@ -885,10 +903,12 @@ int FTPWindow::SetToolbarState() {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_DOWNLOAD, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, false);
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, false);
 	} else {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_DOWNLOAD, !m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, m_localFileExists);	//m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, m_currentSelection->isDir());
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, true);
 	}
 
 	return 0;
@@ -953,6 +973,19 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart) {
 				break;
 			}
+
+            std::vector<FTPDir*> parentDirObjs = dirop->GetParentDirObjs();
+            int i;
+
+            for (i=0; i<parentDirObjs.size(); i++) {
+                FTPDir* curFTPDir = parentDirObjs[i];
+
+                FileObject* parent;
+                parent = m_ftpSession->FindPathObject(curFTPDir->dirPath);
+                if (parent)
+                    OnDirectoryRefresh(parent, curFTPDir->files, curFTPDir->count);
+            }
+
 			if (queueResult == -1) {
 				OutErr("Failure retrieving contents of directory %s", dirop->GetDirPath());
 				//break commented: even if failed, update the treeview etc., count should result in 0 anyway

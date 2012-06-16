@@ -28,6 +28,7 @@ const TBBUTTON defaultButtons[] = {
 	{   IDB_BITMAP_CONNECT,  IDB_BUTTON_TOOLBAR_CONNECT,               0, TBSTYLE_DROPDOWN, {0,0}, 0, 0},
 	//IDB_BITMAP_DISCONNECT
 	{                    0,                           0, TBSTATE_ENABLED,      TBSTYLE_SEP, {0,0}, 0, 0},
+	{  IDB_BITMAP_OPENDIR, IDB_BUTTON_TOOLBAR_OPENDIR, TBSTATE_ENABLED,      BTNS_BUTTON, {0,0}, 0, 0},
 	{  IDB_BITMAP_DOWNLOAD, IDB_BUTTON_TOOLBAR_DOWNLOAD,               0,      BTNS_BUTTON, {0,0}, 0, 0},
 	{    IDB_BITMAP_UPLOAD,   IDB_BUTTON_TOOLBAR_UPLOAD,               0,      BTNS_BUTTON, {0,0}, 0, 0},
 	{   IDB_BITMAP_REFRESH,  IDB_BUTTON_TOOLBAR_REFRESH,               0,      BTNS_BUTTON, {0,0}, 0, 0},
@@ -42,6 +43,7 @@ const TBBUTTON defaultButtons[] = {
 const TCHAR* tooltips[] = {
 	TEXT("(Dis)Connect"),
 	TEXT("-"),
+	TEXT("Open Directory"),
 	TEXT("Download file"),
 	TEXT("Upload file"),
 	TEXT("Refresh"),

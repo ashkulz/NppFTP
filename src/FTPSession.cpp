@@ -164,6 +164,81 @@ int FTPSession::GetDirectory(const char * dir) {
 	return 0;
 }
 
+int FTPSession::GetDirectoryHierarchy(const char * inputDir) {
+	if (!m_running)
+		return -1;
+
+    char *pathEntry;
+    char* dir = SU::strdup(inputDir);
+
+    // We will store the parent directory paths to be
+    // examined in the below vector.
+    std::vector<char*> parentDirs;
+
+    int i;
+    int childCount;
+    char currentPath[MAX_PATH];
+    FileObject* currentFileObj = m_rootObject;
+    FileObject* tmp;
+
+    strcpy( currentPath, "/" );
+
+    // Split the entries based on '/' and append the
+    // previous directory name to get the full path.
+    pathEntry = strtok (dir,"/");
+    while(pathEntry != NULL) {
+
+        if (currentFileObj) {
+
+            childCount = currentFileObj->GetChildCount();
+            currentFileObj = currentFileObj->GetChild(pathEntry);
+
+            if (currentFileObj) {
+
+                HTREEITEM hti = (HTREEITEM)(currentFileObj->GetData());
+                if (hti) {
+
+                    sprintf(currentPath,"%s%s/", currentPath, pathEntry);
+                    pathEntry = strtok (NULL,"/");
+
+                    continue;
+                }
+            }
+
+            // Cannot find the child. Check if it is because I have no
+            // information about the child, or that I cannot find the child.
+            if (!currentFileObj) {
+
+                // If I have child data, but I cannot find the child, then
+                // I will stop here and will not queue the operation.
+                if (childCount)
+                    return 1;
+            }
+        }
+
+        if (!parentDirs.size()) {
+            parentDirs.push_back(SU::strdup(currentPath));
+        }
+
+        sprintf(currentPath,"%s%s/", currentPath, pathEntry);
+
+        parentDirs.push_back(SU::strdup(currentPath));
+        pathEntry = strtok (NULL,"/");
+    }
+
+    // If there is some parent directories to be examined,
+    // remove the last directory because this is same as
+    // the input directory.
+    if (parentDirs.size())
+        parentDirs.pop_back();
+
+	QueueGetDir * dirop = new QueueGetDir(m_hNotify, inputDir, parentDirs);
+
+	m_mainQueue->AddQueueOp(dirop);
+
+	return 0;
+}
+
 int FTPSession::DownloadFileCache(const char * sourcefile) {
 	if (!m_running)
 		return -1;

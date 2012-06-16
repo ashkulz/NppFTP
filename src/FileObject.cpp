@@ -224,3 +224,19 @@ bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
 	}
 	return (res <= 0);
 }
+
+FileObject* FileObject::GetChild(const char *filename) {
+
+    int i;
+    int count = GetChildCount();
+    if (count == 0)
+        return NULL;
+
+	for(i = 0; i < count; i++) {
+		if ( !strcmp( GetChild(i)->GetName(), filename ) ) {
+			return GetChild(i);
+		}
+	}
+
+	return NULL;
+}

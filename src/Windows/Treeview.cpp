@@ -51,6 +51,7 @@ Treeview::Treeview() :
 	icx.dwICC = ICC_TREEVIEW_CLASSES;
 	InitCommonControlsEx(&icx);
 
+    curSelectedItem = NULL;
 }
 
 Treeview::~Treeview() {
@@ -310,6 +311,12 @@ int Treeview::ExpandDirectory(FileObject * dir) {
 	if (visible == TRUE) {
 		TreeView_Expand(m_hwnd, hti, TVE_EXPAND);
 	}
+
+	if (curSelectedItem)
+        TreeView_SetItemState(m_hwnd, curSelectedItem, 0, TVIS_SELECTED);
+
+	TreeView_SetItemState(m_hwnd, hti, TVIS_SELECTED, TVIS_SELECTED);
+    curSelectedItem = hti;
 	return 0;
 }
 

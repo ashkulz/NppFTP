@@ -1,5 +1,9 @@
+/* crypto/cmac/cmac.h */
+/* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
+ * project.
+ */
 /* ====================================================================
- * Copyright (c) 2003 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 2010 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -16,12 +20,12 @@
  * 3. All advertising materials mentioning features or use of this
  *    software must display the following acknowledgment:
  *    "This product includes software developed by the OpenSSL Project
- *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+ *    for use in the OpenSSL Toolkit. (http://www.OpenSSL.org/)"
  *
  * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission. For written permission, please contact
- *    openssl-core@openssl.org.
+ *    licensing@OpenSSL.org.
  *
  * 5. Products derived from this software may not be called "OpenSSL"
  *    nor may "OpenSSL" appear in their names without prior written
@@ -30,7 +34,7 @@
  * 6. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by the OpenSSL Project
- *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+ *    for use in the OpenSSL Toolkit (http://www.OpenSSL.org/)"
  *
  * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
  * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -44,34 +48,35 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * ====================================================================
  */
 
-#ifndef HEADER_FIPS_RAND_H
-#define HEADER_FIPS_RAND_H
 
-#include "des.h"
+#ifndef HEADER_CMAC_H
+#define HEADER_CMAC_H
 
-#ifdef OPENSSL_FIPS
-
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-int FIPS_rand_set_key(const unsigned char *key, FIPS_RAND_SIZE_T keylen);
-int FIPS_rand_seed(const void *buf, FIPS_RAND_SIZE_T num);
-int FIPS_rand_bytes(unsigned char *out, FIPS_RAND_SIZE_T outlen);
+#include <openssl/evp.h>
 
-int FIPS_rand_test_mode(void);
-void FIPS_rand_reset(void);
-int FIPS_rand_set_dt(unsigned char *dt);
+/* Opaque */
+typedef struct CMAC_CTX_st CMAC_CTX;
 
-int FIPS_rand_status(void);
+CMAC_CTX *CMAC_CTX_new(void);
+void CMAC_CTX_cleanup(CMAC_CTX *ctx);
+void CMAC_CTX_free(CMAC_CTX *ctx);
+EVP_CIPHER_CTX *CMAC_CTX_get0_cipher_ctx(CMAC_CTX *ctx);
+int CMAC_CTX_copy(CMAC_CTX *out, const CMAC_CTX *in);
 
-const RAND_METHOD *FIPS_rand_method(void);
+int CMAC_Init(CMAC_CTX *ctx, const void *key, size_t keylen, 
+			const EVP_CIPHER *cipher, ENGINE *impl);
+int CMAC_Update(CMAC_CTX *ctx, const void *data, size_t dlen);
+int CMAC_Final(CMAC_CTX *ctx, unsigned char *out, size_t *poutlen);
+int CMAC_resume(CMAC_CTX *ctx);
 
 #ifdef  __cplusplus
 }
-#endif
 #endif
 #endif

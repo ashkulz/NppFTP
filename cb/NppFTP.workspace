@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
 	<Workspace title="NppFTP">
-		<Project filename="../zlib/cb/zlib.cbp" />
 		<Project filename="../tinyxml/cb/TinyXML.cbp" />
 		<Project filename="../UTCP/cb/UTCP.cbp" />
 		<Project filename="../libssh-0.4.4/cb/libssh.cbp" />
 		<Project filename="NppFTP.cbp" active="1">
-			<Depends filename="../zlib/cb/zlib.cbp" />
 			<Depends filename="../tinyxml/cb/TinyXML.cbp" />
 			<Depends filename="../UTCP/cb/UTCP.cbp" />
 			<Depends filename="../libssh-0.4.4/cb/libssh.cbp" />

@@ -173,7 +173,7 @@ protected:
 	bool			m_SSLconnected;
 	SSLMode			m_sslMode;
 
-	SSL_METHOD *	m_meth;
+	const SSL_METHOD *	m_meth;
 	SSL_CTX *		m_ctx;
 	SSL *			m_ssl;
 	SSL_SESSION *	m_reuseSession;

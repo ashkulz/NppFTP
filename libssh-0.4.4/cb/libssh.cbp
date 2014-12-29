@@ -38,7 +38,6 @@
 			<Add option="-DLIBSSH_STATIC" />
 			<Add directory="..\include" />
 			<Add directory="..\..\include" />
-			<Add directory="..\..\zlib" />
 		</Compiler>
 		<Unit filename="..\include\libssh\agent.h" />
 		<Unit filename="..\include\libssh\buffer.h" />

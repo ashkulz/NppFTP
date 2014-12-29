@@ -29,7 +29,7 @@
 					<Add library="sshD" />
 					<Add library="ssl" />
 					<Add library="crypto" />
-					<Add library="zlibD" />
+					<Add library="z" />
 					<Add library="gdi32" />
 					<Add library="ws2_32" />
 				</Linker>
@@ -56,7 +56,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-static-libgcc" />
+					<Add option="-static" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
 					<Add library="uuid" />
@@ -67,7 +67,7 @@
 					<Add library="ssh" />
 					<Add library="ssl" />
 					<Add library="crypto" />
-					<Add library="zlib" />
+					<Add library="z" />
 					<Add library="gdi32" />
 					<Add library="ws2_32" />
 				</Linker>
@@ -90,7 +90,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-static-libgcc" />
+					<Add option="-static" />
 					<Add library="Comdlg32" />
 					<Add library="Comctl32" />
 					<Add library="uuid" />
@@ -101,7 +101,7 @@
 					<Add library="ssh" />
 					<Add library="ssl" />
 					<Add library="crypto" />
-					<Add library="zlib" />
+					<Add library="z" />
 					<Add library="gdi32" />
 					<Add library="ws2_32" />
 				</Linker>

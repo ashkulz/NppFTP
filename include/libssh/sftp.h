@@ -3,24 +3,23 @@
  *
  * Copyright (c) 2003-2008 by Aris Adamantiadis
  *
- * The SSH Library is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * The SSH Library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
- * License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with the SSH Library; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
- * @file sftp.h
+ * @defgroup libssh_sftp The libssh SFTP API
  *
  * @brief SFTP handling functions
  *
@@ -32,7 +31,6 @@
  * it can fetch it, while continuing to read for other messages (it is
  * unspecified in which order messages may be sent back to the client
  *
- * @defgroup ssh_sftp SFTP Functions
  * @{
  */
 
@@ -60,6 +58,8 @@ extern "C" {
 #endif /* ssize_t */
 #endif /* _MSC_VER */
 #endif /* _WIN32 */
+
+#define LIBSFTP_VERSION 3
 
 typedef struct sftp_attributes_struct* sftp_attributes;
 typedef struct sftp_client_message_struct* sftp_client_message;
@@ -132,6 +132,8 @@ struct sftp_client_message_struct {
     int attr_num;
     ssh_buffer attrbuf; /* used by sftp_reply_attrs */
     ssh_string data; /* can be newpath of rename() */
+    ssh_buffer complete_message; /* complete message in case of retransmission*/
+    char *str_data; /* cstring version of data */
 };
 
 struct sftp_request_queue_struct {
@@ -174,21 +176,22 @@ struct sftp_attributes_struct {
     ssh_string extended_data;
 };
 
+/**
+ * @brief SFTP statvfs structure.
+ */
 struct sftp_statvfs_struct {
-  uint64_t f_bsize; /* file system block size */
-  uint64_t f_frsize; /* fundamental fs block size */
-  uint64_t f_blocks; /* number of blocks (unit f_frsize) */
-  uint64_t f_bfree; /* free blocks in file system */
-  uint64_t f_bavail; /* free blocks for non-root */
-  uint64_t f_files; /* total file inodes */
-  uint64_t f_ffree; /* free file inodes */
-  uint64_t f_favail; /* free file inodes for to non-root */
-  uint64_t f_fsid; /* file system id */
-  uint64_t f_flag; /* bit mask of f_flag values */
-  uint64_t f_namemax; /* maximum filename length */
+  uint64_t f_bsize;   /** file system block size */
+  uint64_t f_frsize;  /** fundamental fs block size */
+  uint64_t f_blocks;  /** number of blocks (unit f_frsize) */
+  uint64_t f_bfree;   /** free blocks in file system */
+  uint64_t f_bavail;  /** free blocks for non-root */
+  uint64_t f_files;   /** total file inodes */
+  uint64_t f_ffree;   /** free file inodes */
+  uint64_t f_favail;  /** free file inodes for to non-root */
+  uint64_t f_fsid;    /** file system id */
+  uint64_t f_flag;    /** bit mask of f_flag values */
+  uint64_t f_namemax; /** maximum filename length */
 };
-
-#define LIBSFTP_VERSION 3
 
 /**
  * @brief Start a new sftp session.
@@ -196,8 +199,23 @@ struct sftp_statvfs_struct {
  * @param session       The ssh session to use.
  *
  * @return              A new sftp session or NULL on error.
+ *
+ * @see sftp_free()
  */
 LIBSSH_API sftp_session sftp_new(ssh_session session);
+
+/**
+ * @brief Start a new sftp session with an existing channel.
+ *
+ * @param session       The ssh session to use.
+ * @param channel		An open session channel with subsystem already allocated
+ *
+ * @return              A new sftp session or NULL on error.
+ *
+ * @see sftp_free()
+ */
+LIBSSH_API sftp_session sftp_new_channel(ssh_session session, ssh_channel channel);
+
 
 /**
  * @brief Close and deallocate a sftp session.
@@ -212,6 +230,8 @@ LIBSSH_API void sftp_free(sftp_session sftp);
  * @param sftp          The sftp session to initialize.
  *
  * @return              0 on success, < 0 on error with ssh error set.
+ *
+ * @see sftp_new()
  */
 LIBSSH_API int sftp_init(sftp_session sftp);
 
@@ -224,6 +244,8 @@ LIBSSH_API int sftp_init(sftp_session sftp);
  *
  * @return              The saved error (see server responses), < 0 if an error
  *                      in the function occured.
+ *
+ * @see Server responses
  */
 LIBSSH_API int sftp_get_error(sftp_session sftp);
 
@@ -283,7 +305,7 @@ LIBSSH_API int sftp_extension_supported(sftp_session sftp, const char *name,
 
 /**
  * @brief Open a directory used to obtain directory entries.
- 
+ *
  * @param session       The sftp session handle to open the directory.
  * @param path          The path of the directory to open.
  *
@@ -330,6 +352,8 @@ LIBSSH_API int sftp_dir_eof(sftp_dir dir);
  *
  * @return              The sftp attributes structure of the file or directory,
  *                      NULL on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_attributes sftp_stat(sftp_session session, const char *path);
 
@@ -345,6 +369,8 @@ LIBSSH_API sftp_attributes sftp_stat(sftp_session session, const char *path);
  *
  * @return              The sftp attributes structure of the file or directory,
  *                      NULL on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_attributes sftp_lstat(sftp_session session, const char *path);
 
@@ -355,6 +381,8 @@ LIBSSH_API sftp_attributes sftp_lstat(sftp_session session, const char *path);
  *
  * @return              The sftp attributes structure of the file or directory,
  *                      NULL on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_attributes sftp_fstat(sftp_file file);
 
@@ -392,7 +420,7 @@ LIBSSH_API int sftp_close(sftp_file file);
  *
  * @param file          The file to be opened.
  *
- * @param accesstype        Is one of O_RDONLY, O_WRONLY or O_RDWR which request
+ * @param accesstype    Is one of O_RDONLY, O_WRONLY or O_RDWR which request
  *                      opening  the  file  read-only,write-only or read/write.
  *                      Acesss may also be bitwise-or'd with one or  more of
  *                      the following:
@@ -410,12 +438,24 @@ LIBSSH_API int sftp_close(sftp_file file);
  *
  * @return              A sftp file handle, NULL on error with ssh and sftp
  *                      error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_file sftp_open(sftp_session session, const char *file, int accesstype,
     mode_t mode);
 
+/**
+ * @brief Make the sftp communication for this file handle non blocking.
+ *
+ * @param[in]  handle   The file handle to set non blocking.
+ */
 LIBSSH_API void sftp_file_set_nonblocking(sftp_file handle);
 
+/**
+ * @brief Make the sftp communication for this file handle blocking.
+ *
+ * @param[in]  handle   The file handle to set blocking.
+ */
 LIBSSH_API void sftp_file_set_blocking(sftp_file handle);
 
 /**
@@ -429,6 +469,8 @@ LIBSSH_API void sftp_file_set_blocking(sftp_file handle);
  *
  * @return              Number of bytes written, < 0 on error with ssh and sftp
  *                      error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API ssize_t sftp_read(sftp_file file, void *buf, size_t count);
 
@@ -569,6 +611,8 @@ LIBSSH_API void sftp_rewind(sftp_file file);
  * @param file          The file to unlink/delete.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_unlink(sftp_session sftp, const char *file);
 
@@ -580,6 +624,8 @@ LIBSSH_API int sftp_unlink(sftp_session sftp, const char *file);
  * @param directory     The directory to remove.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_rmdir(sftp_session sftp, const char *directory);
 
@@ -595,6 +641,8 @@ LIBSSH_API int sftp_rmdir(sftp_session sftp, const char *directory);
  *                      The permissions of the created file are (mode & ~umask)
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_mkdir(sftp_session sftp, const char *directory, mode_t mode);
 
@@ -610,6 +658,8 @@ LIBSSH_API int sftp_mkdir(sftp_session sftp, const char *directory, mode_t mode)
  *                      after the move.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_rename(sftp_session sftp, const char *original, const  char *newname);
 
@@ -624,6 +674,8 @@ LIBSSH_API int sftp_rename(sftp_session sftp, const char *original, const  char 
  *                      which should be changed.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_setstat(sftp_session sftp, const char *file, sftp_attributes attr);
 
@@ -639,6 +691,8 @@ LIBSSH_API int sftp_setstat(sftp_session sftp, const char *file, sftp_attributes
  * @param group         The new group which should be set.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_chown(sftp_session sftp, const char *file, uid_t owner, gid_t group);
 
@@ -654,6 +708,8 @@ LIBSSH_API int sftp_chown(sftp_session sftp, const char *file, uid_t owner, gid_
  *                      The permissions of the created file are (mode & ~umask)
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_chmod(sftp_session sftp, const char *file, mode_t mode);
 
@@ -668,6 +724,8 @@ LIBSSH_API int sftp_chmod(sftp_session sftp, const char *file, mode_t mode);
  *                      and modification time.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_utimes(sftp_session sftp, const char *file, const struct timeval *times);
 
@@ -681,6 +739,8 @@ LIBSSH_API int sftp_utimes(sftp_session sftp, const char *file, const struct tim
  * @param  dest         Specifies the path name of the symlink to be created.
  *
  * @return              0 on success, < 0 on error with ssh and sftp error set.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API int sftp_symlink(sftp_session sftp, const char *target, const char *dest);
 
@@ -692,6 +752,8 @@ LIBSSH_API int sftp_symlink(sftp_session sftp, const char *target, const char *d
  * @param  path         Specifies the path name of the symlink to be read.
  *
  * @return              The target of the link, NULL on error.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API char *sftp_readlink(sftp_session sftp, const char *path);
 
@@ -703,6 +765,8 @@ LIBSSH_API char *sftp_readlink(sftp_session sftp, const char *path);
  * @param  path         The pathname of any file within the mounted file system.
  *
  * @return A statvfs structure or NULL on error.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_statvfs_t sftp_statvfs(sftp_session sftp, const char *path);
 
@@ -712,6 +776,8 @@ LIBSSH_API sftp_statvfs_t sftp_statvfs(sftp_session sftp, const char *path);
  * @param  file         An opened file.
  *
  * @return A statvfs structure or NULL on error.
+ *
+ * @see sftp_get_error()
  */
 LIBSSH_API sftp_statvfs_t sftp_fstatvfs(sftp_file file);
 
@@ -773,8 +839,14 @@ int buffer_add_attributes(ssh_buffer buffer, sftp_attributes attr);
 sftp_attributes sftp_parse_attr(sftp_session session, ssh_buffer buf,int expectname);
 /* sftpserver.c */
 
-sftp_client_message sftp_get_client_message(sftp_session sftp);
-void sftp_client_message_free(sftp_client_message msg);
+LIBSSH_API sftp_client_message sftp_get_client_message(sftp_session sftp);
+LIBSSH_API void sftp_client_message_free(sftp_client_message msg);
+LIBSSH_API uint8_t sftp_client_message_get_type(sftp_client_message msg);
+LIBSSH_API const char *sftp_client_message_get_filename(sftp_client_message msg);
+LIBSSH_API void sftp_client_message_set_filename(sftp_client_message msg, const char *newname);
+LIBSSH_API const char *sftp_client_message_get_data(sftp_client_message msg);
+LIBSSH_API uint32_t sftp_client_message_get_flags(sftp_client_message msg);
+LIBSSH_API int sftp_send_client_message(sftp_session sftp, sftp_client_message msg);
 int sftp_reply_name(sftp_client_message msg, const char *name,
     sftp_attributes attr);
 int sftp_reply_handle(sftp_client_message msg, ssh_string handle);
@@ -843,21 +915,43 @@ void sftp_handle_remove(sftp_session sftp, void *handle);
 #define SSH_FILEXFER_TYPE_SPECIAL 4
 #define SSH_FILEXFER_TYPE_UNKNOWN 5
 
-/* server responses */
+/**
+ * @name Server responses
+ *
+ * @brief Responses returned by the sftp server.
+ * @{
+ */
+
+/** No error */
 #define SSH_FX_OK 0
+/** End-of-file encountered */
 #define SSH_FX_EOF 1
+/** File doesn't exist */
 #define SSH_FX_NO_SUCH_FILE 2
+/** Permission denied */
 #define SSH_FX_PERMISSION_DENIED 3
+/** Generic failure */
 #define SSH_FX_FAILURE 4
+/** Garbage received from server */
 #define SSH_FX_BAD_MESSAGE 5
+/** No connection has been set up */
 #define SSH_FX_NO_CONNECTION 6
+/** There was a connection, but we lost it */
 #define SSH_FX_CONNECTION_LOST 7
+/** Operation not supported by the server */
 #define SSH_FX_OP_UNSUPPORTED 8
+/** Invalid file handle */
 #define SSH_FX_INVALID_HANDLE 9
+/** No such file or directory path exists */
 #define SSH_FX_NO_SUCH_PATH 10
+/** An attempt to create an already existing file or directory has been made */
 #define SSH_FX_FILE_ALREADY_EXISTS 11
+/** We are trying to write on a write-protected filesystem */
 #define SSH_FX_WRITE_PROTECT 12
+/** No media in remote drive */
 #define SSH_FX_NO_MEDIA 13
+
+/** @} */
 
 /* file flags */
 #define SSH_FXF_READ 0x01

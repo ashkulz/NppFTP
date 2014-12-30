@@ -26,7 +26,7 @@
 					<Add library="shlwapi" />
 					<Add library="TinyXMLD" />
 					<Add library="UTCPD" />
-					<Add library="sshD" />
+					<Add library="ssh" />
 					<Add library="ssl" />
 					<Add library="crypto" />
 					<Add library="z" />
@@ -127,7 +127,6 @@
 			<Add directory="..\include\nppftp" />
 			<Add directory="..\include\nppftp\Npp" />
 			<Add directory="..\include\nppftp\Windows" />
-			<Add directory="..\libssh-0.4.4\include" />
 			<Add directory="..\tinyxml\include" />
 			<Add directory="..\UTCP\Include" />
 		</Compiler>

@@ -3,11 +3,9 @@
 	<Workspace title="NppFTP">
 		<Project filename="../tinyxml/cb/TinyXML.cbp" />
 		<Project filename="../UTCP/cb/UTCP.cbp" />
-		<Project filename="../libssh-0.4.4/cb/libssh.cbp" />
 		<Project filename="NppFTP.cbp" active="1">
 			<Depends filename="../tinyxml/cb/TinyXML.cbp" />
 			<Depends filename="../UTCP/cb/UTCP.cbp" />
-			<Depends filename="../libssh-0.4.4/cb/libssh.cbp" />
 		</Project>
 	</Workspace>
 </CodeBlocks_workspace_file>

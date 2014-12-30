@@ -22,7 +22,6 @@
 #include "MessageDialog.h"
 #include "KBIntDialog.h"
 #include <fcntl.h>
-#include <libssh/keys.h>	//complete type for private_key
 
 #ifdef strdup	//undefine strdup form libssh
 #undef strdup
@@ -555,8 +554,8 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	if (privkey == NULL)
 		return SSH_AUTH_ERROR;
 
-	type = privkey->type;
-	if (type == 0) {
+	type = ssh_privatekey_type(privkey);
+	if (type == SSH_KEX) {
 		privatekey_free(privkey);
 		return SSH_AUTH_ERROR;
 	}

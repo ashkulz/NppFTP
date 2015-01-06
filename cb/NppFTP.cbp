@@ -33,11 +33,6 @@
 					<Add library="gdi32" />
 					<Add library="ws2_32" />
 				</Linker>
-				<ExtraCommands>
-					<Add before='cmd /c copy &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbolsU.h&quot; &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbols.h&quot; /Y' />
-					<Add after='cmd /c copy &quot;$(PROJECT_DIR)$(TARGET_OUTPUT_FILE)&quot; &quot;..\..\Notepad++\plugins\&quot;' />
-					<Mode after="always" />
-				</ExtraCommands>
 			</Target>
 			<Target title="Release_DLL">
 				<Option output="..\bin\NppFTP" prefix_auto="1" extension_auto="1" />
@@ -71,43 +66,6 @@
 					<Add library="gdi32" />
 					<Add library="ws2_32" />
 				</Linker>
-				<ExtraCommands>
-					<Add before='cmd /c copy &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbolsU.h&quot; &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbols.h&quot; /Y' />
-				</ExtraCommands>
-			</Target>
-			<Target title="ReleaseANSI_DLL">
-				<Option output="..\bin\NppFTPA" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="..\bin" />
-				<Option object_output="obj\ReleaseA\" />
-				<Option type="3" />
-				<Option compiler="gcc" />
-				<Option host_application="..\..\Notepad++\notepad++.exe" />
-				<Option projectLinkerOptionsRelation="2" />
-				<Compiler>
-					<Add option="-fexpensive-optimizations" />
-					<Add option="-Os" />
-					<Add option="-O3" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-					<Add option="-static" />
-					<Add library="Comdlg32" />
-					<Add library="Comctl32" />
-					<Add library="uuid" />
-					<Add library="ole32" />
-					<Add library="shlwapi" />
-					<Add library="TinyXML" />
-					<Add library="UTCPA" />
-					<Add library="ssh" />
-					<Add library="ssl" />
-					<Add library="crypto" />
-					<Add library="z" />
-					<Add library="gdi32" />
-					<Add library="ws2_32" />
-				</Linker>
-				<ExtraCommands>
-					<Add before='cmd /c copy &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbolsA.h&quot; &quot;$(PROJECT_DIR)..\include\nppftp\Windows\symbols.h&quot; /Y' />
-				</ExtraCommands>
 			</Target>
 		</Build>
 		<Compiler>

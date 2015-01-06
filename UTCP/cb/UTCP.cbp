@@ -36,21 +36,6 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="ReleaseANSI">
-				<Option output="..\..\lib\libUTCPA" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="" />
-				<Option object_output="obj\ReleaseA\" />
-				<Option type="2" />
-				<Option compiler="gcc" />
-				<Option createDefFile="1" />
-				<Compiler>
-					<Add option="-Os" />
-					<Add option="-O3" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-				</Linker>
-			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />

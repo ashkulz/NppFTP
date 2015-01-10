@@ -98,8 +98,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/home/build/0.13/static-build/mingw-w64-cross-win32/deplibs/lib/engines"
-#define OPENSSLDIR "/home/build/0.13/static-build/mingw-w64-cross-win32/deplibs"
+#define ENGINESDIR "/home/wkhtmltopdf/wkhtmltopdf/static-build/mingw-w64-cross-win32/deplibs/lib/engines"
+#define OPENSSLDIR "/home/wkhtmltopdf/wkhtmltopdf/static-build/mingw-w64-cross-win32/deplibs"
 #endif
 #endif
 

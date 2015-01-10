@@ -59,6 +59,7 @@ INT_PTR AboutDialog::OnInitDialog() {
 	const TCHAR * aboutMessage = 
 		TEXT("NppFTP, Copyright 2010\r\n")
 		TEXT("Created by Harry ( harrybharry@users.sourceforge.net )\r\n")
+		TEXT("Maintained by Ashish Kulkarni (kulkarni.ashish@gmail.com)\r\n")
 		TEXT("\r\n")
 		TEXT("Press Show FTP Window to get started, and read the documentation (if any) when you get stuck.\r\n")
 		TEXT("For help, info and updates, visit the site by clicking the button below.\r\n")

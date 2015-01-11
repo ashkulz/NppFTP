@@ -127,7 +127,7 @@ CUT_FTPClient::CUT_FTPClient() :
     m_wsData.ptrFTPClient = this;
 
     //set up the defaults
-    m_szResponse[0]         = NULL;     // Last response from the server
+    m_szResponse[0]         = '\0';     // Last response from the server
     m_nDataPort              =   10000 + GetTickCount()%20000;
     if(m_nDataPort > 32000 || m_nDataPort < 0)
         m_nDataPort = 10000;
@@ -179,7 +179,7 @@ int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LP
 
     // clear response list
     m_listResponse.ClearList();
-    m_szResponse [0]= NULL;
+    m_szResponse [0]= '\0';
     m_lastResponseCode = 0;
     m_cachedResponse = false;
 
@@ -2884,7 +2884,7 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     struct tm   *tblock;
     long        value;
 	int			linksIncluded = 0;
-    di->fileName[0] = NULL;
+    di->fileName[0] = '\0';
 
     // Get the file name
     int nSpaces = 0;
@@ -3157,7 +3157,7 @@ int CUT_FTPClient::Quote(LPCWSTR command) {
 #endif
 int CUT_FTPClient::Quote(LPCSTR command) {
 
-    m_szResponse[0]         = NULL;
+    m_szResponse[0]         = '\0';
     if (!command || strlen(command) <1)
         return OnError(UTE_QUOTE_LINE_IS_EMPTY);
     // clear response list

@@ -1,8 +1,3 @@
 bin/
-obj
-*.layout
-*.depend
-include/nppftp/Windows/symbols.h
-lib/libTinyXML.a
-lib/libUTCP.a
-lib/libUTCPA.a
+obj/
+NppFTP.zip

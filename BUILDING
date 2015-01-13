@@ -1,10 +1,10 @@
 All binaries were built with the Mingw-builds [1] toolchain, specifically
-i686-4.9.2-win32-sjlj-rt_v3-rev1. The Code::Blocks IDE was used to compile
-the source code with the above toolchain.
+i686-4.9.2-win32-sjlj-rt_v3-rev1. Just run `mingw32-make` in the root
+folder to produce the DLL.
 
 Library versions used:
  * zlib 1.2.8
- * OpenSSL 1.0.1j
+ * OpenSSL 1.0.1k
  * libssh 0.6.4
 
 All the above libraries were cross-compiled on Ubuntu 14.04.1 using

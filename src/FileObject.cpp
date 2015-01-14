@@ -225,7 +225,7 @@ bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
 	return (res <= 0);
 }
 
-FileObject* FileObject::GetChild(const char *filename) {
+FileObject* FileObject::GetChildByName(const char *filename) {
 
     int i;
     int count = GetChildCount();

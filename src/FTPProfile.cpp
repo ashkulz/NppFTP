@@ -185,18 +185,13 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		case Mode_FTPES: {
 			FTPClientWrapperSSL * SSLwrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, password);
 			wrapper = SSLwrapper;
-			switch(m_securityMode) {
-				case Mode_FTP:
-					SSLwrapper->SetMode(CUT_FTPClient::FTP);
-					break;
-				case Mode_FTPS:
-					SSLwrapper->SetMode(CUT_FTPClient::FTPS);
-					break;
-				case Mode_FTPES:
-					SSLwrapper->SetMode(CUT_FTPClient::FTPES);
-					break;
+			if (m_securityMode == Mode_FTP)
+				SSLwrapper->SetMode(CUT_FTPClient::FTP);
+			else if (m_securityMode == Mode_FTPS)
+				SSLwrapper->SetMode(CUT_FTPClient::FTPS);
+			else if (m_securityMode == Mode_FTPES)
+				SSLwrapper->SetMode(CUT_FTPClient::FTPES);
 
-			}
 			SSLwrapper->SetConnectionMode(m_connectionMode);
 			SSLwrapper->SetPortRange(m_dataPortMin, m_dataPortMax);
 			SSLwrapper->SetListParams(m_ftpListParams);

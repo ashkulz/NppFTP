@@ -179,5 +179,5 @@ int DragDropWindow::PerformDragDrop() {
 
 	OutMsg("[DnD] PerformDragDrop end");
 
-	return 0;
+	return result;
 }

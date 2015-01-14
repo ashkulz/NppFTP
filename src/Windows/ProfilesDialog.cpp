@@ -219,6 +219,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 							case Mode_SFTP: {
 								m_currentProfile->SetPort(22);
 								break; }
+							default: break;
 						}
 						::SetDlgItemInt(m_hPageConnection, IDC_EDIT_PORT,  m_currentProfile->GetPort(), TRUE);
 					}
@@ -553,11 +554,13 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	lvc.fmt = LVCFMT_LEFT;
 
 	lvc.cx = 110;
-	lvc.pszText = TEXT("Local path");
+	TCHAR strLocalPath[] = TEXT("Local path");
+	lvc.pszText = strLocalPath;
 	ListView_InsertColumn(hListCache, 0, &lvc);
 
 	lvc.cx = 110;
-	lvc.pszText = TEXT("External path");
+	TCHAR strExternalPath[] = TEXT("External path");
+	lvc.pszText = strExternalPath;
 	ListView_InsertColumn(hListCache, 1, &lvc);
 
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);

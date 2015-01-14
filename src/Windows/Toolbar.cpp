@@ -199,7 +199,7 @@ int Toolbar::DoPopop(POINT chevPoint) {
 
 	if (start < m_nrButtons) {	//some buttons are hidden
 		HMENU menu = ::CreatePopupMenu();
-		int curIndex = start;
+		size_t curIndex = start;
 		while (curIndex < m_nrButtons) {
 			if (m_buttons[curIndex].idCommand != 0) {
 				const TCHAR* name = tooltips[curIndex];
@@ -220,7 +220,7 @@ int Toolbar::DoPopop(POINT chevPoint) {
 			curIndex++;
 		}
 		TrackPopupMenu(menu, 0, chevPoint.x, chevPoint.y, 0, m_hwnd, NULL);
-		for(int i = start; i < curIndex; i++) {
+		for(size_t i = start; i < curIndex; i++) {
 			::RemoveMenu(menu, 0, MF_BYPOSITION);
 		}
 		::DestroyMenu(menu);

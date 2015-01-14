@@ -632,19 +632,25 @@ int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
 }
 
 int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
-	int state;
+	int state, rc;
 	int result = -1;
 	unsigned char *hash = NULL;
 	char * hashHex;
-	int hlen;
+	size_t hlen;
+	ssh_key srv_pubkey;
 	TCHAR errMessage[512];
 
 	state = ssh_is_server_known(session);
 
-	hlen = ssh_get_pubkey_hash(session, &hash);
-	if (hlen < 0) {
+	rc = ssh_get_publickey(session, &srv_pubkey);
+	if (rc < 0)
 		return -1;
-	}
+
+	rc = ssh_get_publickey_hash(srv_pubkey, SSH_PUBLICKEY_HASH_SHA1, &hash, &hlen);
+	ssh_key_free(srv_pubkey);
+	if (rc < 0)
+		return -1;
+
 	hashHex = ssh_get_hexa(hash, hlen);
 
 	bool askSavekey = false;

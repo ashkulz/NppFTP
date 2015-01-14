@@ -1,7 +1,7 @@
 # Makefile for building NppFTP
 CXX    = i686-w64-mingw32-g++
 AR     = ar rcs
-CFLAGS = -Os -O3 -Wall -fexpensive-optimizations -DLIBSSH_STATIC -DUNICODE -D_UNICODE
+CFLAGS = -Os -O3 -Wall -Werror -fexpensive-optimizations -DLIBSSH_STATIC -DUNICODE -D_UNICODE
 LFLAGS = -static -Lobj -L3rdparty/lib -lcomdlg32 -lcomctl32 -luuid -lole32 -lshlwapi -lssh -lssl -lcrypto -lz -lgdi32 -lws2_32
 INC    = -I3rdparty/include -Iinclude -Iinclude/Npp -Iinclude/Windows -Itinyxml/include -IUTCP/include
 

@@ -43,15 +43,18 @@ int QueueWindow::Create(HWND hParent) {
 	lvc.fmt = LVCFMT_LEFT;
 
 	lvc.cx = 50;
-	lvc.pszText = TEXT("Action");
+	TCHAR strAction[] = TEXT("Action");
+	lvc.pszText = strAction;
 	ListView_InsertColumn(m_hwnd, 0, &lvc);
 
 	lvc.cx = 60;
-	lvc.pszText = TEXT("Progress");
+	TCHAR strProgress[] = TEXT("Progress");
+	lvc.pszText = strProgress;
 	ListView_InsertColumn(m_hwnd, 1, &lvc);
 
 	lvc.cx = 250;
-	lvc.pszText = TEXT("File");
+	TCHAR strFile[] = TEXT("File");
+	lvc.pszText = strFile;
 	ListView_InsertColumn(m_hwnd, 2, &lvc);
 
 	return 0;

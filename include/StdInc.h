@@ -19,7 +19,7 @@
 //System headers
 #define _WIN32_IE 0x0501
 #define _WIN32_WINNT 0x0501
-#define _WINSOCKAPI_
+#include <winsock2.h>
 #include <windows.h>
 #include <Shlwapi.h>
 #include <tchar.h>

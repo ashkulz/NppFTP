@@ -91,7 +91,7 @@ private:
 class CDataObject : public IDataObject {
 public:
 							CDataObject(DropDataWindow * dataWindow);
-							~CDataObject();
+							virtual ~CDataObject();
 
    /* IUnknown methods */
 	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
@@ -133,7 +133,7 @@ private:
 class CEnumFormatEtc : public IEnumFORMATETC {
 public:
 							CEnumFormatEtc(FORMATETC *pFormatEtc, int nNumFormats);
-							~CEnumFormatEtc();
+							virtual ~CEnumFormatEtc();
 
 	/* IUnknown methods */
 	STDMETHOD				(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
@@ -157,7 +157,7 @@ class CStreamData : public IStream {
 	//Supports only 4GB streamsize, no more
 public:
 							CStreamData(FILEDESCRIPTOR * fd);
-							~CStreamData();
+							virtual ~CStreamData();
 
 	/* IUnknown methods */
 	STDMETHOD				(QueryInterface)(REFIID iid, void FAR* FAR* ppv);

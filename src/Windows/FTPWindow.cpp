@@ -760,7 +760,7 @@ HRESULT FTPWindow::OnDrop(LPDATAOBJECT pDataObj, DWORD /*grfKeyState*/, POINTL /
 	FORMATETC formatetc;
 	formatetc.cfFormat = CF_HDROP;
 	formatetc.tymed = TYMED_HGLOBAL;
-	formatetc.dwAspect = NULL;
+	formatetc.dwAspect = 0;
 	formatetc.lindex = -1;
 	formatetc.ptd = NULL;;
 
@@ -975,7 +975,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 
             std::vector<FTPDir*> parentDirObjs = dirop->GetParentDirObjs();
-            int i;
+            size_t i;
 
             for (i=0; i<parentDirObjs.size(); i++) {
                 FTPDir* curFTPDir = parentDirObjs[i];

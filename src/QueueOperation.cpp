@@ -374,7 +374,7 @@ QueueGetDir::QueueGetDir(HWND hNotify, const char * dirPath, std::vector<char*> 
 	m_fileCount(0)
 {
 
-    int i;
+	size_t i;
 	m_dirPath = SU::strdup(dirPath);
 
 	for(i=0; i<inputParentDirs.size(); i++)
@@ -390,7 +390,7 @@ QueueGetDir::~QueueGetDir() {
 
 	SU::free(m_dirPath);
 
-	int i;
+	size_t i;
 	for(i=0; i<parentDirs.size(); i++)
         SU::free(parentDirs[i]);
 }
@@ -405,7 +405,7 @@ int QueueGetDir::Perform() {
 
     if (parentDirs.size() > 0) {
 
-        int i;
+        size_t i;
         for(i=0; i<parentDirs.size(); i++) {
 
             FTPFile* files;

@@ -116,7 +116,7 @@ void beNotified(SCNotification * scNotification) {
 			break; }
 		case NPPN_FILESAVED: {
 			BufferID buf = (BufferID)scNotification->nmhdr.idFrom;
-			int size = ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, NULL);
+			int size = ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, (LPARAM)NULL);
 			if (size == -1)
 				break;
 			TCHAR * path = new TCHAR[size+1];
@@ -126,7 +126,7 @@ void beNotified(SCNotification * scNotification) {
 			break; }
 		case NPPN_BUFFERACTIVATED: {
 			BufferID buf = (BufferID)scNotification->nmhdr.idFrom;
-			int size = ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, NULL);
+			int size = ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)buf, (LPARAM)NULL);
 			if (size == -1)
 				break;
 			TCHAR * path = new TCHAR[size+1];

@@ -306,7 +306,8 @@ int Treeview::ExpandDirectory(FileObject * dir) {
 
 	HTREEITEM hti = (HTREEITEM)dat;
 	RECT rc = {0,0,0,0};
-	BOOL visible = TreeView_GetItemRect(m_hwnd, hti, &rc, FALSE);
+	RECT *rcPtr = &rc;
+	BOOL visible = TreeView_GetItemRect(m_hwnd, hti, rcPtr, FALSE);
 
 	if (visible == TRUE) {
 		TreeView_Expand(m_hwnd, hti, TVE_EXPAND);
@@ -373,7 +374,8 @@ int Treeview::RedrawItem(HTREEITEM item) {
 		return -1;
 
 	RECT rc;
-	BOOL visible = TreeView_GetItemRect(m_hwnd, item, &rc, TRUE);	//TRUE: get rect of entire row
+	RECT *rcPtr = &rc;
+	BOOL visible = TreeView_GetItemRect(m_hwnd, item, rcPtr, TRUE);	//TRUE: get rect of entire row
 	if (visible == TRUE) {
 		//::RedrawWindow(m_hwnd, &rc, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_ERASENOW|RDW_UPDATENOW);
 		::RedrawWindow(m_hwnd, NULL, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_ERASENOW|RDW_UPDATENOW);

@@ -34,7 +34,7 @@ public:
 	static const char*		GetDefaultKey();	//size of 8, not zero terminated neccessarily
 	static bool				IsDefaultKey();
 
-	static const size_t		KeySize = 8;
+	static const int		KeySize = 8;
 private:
 	static char*			DES_encrypt(const char * key, int keysize, const char * data, int size, bool addZero, int type);
 

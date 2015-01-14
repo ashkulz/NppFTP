@@ -313,10 +313,12 @@ int Treeview::ExpandDirectory(FileObject * dir) {
 		TreeView_Expand(m_hwnd, hti, TVE_EXPAND);
 	}
 
-	if (curSelectedItem)
-        TreeView_SetItemState(m_hwnd, curSelectedItem, 0, TVIS_SELECTED);
+	if (curSelectedItem) {
+		TreeView_SelectItem(m_hwnd, NULL);
+		TreeView_SetItemState(m_hwnd, curSelectedItem, 0, TVIS_SELECTED);
+	}
 
-	TreeView_SetItemState(m_hwnd, hti, TVIS_SELECTED, TVIS_SELECTED);
+	TreeView_SelectItem(m_hwnd, hti);
     curSelectedItem = hti;
 	return 0;
 }

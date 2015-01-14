@@ -244,7 +244,7 @@ BEGIN
             VALUE "FileDescription", "FTP Plugin for Notepad++, a free (GNU) source code editor"
             VALUE "FileVersion", IDT_VERSION_TEXT
             VALUE "InternalName", "NppFTP"
-            VALUE "LegalCopyright", "Copyright (C) 2010"
+            VALUE "LegalCopyright", "Copyright (c) 2010-2015"
             VALUE "OriginalFilename", "NppFTP.dll"
             VALUE "ProductName", "NppFTP"
             VALUE "ProductVersion", IDT_VERSION_TEXT

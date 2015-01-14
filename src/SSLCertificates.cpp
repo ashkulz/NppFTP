@@ -87,8 +87,8 @@ X509* SSLCertificates::ConvertDER(const DER & der) {
 	//Assuming openssl 0.9.7 or higher
 	X509 * x509 = NULL;
 
-	const unsigned char ** buf = (const unsigned char **)&(der.data);
-	x509 = d2i_X509(NULL, buf, der.len);
+	unsigned char * buf = der.data;
+	x509 = d2i_X509(NULL, const_cast<const unsigned char **>(&buf), der.len);
 
 	return x509;
 }

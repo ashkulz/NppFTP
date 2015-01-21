@@ -97,7 +97,7 @@ INT_PTR AboutDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			result = TRUE;
 			break; }
 		case IDC_BUTTON_VISIT: {
-			ShellExecute(NULL, TEXT("open"), TEXT("http://sourceforge.net/projects/nppftp"), NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(NULL, TEXT("open"), TEXT("http://ashkulz.github.io/NppFTP/"), NULL, NULL, SW_SHOWNORMAL);
 			result = TRUE;
 			break; }
 		case IDC_BUTTON_DONATE: {

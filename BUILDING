@@ -4,7 +4,7 @@ folder to produce the DLL.
 
 Library versions used:
  * zlib 1.2.8
- * OpenSSL 1.0.1k
+ * OpenSSL 1.0.1l
  * libssh 0.6.4
 
 All the above libraries were cross-compiled on Ubuntu 14.04.1 using

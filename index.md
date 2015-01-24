@@ -2,6 +2,10 @@
 layout: default
 ---
 
+## Download
+
+You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [SourceForge](http://sourceforge.net/projects/nppftp/files/latest/download).
+
 ## Usage
 
 To start using the plugin, use the **Show NppFTP Window** option from the plugins menu, or use the Notepad++ toolbar button. To find some information about the plugin, use the **About NppFTP** option from the menu. There is a button there for a link to the NppFTP site.
@@ -58,6 +62,7 @@ were to be at the top, ALL files would be downloaded to `D:\serverfilesystem`
 ## Toolbar
 
 The toolbar provides the following buttons:
+
 * _Connected/Disconnect_: Either connect to a server from a profile form a dropdown menu, or disconnect from the current server.
 * _Download file_: If a file is selected in the treeview, download it to the cache.
 * _Upload file_: If a directory is selected in the treeview, upload the current file to that directory.

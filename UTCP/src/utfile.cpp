@@ -25,7 +25,7 @@ Modification made April 2010:
 
 #include "stdafx.h"
 #include "tchar.h"
-#include "UTFile.h"
+#include "utfile.h"
 
 
 CUT_File::CUT_File()

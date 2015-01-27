@@ -22,7 +22,7 @@
 #include "resource.h"
 #include "Commands.h"
 #include <time.h>
-#include <Windowsx.h>
+#include <windowsx.h>
 #include "Npp/Scintilla.h"
 #include "Npp/SciLexer.h"
 

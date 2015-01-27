@@ -19,7 +19,7 @@
 #include "StdInc.h"
 #include "InputDialog.h"
 
-#include <Windowsx.h>
+#include <windowsx.h>
 #include "resource.h"
 
 InputDialog::InputDialog() :

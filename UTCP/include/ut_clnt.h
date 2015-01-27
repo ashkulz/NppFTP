@@ -35,9 +35,9 @@ Add OpenSSL secure functionality
 #include <winsock2.h>     //use for Winsock v2.x
 #define WINSOCKVER    MAKEWORD(2,0)
 
-#include "UTErr.h"
-#include "UTFile.h"
-#include "UTStrLst.h"
+#include "uterr.h"
+#include "utfile.h"
+#include "utstrlst.h"
 #include "UTDataSource.h"
 #include "UT_Queue.h"
 

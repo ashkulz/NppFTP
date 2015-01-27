@@ -21,7 +21,7 @@
 
 #include "Encryption.h"
 #include "resource.h"
-#include <Windowsx.h>
+#include <windowsx.h>
 
 SettingsDialog::SettingsDialog() :
 	Dialog(IDD_DIALOG_GLOBAL),

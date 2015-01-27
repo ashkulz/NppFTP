@@ -27,8 +27,8 @@ Remove pragma statements
 #define UTDATASOURCE_H
 
 #include <stdio.h>
-#include "UTStrLst.h"
-#include "UTFile.h"
+#include "utstrlst.h"
+#include "utfile.h"
 
 #define	FIND_BUFFER_SIZE	4096
 

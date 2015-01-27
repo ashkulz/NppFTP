@@ -22,7 +22,7 @@
 #include "InputDialog.h"
 #include "FTPWindow.h"
 #include "resource.h"
-#include <Windowsx.h>
+#include <windowsx.h>
 
 ProfilesDialog::ProfilesDialog() :
 	Dialog(IDD_DIALOG_PROFILES),

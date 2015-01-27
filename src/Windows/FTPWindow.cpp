@@ -26,8 +26,8 @@
 #include "Npp/Notepad_plus_msgs.h"
 
 #include "Commands.h"
-#include <Commctrl.h>
-#include <Windowsx.h>
+#include <commctrl.h>
+#include <windowsx.h>
 
 const TCHAR * FTPWindow::FTPWINDOWCLASS = TEXT("NPPFTPMAIN");
 

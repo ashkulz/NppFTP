@@ -25,7 +25,7 @@
 #define UTSTLST_H
 
 #include <stdlib.h>
-#include "UTErr.h"
+#include "uterr.h"
 
 
 // =================================================================

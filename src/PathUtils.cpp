@@ -19,8 +19,8 @@
 #include "StdInc.h"
 #include "PathUtils.h"
 
-#include <Shlobj.h>
-#include <Commdlg.h>
+#include <shlobj.h>
+#include <commdlg.h>
 
 int PU::LocalToExternalPath(const TCHAR * local, char * external, int externalsize) {
 	if (!local || !external || externalsize == 0)

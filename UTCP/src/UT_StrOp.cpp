@@ -17,7 +17,7 @@
 //=================================================================
 
 #include "stdafx.h"
-#include "UT_StrOp.h"
+#include "ut_strop.h"
 
 #include <stdio.h>
 #include <stdlib.h>

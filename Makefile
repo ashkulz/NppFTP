@@ -1,6 +1,14 @@
 # Makefile for building NppFTP
+
+ifeq ($(OS),Windows_NT)
+WINDRES = windres
+RMDIR   = if exist $(1) rd /s /q $(1)
+else
+WINDRES = i686-w64-mingw32-windres
+RMDIR   = rm -fr $(1)
+endif
+
 CXX    = i686-w64-mingw32-g++
-AR     = ar rcs
 CFLAGS = -MMD -Os -O3 -Wall -Werror -fexpensive-optimizations -DLIBSSH_STATIC -DUNICODE -D_UNICODE
 LFLAGS = -static -Lobj -L3rdparty/lib -lcomdlg32 -lcomctl32 -luuid -lole32 -lshlwapi -lssh -lssl -lcrypto -lz -lgdi32 -lws2_32
 INC    = -I3rdparty/include -Iinclude -Iinclude/Npp -Iinclude/Windows -Itinyxml/include -IUTCP/include
@@ -21,9 +29,10 @@ OBJECTS_D  = $(TXML_OBJ_D) $(UTCP_OBJ_D) $(NPP_OBJ_D)
 DEPENDS_D  = ${OBJECTS_D:.o=.d}
 
 all:     release
-debug:   makedirs $(TGT_D)
-release: makedirs $(TGT)
-	@zip -9 -r NppFTP.zip $(TGT) doc/ >nul
+debug:   bin obj $(TGT_D)
+release: bin obj $(TGT)
+	@echo ============ creating NppFTP.zip ============
+	@zip -9 -r NppFTP.zip $(TGT) doc/
 
 obj/%.o: tinyxml/src/%.cpp
 	@echo CXX  $< & $(CXX) -c $(CFLAGS) $(INC) $< -o $@
@@ -50,7 +59,7 @@ obj/%_debug.o: src/Windows/%.cpp
 	@echo CXX  $< & $(CXX) -g -c $(CFLAGS) $(INC) $< -o $@
 
 obj/%.res: src/Windows/%.rc
-	@echo RES  $< & windres $(INC) -J rc -O coff -i $< -o $@
+	@echo RES  $< & $(WINDRES) $(INC) -J rc -O coff -i $< -o $@
 
 $(TGT): $(OBJECTS) $(RES)
 	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS) -o $@ -s $(LFLAGS)
@@ -58,13 +67,15 @@ $(TGT): $(OBJECTS) $(RES)
 $(TGT_D): $(OBJECTS_D) $(RES)
 	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS_D) -o $@ $(LFLAGS)
 
-makedirs:
-	@if not exist obj mkdir obj
-	@if not exist bin mkdir bin
+bin:
+	@mkdir bin
+
+obj:
+	@mkdir obj
 
 clean:
-	@if exist obj rd /s /q obj
-	@if exist bin rd /s /q bin
+	@$(call RMDIR, bin)
+	@$(call RMDIR, obj)
 
 -include ${DEPENDS}
 -include ${DEPENDS_D}

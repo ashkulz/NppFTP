@@ -24,26 +24,26 @@
 //
 // Icon resources
 //
-IDI_ICON_FOLDERS   ICON           "bitmaps\\icon_folder.ico"
-IDI_ICON_MESSAGES  ICON           "bitmaps\\icon_messages.ico"
+IDI_ICON_FOLDERS   ICON           "bitmaps/icon_folder.ico"
+IDI_ICON_MESSAGES  ICON           "bitmaps/icon_messages.ico"
 
 //
 // Bitmap resources
 //
-IDB_BITMAP_ABORT   BITMAP         "bitmaps\\toolbar_abort.bmp"
-IDB_BITMAP_CONNECT BITMAP         "bitmaps\\toolbar_connected.bmp"
-IDB_BITMAP_DISCONNECT BITMAP      "bitmaps\\toolbar_disconnected.bmp"
-IDB_BITMAP_DOWNLOAD BITMAP        "bitmaps\\toolbar_download.bmp"
-IDB_BITMAP_OPENDIR BITMAP         "bitmaps\\maintoolbar_folder.bmp"
-IDB_BITMAP_FOLDERS BITMAP         "bitmaps\\maintoolbar_folder.bmp"
-IDB_BITMAP_MESSAGES BITMAP        "bitmaps\\toolbar_messages.bmp"
-IDB_BITMAP_RAWCOMMAND BITMAP      "bitmaps\\toolbar_rawcommand.bmp"
-IDB_BITMAP_REFRESH BITMAP         "bitmaps\\toolbar_refresh.bmp"
-IDB_BITMAP_SETTINGS BITMAP        "bitmaps\\toolbar_settings.bmp"
-IDB_BITMAP_TREEICONS BITMAP       "bitmaps\\icons_treeview.bmp"
-IDB_BITMAP_TREEICONS_MASK BITMAP  "bitmaps\\icons_treeview_mask.bmp"
-IDB_BITMAP_UPLOAD  BITMAP         "bitmaps\\toolbar_upload.bmp"
-IDB_BITMAP_PAYPAL  BITMAP         "bitmaps\\pp_favicon_x.bmp"
+IDB_BITMAP_ABORT   BITMAP         "bitmaps/toolbar_abort.bmp"
+IDB_BITMAP_CONNECT BITMAP         "bitmaps/toolbar_connected.bmp"
+IDB_BITMAP_DISCONNECT BITMAP      "bitmaps/toolbar_disconnected.bmp"
+IDB_BITMAP_DOWNLOAD BITMAP        "bitmaps/toolbar_download.bmp"
+IDB_BITMAP_OPENDIR BITMAP         "bitmaps/maintoolbar_folder.bmp"
+IDB_BITMAP_FOLDERS BITMAP         "bitmaps/maintoolbar_folder.bmp"
+IDB_BITMAP_MESSAGES BITMAP        "bitmaps/toolbar_messages.bmp"
+IDB_BITMAP_RAWCOMMAND BITMAP      "bitmaps/toolbar_rawcommand.bmp"
+IDB_BITMAP_REFRESH BITMAP         "bitmaps/toolbar_refresh.bmp"
+IDB_BITMAP_SETTINGS BITMAP        "bitmaps/toolbar_settings.bmp"
+IDB_BITMAP_TREEICONS BITMAP       "bitmaps/icons_treeview.bmp"
+IDB_BITMAP_TREEICONS_MASK BITMAP  "bitmaps/icons_treeview_mask.bmp"
+IDB_BITMAP_UPLOAD  BITMAP         "bitmaps/toolbar_upload.bmp"
+IDB_BITMAP_PAYPAL  BITMAP         "bitmaps/pp_favicon_x.bmp"
 
 //
 // Dialog resources

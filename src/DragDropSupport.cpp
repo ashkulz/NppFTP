@@ -224,7 +224,7 @@ STDMETHODIMP_(ULONG) CDataObject::Release(void) {
 }
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium) {
-	pmedium->tymed = NULL;
+	pmedium->tymed = 0;
 	pmedium->pUnkForRelease = NULL;
 	pmedium->hGlobal = NULL;
 

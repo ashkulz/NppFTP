@@ -294,7 +294,7 @@ int PU::BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner) {
 	bi.lpszTitle = TEXT("Please pick a location");
 	bi.ulFlags = 0;
 	bi.lpfn = NULL;
-	bi.lParam = NULL;
+	bi.lParam = 0;
 	bi.iImage = 0;
 
 	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);

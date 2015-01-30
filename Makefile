@@ -62,10 +62,10 @@ obj/%.res: src/Windows/%.rc
 	@echo RES  $< & $(WINDRES) $(INC) -J rc -O coff -i $< -o $@
 
 $(TGT): $(OBJECTS) $(RES)
-	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS) -o $@ -s $(LFLAGS)
+	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS) $(RES) -o $@ -s $(LFLAGS)
 
 $(TGT_D): $(OBJECTS_D) $(RES)
-	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS_D) -o $@ $(LFLAGS)
+	@echo LINK $@ & $(CXX) -shared -Wl,--dll $(OBJECTS_D) $(RES) -o $@ $(LFLAGS)
 
 bin:
 	@mkdir bin

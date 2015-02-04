@@ -64,7 +64,7 @@ Show messages: Hide or Show the messages window.
 
 Treeview:
 ---------
-If an ftp session is active, the treview will show the files on the server. Some actions of the toolbar depend on the selected object in the treeview (see toolbar).
+If an ftp session is active, the treeview will show the files on the server. Some actions of the toolbar depend on the selected object in the treeview (see toolbar).
 Doubleclicking on a directory will show its contents. Doubleclicking on a file will download it to the cache and open it.
 
 Queue:

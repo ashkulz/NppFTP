@@ -1037,7 +1037,9 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 
 			OutMsg("Upload of %s succeeded.", opuld->GetExternalPath());
-
+			
+			MessageBeep(MB_OK);
+			
 			char path[MAX_PATH];
 			strcpy(path, opuld->GetExternalPath());
 			char * name = (char*)PU::FindExternalFilename(path);

@@ -33,6 +33,9 @@ debug:   bin obj $(TGT_D)
 release: bin obj $(TGT)
 	@echo ============ creating NppFTP.zip ============
 	@zip -9 -r NppFTP.zip $(TGT) doc/
+test:    bin obj $(TGT)
+	@copy /y $(TGT) "%APPDATA%\Notepad++\plugins" >nul
+	@cmd /c start notepad++
 
 obj/%.o: tinyxml/src/%.cpp
 	@echo CXX  $< & $(CXX) -c $(CFLAGS) $(INC) $< -o $@

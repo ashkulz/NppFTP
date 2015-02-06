@@ -70,6 +70,7 @@
 	#define IDC_EDIT_KEYFILE			140
 	#define IDC_BUTTON_KEYBROWSE		141
 	#define IDC_EDIT_PASSPHRASE			142
+	#define IDC_CHECK_ASKPASSPHRASE		193
 	#define IDC_CHECK_AGENT				143
 	#define IDC_CHECK_PASSWORD			144
 	#define IDC_CHECK_KEY				145
@@ -118,4 +119,4 @@
 	#define IDC_EDIT_PROMPTMAX			182
 	#define IDC_EDIT_ANSWERMAX			183
 	#define IDC_STATIC_MARKER			184
-//next id:								193
+//next id:								194

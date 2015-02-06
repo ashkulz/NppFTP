@@ -77,6 +77,8 @@ public:
 	int						SetKeyFile(const TCHAR * keyFile);
 	const char*				GetPassphrase() const;
 	int						SetPassphrase(const char * passphrase);
+	bool					GetAskPassphrase() const;
+	int						SetAskPassphrase(bool askPassphrase);
 	bool					GetUseAgent() const;
 	int						SetUseAgent(bool useAgent);
 	AuthenticationMethods	GetAcceptedMethods() const;
@@ -124,6 +126,7 @@ private:
 	char*					m_username;
 	char*					m_password;
 	bool					m_askPassword;
+	bool					m_askPassphrase;
 
 	int						m_timeout;
 

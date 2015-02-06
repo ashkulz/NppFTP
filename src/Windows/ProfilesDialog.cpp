@@ -239,6 +239,13 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				m_currentProfile->SetPassphrase(aTextBuffer);
 			}
 			break; }
+		case IDC_CHECK_ASKPASSPHRASE: {
+			if (notifCode == BN_CLICKED) {
+				LRESULT checked = Button_GetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_ASKPASSPHRASE));
+				::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), !(checked == BST_CHECKED));
+				m_currentProfile->SetAskPassphrase(checked == BST_CHECKED);
+			}
+			break; }
 		case IDC_CHECK_AGENT: {
 			if (notifCode == BN_CLICKED) {
 				LRESULT checked = Button_GetCheck(idHwnd);
@@ -688,6 +695,8 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE), (methods&Method_Interactive)?TRUE:FALSE);
 	::SetDlgItemText(m_hPageAuthentication, IDC_EDIT_KEYFILE, m_currentProfile->GetKeyFile());
 	::SetDlgItemTextA(m_hPageAuthentication, IDC_EDIT_PASSPHRASE, m_currentProfile->GetPassphrase());
+	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_ASKPASSPHRASE), (m_currentProfile->GetAskPassphrase())?TRUE:FALSE);
+	::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), !(m_currentProfile->GetAskPassphrase()));
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_AGENT), m_currentProfile->GetUseAgent()?TRUE:FALSE);
 
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);

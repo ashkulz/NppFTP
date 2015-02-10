@@ -272,7 +272,7 @@ protected:
 
 class QueueChmodFile : public QueueOperation {
 public:
-							QueueChmodFile(HWND hNotify, const char * filePath, const char * newChmod, int notifyCode = 0, void * notifyData = NULL);
+							QueueChmodFile(HWND hNotify, const char * filePath, const char * newMode, int notifyCode = 0, void * notifyData = NULL);
 	virtual					~QueueChmodFile();
 
 	virtual int				Perform();
@@ -283,7 +283,7 @@ public:
 	virtual char*			GetNewChmod();
 protected:
 	char*					m_filePath;
-	char*					m_newChmod;
+	char*					m_newMode;
 };
 
 //Requires SSL client wrapper

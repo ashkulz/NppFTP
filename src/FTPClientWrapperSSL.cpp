@@ -229,14 +229,14 @@ int FTPClientWrapperSSL::Pwd(char* buf, size_t size) {
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
-int FTPClientWrapperSSL::Rename(const char * path, const char * mode) {
-	int retcode = m_client.RenameFile(path, mode);
+int FTPClientWrapperSSL::Rename(const char * from, const char * to) {
+	int retcode = m_client.RenameFile(from, to);
 
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
 int FTPClientWrapperSSL::Chmod(const char * from, const char * to) {
-	int retcode = m_client.ChmodFile(from, to);
+	int retcode = m_client.ChmodFile(path, mode);
 
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }

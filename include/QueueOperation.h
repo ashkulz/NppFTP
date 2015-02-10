@@ -46,7 +46,7 @@ public:
 	enum QueueType { QueueTypeConnect, QueueTypeDisconnect, QueueTypeDownload, QueueTypeUpload,
 	                 QueueTypeDirectoryGet, QueueTypeDirectoryCreate, QueueTypeDirectoryRemove,
 	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote,
-	                 QueueTypeDownloadHandle
+	                 QueueTypeDownloadHandle, QueueTypeFileChmod
 	               };
 
 	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
@@ -268,6 +268,22 @@ public:
 protected:
 	char*					m_filePath;
 	char*					m_newPath;
+};
+
+class QueueChmodFile : public QueueOperation {
+public:
+							QueueChmodFile(HWND hNotify, const char * filePath, const char * newChmod, int notifyCode = 0, void * notifyData = NULL);
+	virtual					~QueueChmodFile();
+
+	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
+
+	virtual char*			GetFilePath();
+	virtual char*			GetNewChmod();
+protected:
+	char*					m_filePath;
+	char*					m_newChmod;
 };
 
 //Requires SSL client wrapper

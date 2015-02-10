@@ -59,7 +59,7 @@ public:
 	int						MkFile(const char * path);
 	int						DeleteFile(const char * path);
 	int						Rename(const char * oldpath, const char * newpath);
-	int						Chmod(const char * oldpath, const char * newchmod);
+	int						Chmod(const char * path, const char * newmode);
 	
 	FileObject*				GetRootObject();
 	FileObject*				FindPathObject(const char * filepath);

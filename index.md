@@ -6,6 +6,10 @@ layout: default
 
 You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [SourceForge](http://sourceforge.net/projects/nppftp/files/latest/download).
 
+## Support
+
+In case you need any help, please search the Github [issue tracker](https://github.com/ashkulz/NppFTP/issues) before creating a [new issue](https://github.com/ashkulz/NppFTP/issues/new).
+
 ## Usage
 
 To start using the plugin, use the **Show NppFTP Window** option from the plugins menu, or use the Notepad++ toolbar button. To find some information about the plugin, use the **About NppFTP** option from the menu. There is a button there for a link to the NppFTP site.

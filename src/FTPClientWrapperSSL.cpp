@@ -235,6 +235,12 @@ int FTPClientWrapperSSL::Rename(const char * from, const char * to) {
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
+int FTPClientWrapperSSL::Chmod(const char * from, const char * to) {
+	int retcode = m_client.ChmodFile(from, to);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
 int FTPClientWrapperSSL::MkDir(const char * path) {
 	int retcode = m_client.MkDir(path);
 

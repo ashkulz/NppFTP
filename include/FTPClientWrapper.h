@@ -91,7 +91,7 @@ public:
 
 	//Modifying operations
 	virtual int				Rename(const char * from, const char * to) = 0;
-	virtual int				Chmod(const char * from, const char * to) = 0;
+	virtual int				Chmod(const char * path, const char * mode) = 0;
 
 	virtual int				MkDir(const char * path) = 0;
 	virtual int				RmDir(const char * path) = 0;
@@ -142,7 +142,7 @@ public:
 
 	//Modifying operations
 	virtual int				Rename(const char * from, const char * to);
-	virtual int				Chmod(const char * from, const char * to);
+	virtual int				Chmod(const char * path, const char * mode);
 	
 	virtual int				MkDir(const char * path);
 	virtual int				RmDir(const char * path);
@@ -203,7 +203,7 @@ public:
 
 	//Modifying operations
 	virtual int				Rename(const char * from, const char * to);
-	virtual int				Chmod(const char * from, const char * to);
+	virtual int				Chmod(const char * path, const char * mode);
 	
 	virtual int				MkDir(const char * path);
 	virtual int				RmDir(const char * path);

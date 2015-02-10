@@ -645,50 +645,7 @@ char * QueueRenameFile::GetNewPath() {
 	return m_newPath;
 }
 
-////////////////////////////////////// --------------------------------------------
-
-QueueChmodFile::QueueChmodFile(HWND hNotify, const char * filePath, const char * newChmod, int notifyCode, void * notifyData) :
-	QueueOperation(QueueTypeFileRename, hNotify, notifyCode, notifyData)
-{
-	m_filePath = SU::strdup(filePath);
-	m_newChmod = SU::strdup(newChmod);
-}
-
-QueueChmodFile::~QueueChmodFile() {
-	SU::free(m_filePath);
-	SU::free(m_newChmod);
-}
-
-int QueueChmodFile::Perform() {
-	if (m_doConnect && !m_client->IsConnected()) {
-		m_result = m_client->Connect();
-		if (m_result == -1)
-			return m_result;
-		m_result = -1;
-	}
-
-	m_result = m_client->Chmod(m_filePath, m_newChmod);
-
-	return m_result;
-}
-
-bool QueueChmodFile::Equals(const QueueOperation & other) {
-	if (!QueueOperation::Equals(other))
-		return false;
-	const QueueChmodFile & otherChmod = (QueueChmodFile&) other;
-
-	return (!strcmp(otherChmod.m_filePath, m_filePath) && !strcmp(otherChmod.m_newChmod, m_newChmod));
-}
-
-char * QueueChmodFile::GetFilePath() {
-	return m_filePath;
-}
-
-char * QueueChmodFile::GetNewPath() {
-	return m_newChmod;
-}
-
-////////////////////////////////////// ------------------------------------------
+//////////////////////////////////////
 
 //Requires SSL client wrapper
 QueueQuote::QueueQuote(HWND hNotify, const char * quote, int notifyCode, void * notifyData) :
@@ -724,4 +681,48 @@ bool QueueQuote::Equals(const QueueOperation & other) {
 
 char * QueueQuote::GetQuote() {
 	return m_quote;
+}
+
+
+////////////////////////////////////// --------------------------------------------
+
+QueueChmodFile::QueueChmodFile(HWND hNotify, const char * filePath, const char * newMode, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeFileRename, hNotify, notifyCode, notifyData)
+{
+	m_filePath = SU::strdup(filePath);
+	m_newMode = SU::strdup(newMode);
+}
+
+QueueChmodFile::~QueueChmodFile() {
+	SU::free(m_filePath);
+	SU::free(m_newMode);
+}
+
+int QueueChmodFile::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		m_result = m_client->Connect();
+		if (m_result == -1)
+			return m_result;
+		m_result = -1;
+	}
+
+	m_result = m_client->Chmod(m_filePath, m_newMode);
+
+	return m_result;
+}
+
+bool QueueChmodFile::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueChmodFile & otherChmod = (QueueChmodFile&) other;
+
+	return (!strcmp(otherChmod.m_filePath, m_filePath) && !strcmp(otherChmod.m_newMode, m_newMode));
+}
+
+char * QueueChmodFile::GetFilePath() {
+	return m_filePath;
+}
+
+char * QueueChmodFile::GetNewMode() {
+	return m_newMode;
 }

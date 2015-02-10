@@ -200,6 +200,13 @@ int FTPClientWrapperSSH::Rename(const char * from, const char * to) {
 	return OnReturn((retcode == 0)?0:-1);
 }
 
+int FTPClientWrapperSSH::chmod(const char * path, const char * mode) {
+	int retcode = sftp_chmod(m_sftpsession, path, mode);
+
+	return OnReturn((retcode == 0)?0:-1);
+}
+
+
 int FTPClientWrapperSSH::MkDir(const char * path) {
 	int retcode = sftp_mkdir(m_sftpsession, path, 0775);	//default rwxrwxr-x permission
 

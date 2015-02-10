@@ -11,7 +11,7 @@
 //   remote file storage capabilities.
 //
 //    The objectives of FTP are
-//      1) to promote sharing of files (computer
+//      1) to promote sharing of files (computerDeleteFile
 //         programs and/or data),
 //      2) to encourage indirect or implicit (via
 //         programs) use of remote computers,
@@ -24,7 +24,7 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -247,6 +247,12 @@ public:
 	virtual int		DeleteFile(LPCSTR file);
 #if defined _UNICODE
 	virtual int		DeleteFile(LPCWSTR file);
+#endif
+
+	// Chmod
+	virtual int	ChmodFile(LPCSTR sourceFile,LPCSTR permissions);
+#if defined _UNICODE
+	virtual int	ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions);
 #endif
 
 	// Get the Current working directory

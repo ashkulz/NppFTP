@@ -94,7 +94,8 @@ protected:
 	virtual int				DeleteFile(FileObject * file);
 
 	virtual int				Rename(FileObject * fo);
-
+	virtual int				Chmod(FileObject * fo);
+	
 	//virtual int				UploadCurrentFile(FileObject * parent);
 	//virtual int				UploadOtherFile(FileObject * parent);
 

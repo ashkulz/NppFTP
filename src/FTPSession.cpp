@@ -401,6 +401,17 @@ int FTPSession::Rename(const char * oldpath, const char * newpath) {
 	return 0;
 }
 
+int FTPSession::Chmod(const char * path, const char * newmode) {
+	if (!m_running)
+		return -1;
+
+	QueueChmodFile * fileop = new QueueChmodFile(m_hNotify, path, newmode);
+
+	m_mainQueue->AddQueueOp(fileop);
+
+	return 0;
+}
+
 FileObject* FTPSession::GetRootObject() {
 	char dir[MAX_PATH];
 	strcpy(dir, m_currentProfile->GetInitialDir());

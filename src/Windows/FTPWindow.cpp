@@ -849,9 +849,9 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_RENAMEFILE,TEXT("&Rename File"));
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_DELETEFILE,TEXT("D&elete File"));
-	//AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
-	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
-	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PROPSFILE,TEXT("&Properties"));
+	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
+	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PROPSFILE,TEXT("&Properties"));
 
 	//Create context menu for directories in folder window
 	m_popupDir = CreatePopupMenu();
@@ -865,9 +865,9 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADOTHERFILE,TEXT("Upload &other file here..."));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_REFRESHDIR,TEXT("Re&fresh"));
-	//AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
-	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
-	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
+	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
 
 	//Create special context menu for links
 	m_popupLink = CreatePopupMenu();

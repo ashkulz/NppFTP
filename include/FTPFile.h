@@ -28,14 +28,12 @@ struct FTPFile {
 	FILETIME				mtime;
 	FILETIME				atime;
 	FTPFileType				fileType;				// flag if the entry is directory, file or a link
-	int						permissions;
 };
 
 struct FTPDir {
     struct FTPFile*         files;
     char*                   dirPath;	// dir path
     int                     count;
-	int						permissions;
 };
 
 #endif //FTPFILE_H

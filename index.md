@@ -23,7 +23,7 @@ In the general configuration dialog, the default cache location can be entered. 
 ### Profile configuration
 In the profiles configuration dialog, profiles can be created, modified and deleted. Initially, no profiles exists and no connection can be made. To create a new profile, click the Add profile button and enter the name of the new profile. Please provide an unique name for your own ease of use. Renaming and deleting a profile is done with the corresponding buttons.
 
-In the connections tab, settings for each connection be be entered. At minimum provide a hostname (address) and port. In the transfers tab, settings for FTP transfers can be edited. In the cache tab, specific cache mappings can be added for the selected profile. See [Cache paths] for more details.
+In the connections tab, settings for each connection can be entered. At minimum provide a hostname (address) and port. In the transfers tab, settings for FTP transfers can be edited. In the cache tab, specific cache mappings can be added for the selected profile. See [Cache paths] for more details.
 
 ## Cache paths
 When downloading files from a server, they are by default stored in the cache. When a file in the cache is saved, it will automatically be uploaded. To allow more fine grained control over what files go to where, a cache mapping can be created. A cache map consists of a local directory and an external path. The local directory provides the location on the local computer to look for files to upload and to download to. For example, if `C:\ftpfiles\myserver\home` were entered, files in that directory and subdirectory would be transferred to the corresponding path on the external server. The external path provides the location to download files from and upload to. For example, `/home/myuser/public_html/` would map files on that path and its subpaths to the corresponding directory. Determining a cache map for a file-transfer is done on a first match basis (rather than 'best fit'). For example, consider the following scenario:
@@ -61,27 +61,27 @@ Ordering is important. The general cache map will always be considered last, the
 ```
 D:\serverfilesystem          /
 ```
-were to be at the top, ALL files would be downloaded to `D:\serverfilesystem`
+were to be at the top, all files would be downloaded to `D:\serverfilesystem`
 
 ## Toolbar
 
 The toolbar provides the following buttons:
 
-* _Connected/Disconnect_: Either connect to a server from a profile form a dropdown menu, or disconnect from the current server.
+* _(Dis)Connect_: Either connect to a server from a profile form a dropdown menu, or disconnect from the current server.
+* _Open Directory_: Navigation aid to quickly show the contents of an external directory. The full external path must be input, e.g. `/home/user/public_html`
 * _Download file_: If a file is selected in the treeview, download it to the cache.
 * _Upload file_: If a directory is selected in the treeview, upload the current file to that directory.
 * _Refresh_: If a directory is selected in the treeview, refresh its contents.
 * _Abort_: If a transfer is active, abort it.
-* _Quote_: send a direct command to the server (Currently not implemented)
 * _Settings_: Access settings dialogs.
-* _Show messages_: Hide or Show the messages window.
+* _Show Message Window_: Hide or Show the messages window.
 
 ## Treeview
-If an ftp session is active, the treeview will show the files on the server. Some actions of the toolbar depend on the selected object in the treeview (see toolbar). Doubleclicking on a directory will show its contents. Doubleclicking on a file will download it to the cache and open it.
+If an FTP session is active, the treeview will show the files on the server. Some actions of the toolbar depend on the selected object in the treeview (see toolbar). Double-clicking on a directory will show its contents. Double-clicking on a file will download it to the cache and open it.
 
 ## Queue
 
-The queue window shows the currently active and queued filetransfers, along with their progress and filepath. Rightclicking on an item allows to abort or cancel it, depending whether the transfer is active or queued.
+The queue window shows the currently active and queued file transfers, along with their progress and file path. Right-clicking on an item allows to abort or cancel it, depending whether the transfer is active or queued.
 
 ## Message window
-The messagewindow shows some output of various operations. If something goes wrong, look for errors here. Notifications are blue, server messages are green, errors are red.
+The message window shows the output of various operations. If something goes wrong, look for errors here. Notifications are blue, server messages are green, errors are red.

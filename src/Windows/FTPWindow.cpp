@@ -866,12 +866,12 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_RENAMEDIR,TEXT("&Rename Directory"));
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_DELETEDIR,TEXT("D&elete directory"));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permission"));
+	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
     AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADFILE,TEXT("&Upload current file here"));
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADOTHERFILE,TEXT("Upload &other file here..."));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_REFRESHDIR,TEXT("Re&fresh"));
-	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
-	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permission"));
 	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
 
 	//Create special context menu for links
@@ -1094,6 +1094,8 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 			OutMsg("Deleted file %s", opdelfile->GetFilePath());
 			break; }
+
+
 		case QueueOperation::QueueTypeFileRename: {
 			QueueRenameFile * oprename = (QueueRenameFile*)queueOp;
 			if (isStart)
@@ -1104,6 +1106,8 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 			OutMsg("Renamed %s to %s", oprename->GetFilePath(), oprename->GetNewPath());
 			break; }
+
+
 		case QueueOperation::QueueTypeFileChmod: {
 			QueueChmodFile * opchmod = (QueueChmodFile*)queueOp;
 			if (isStart)
@@ -1114,6 +1118,9 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 			OutMsg("Chmod %s to %s", opchmod->GetFilePath(), opchmod->GetNewMode());
 			break; }
+
+
+
 		case QueueOperation::QueueTypeQuote: {
 			QueueQuote * opquote = (QueueQuote*)queueOp;
 			if (isStart)
@@ -1344,7 +1351,8 @@ int FTPWindow::Chmod(FileObject * fo) {
 	const TCHAR * newMode = id.GetValue();
 	const char *newMode_CP = SU::TCharToCP(newMode, CP_ACP);
 
-
+	if( newMode_CP[0] == 'E' )
+		return 0;
 
 	res = m_ftpSession->Chmod(fo->GetPath(), newMode_CP);
 	if (res == -1)

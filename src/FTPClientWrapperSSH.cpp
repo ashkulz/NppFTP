@@ -23,6 +23,11 @@
 #include "KBIntDialog.h"
 #include <fcntl.h>
 
+
+#include <sys/stat.h> /* mode_t */
+#include <stdio.h>
+#include <stdlib.h>  /* strtoul */
+
 #ifdef strdup	//undefine strdup form libssh
 #undef strdup
 #endif //strdup
@@ -201,9 +206,10 @@ int FTPClientWrapperSSH::Rename(const char * from, const char * to) {
 }
 
 int FTPClientWrapperSSH::ChmodFile(const char * path, const char * mode) {
-	int cpmode = atoi( mode );
 
-	int retcode = sftp_chmod(m_sftpsession, path, cpmode);
+//	int cpmode = atoi(mode) ;
+	mode_t perm = (mode_t) strtoul(mode, 0, 8);
+	int retcode = sftp_chmod(m_sftpsession, path, perm );
 
 	return OnReturn((retcode == 0)?0:-1);
 }

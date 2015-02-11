@@ -687,7 +687,7 @@ char * QueueQuote::GetQuote() {
 ////////////////////////////////////// --------------------------------------------
 
 QueueChmodFile::QueueChmodFile(HWND hNotify, const char * filePath, const char * newMode, int notifyCode, void * notifyData) :
-	QueueOperation(QueueTypeFileRename, hNotify, notifyCode, notifyData)
+	QueueOperation(QueueTypeFileChmod, hNotify, notifyCode, notifyData)
 {
 	m_filePath = SU::strdup(filePath);
 	m_newMode = SU::strdup(newMode);

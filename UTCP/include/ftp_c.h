@@ -7,16 +7,16 @@
 //  FTP client class declaration.
 //
 //  The primary function  of FTP is to transfer files efficiently
-//   and reliably among Hosts and to allow the convenient use of 
+//   and reliably among Hosts and to allow the convenient use of
 //   remote file storage capabilities.
 //
-//    The objectives of FTP are 
+//    The objectives of FTP are
 //      1) to promote sharing of files (computer
 //         programs and/or data),
 //      2) to encourage indirect or implicit (via
-//         programs) use of remote computers, 
+//         programs) use of remote computers,
 //      3) to shield a user from
-//         variations in file storage systems among Hosts, and 
+//         variations in file storage systems among Hosts, and
 //      4) to transfer
 //         data reliably and efficiently.
 //
@@ -24,12 +24,26 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is ï¿½ 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
 // this software, you may contact us at legalaffairs@codeproject.com, or by calling 416-849-8900.
 // =================================================================
+
+/*
+NppFTP modifications:
+Add class modifier to friends
+CUT_WSDataClient
+	Removed existing secure functionality:
+	Added SSL secure functionality
+CUT_FTPClient
+	Removed existing secure functionality:
+	Added SSL secure functionality
+	Make certain helper functions virtual
+	GetDirInfo accepts path parameter
+	Add PeekResponseCode
+*/
 
 #ifndef  __CUT_FTP_CLIENT
 #define  __CUT_FTP_CLIENT
@@ -44,7 +58,7 @@ class CUT_FTPClient;
 //  class: CUT_WSDataClient
 class CUT_WSDataClient : public CUT_WSClient
 {
-	friend CUT_FTPClient;
+	friend class CUT_FTPClient;
 
 private:
 	CUT_FTPClient	*ptrFTPClient;		// pointer to the FTP client class
@@ -54,53 +68,60 @@ public:
 	virtual ~CUT_WSDataClient() {}
 
 protected:
-	// Monitor progress and/or cancel the receive 
+	// Monitor progress and/or cancel the receive
 	virtual BOOL	ReceiveFileStatus(long bytesReceived);
 
 	// Monitor progress and/or cancel the send
 	virtual BOOL	SendFileStatus(long bytesSent);
-#ifdef CUT_SECURE_SOCKET
-	// Function can be overridden to handle certificate verifications errors
-	virtual BOOL OnCertVerifyError(CUT_Certificate & /* certServer */, int /* nError */, char * /* lpszServerName */)
+
+	virtual int		OnLoadCertificates(SSL_CTX * ctx);
+
+	virtual int		OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult);
+
+public:
+	virtual int SocketOnConnected(SOCKET s, const char * lpszName)
 	{
-		return TRUE;
+		UNREFERENCED_PARAMETER(s);
+		UNREFERENCED_PARAMETER(lpszName);
+
+	    //If SSL is enabled, perform the handshake etc.
+		if (m_isSSL) {
+			int res = ConnectSSL();
+			if (res == UTE_ERROR) {
+				CloseConnection();
+				return OnError(UTE_ERROR);
+			}
+		}
+
+		return UTE_SUCCESS;
 	}
-#endif
-
-
-
-
 };
 
 // directory infomation linked list - ascii fileName for internal use
 typedef struct CUT_DIRINFOATag{
-	char fileName[MAX_PATH+1];	// file or directory name 
+	char fileName[MAX_PATH+1];	// file or directory name
 	long fileSize;				// size of directory or file in bytes
-	int  day;					// the day digit of the file date 
-	int  month;					// the month digit of the file date 
-	int  year;					// the year digit of the file date 
-	int  hour;					// the hour digit of the file date 
-	int  minute;				// the minute digit of the file date 
+	int  day;					// the day digit of the file date
+	int  month;					// the month digit of the file date
+	int  year;					// the year digit of the file date
+	int  hour;					// the hour digit of the file date
+	int  minute;				// the minute digit of the file date
 	int  isDir;					// flag if the entry is directory or a file
-	int  permissions;
-	char owner[MAX_PATH+1];
-	char group[MAX_PATH+1];
+	int  permissions;			
 	CUT_DIRINFOATag * next;		// next available entry
 }CUT_DIRINFOA;
 
 // _TCHAR for UI
 typedef struct CUT_DIRINFOTag{
-	_TCHAR fileName[MAX_PATH+1];	// file or directory name 
-	_TCHAR owner[MAX_PATH+1];	//  
-	_TCHAR group[MAX_PATH+1];	// 
+	_TCHAR fileName[MAX_PATH+1];	// file or directory name
 	long fileSize;				// size of directory or file in bytes
-	int  day;					// the day digit of the file date 
-	int  month;					// the month digit of the file date 
-	int  year;					// the year digit of the file date 
-	int  hour;					// the hour digit of the file date 
-	int  minute;				// the minute digit of the file date 
+	int  day;					// the day digit of the file date
+	int  month;					// the month digit of the file date
+	int  year;					// the year digit of the file date
+	int  hour;					// the hour digit of the file date
+	int  minute;				// the minute digit of the file date
 	int  isDir;					// flag if the entry is directory or a file
-	int permissions;
+	int  permissions;					
 	CUT_DIRINFOTag * next;		// next available entry
 }CUT_DIRINFO;
 
@@ -111,14 +132,15 @@ typedef struct CUT_DIRINFOTag{
 class CUT_FTPClient : public CUT_WSClient {
 
 
-	friend CUT_WSDataClient;
+	friend class CUT_WSDataClient;
 
 public:
+	enum FTPSMode { FTP, FTPS, FTPES };
 
 	CUT_FTPClient();								// constructor
 	virtual ~CUT_FTPClient();						// destructor
 
-protected: // changed to protected to allow for inheritance 
+protected: // changed to protected to allow for inheritance
 
 	CUT_WSDataClient	m_wsData;					//data transfer socket
 	char				m_szResponse[MAX_PATH+1];	// last response from the server
@@ -128,25 +150,35 @@ protected: // changed to protected to allow for inheritance
 	int					m_nTransferStructure;		//current transfer structure
 	int					m_nDataPort;				//current data port
 	int					m_nControlPort;				//current control port
-	int					m_nConnectTimeout;			// the wait for connect time out 
+	int					m_nConnectTimeout;			// the wait for connect time out
 
 	int					m_nFirewallMode;			// client originates data connections
 
 	CUT_StringList		m_listResponse;				//multi-line response string list
 	CUT_DIRINFOA		*m_DirInfo;					//directory information list
 	int					m_nDirInfoCount;			//number of directory items in the list
+	int					m_lastResponseCode;			//last response code received
+	bool				m_cachedResponse;			//If true, the last response was cached and no receive has to be performed
 
 	char				m_szBuf[MAX_PATH+1];			//general purpose buffer - reduce,reuse,recycle
+
+	FTPSMode			m_sMode;
+	int					m_dataSecLevel;
+	int					m_nDataPortMin;
+	int					m_nDataPortMax;
 
 	/////////////////////
 	// helper functions
 	/////////////////////
 
 	// Get  the response code received from the server for the last comnmand issued along with the server response octet string
-	int		GetResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
+	virtual int		GetResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
+	// Same as GetResponseCode, but the next call to GetResponseCode will return the same as PeekResponseCode
+	// Not the same as winsock peek!
+	virtual int		PeekResponseCode(CUT_WSClient *ws,LPSTR string = NULL,int maxlen = 0);
 
 	// Clear the current list of directory information
-	int		ClearDirInfo();
+	virtual int		ClearDirInfo();
 
 	// firewall friendly versions of SendFile, ReceiveFile and GetDirInfo
 	// automatically selected if m_firewallMode flag set.  See SetFireWallMode()
@@ -162,8 +194,8 @@ protected: // changed to protected to allow for inheritance
 	virtual int		ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile);
 
 
-	// Get the directory in a passive mode 
-	virtual int		GetDirInfoPASV();
+	// Get the directory in a passive mode
+	virtual int		GetDirInfoPASV(LPCSTR path = NULL);
 
 	// Get the directory information in a unix format
 	virtual void	GetInfoInUNIXFormat( CUT_DIRINFOA * di);
@@ -172,6 +204,7 @@ protected: // changed to protected to allow for inheritance
 	virtual void	GetInfoInDOSFormat( CUT_DIRINFOA * di);
 
 public:
+	virtual void setsMode(FTPSMode mode) {m_sMode = mode;};
 
 	// we are going to override the SocketOnConnect to preform our handshake
 	virtual int SocketOnConnected(SOCKET s, const char *lpszName);
@@ -182,7 +215,7 @@ public:
 #if defined _UNICODE
 	virtual int		FTPConnect(LPCWSTR hostname,LPCWSTR userName = _T("anonymous"),LPCWSTR password = _T("anonymous@anonymous.com"),LPCWSTR account = _T(""));
 #endif
-	// close the current connection 
+	// close the current connection
 	virtual int		Close();
 
 	// Retrieve file from the server to disk
@@ -212,19 +245,19 @@ public:
 #if defined _UNICODE
 	virtual int		RenameFile(LPCWSTR sourceFile,LPCWSTR destFile);
 #endif
+
+	// Chmod
+	virtual int	ChmodFile(LPCSTR sourceFile,LPCSTR permissions);
+#if defined _UNICODE
+	virtual int	ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions);
+#endif
+
+
 	// ask server to delete the file from it's directory
 	virtual int		DeleteFile(LPCSTR file);
 #if defined _UNICODE
 	virtual int		DeleteFile(LPCWSTR file);
 #endif
-
-
-	// Chmod
-	virtual int		ChmodFile(LPCSTR sourceFile,LPCSTR permissions);
-#if defined _UNICODE
-	virtual int		ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions);
-#endif
-
 
 	// Get the Current working directory
 	virtual int		GetCurDir(LPSTR directory,int maxlen);
@@ -238,7 +271,7 @@ public:
 	virtual int		ChDir(LPCWSTR directory);
 #endif
 
-	// Change directory one level up 
+	// Change directory one level up
 	virtual int		CdUp();
 
 	// create a directory on the server
@@ -252,7 +285,13 @@ public:
 	virtual int		RmDir(LPCWSTR directory);
 #endif
 
-	// Send a No Operation command 
+	// get size of a file
+	virtual int		GetSize(LPCSTR path, long * size);
+#if defined _UNICODE
+	virtual int		GetSize(LPCWSTR path, long * size);
+#endif
+
+	// Send a No Operation command
 	virtual int		NoOp();
 
 	// Set/Get the transfer type to  0:ASCII  1:IMAGE
@@ -260,8 +299,8 @@ public:
 	int		GetTransferType() const;
 
 	// Set/Get the transfer mode to  0:STREAM  1:BLOCK  2:COMPRESSED
-	int		SetTransferMode(int mode);          
-	int		GetTransferMode() const;          
+	int		SetTransferMode(int mode);
+	int		GetTransferMode() const;
 
 	// Set/Get connection timeout
 	int		SetConnectTimeout(int secs);
@@ -283,25 +322,36 @@ public:
 	int		SetControlPort(int port);
 	int		GetControlPort() const;
 
+	//Set/Get data security level
+	int		SetDataSecure(int level);
+	int		GetDataSecure();
+
+	int		SetDataPortRange(int min, int max);
+	int		GetDataPortRange(int * min, int * max);
+
 	// Get the current Directory information
 	virtual int		GetDirInfo();
+	virtual int		GetDirInfo(LPCSTR path);
+#if defined _UNICODE
+	virtual int		GetDirInfo(LPCWSTR path);
+#endif
 
-	//  Get the number of entries in the Directory information 
+	//  Get the number of entries in the Directory information
 	//  (ie how many files and directories)
 	int		GetDirInfoCount() const;
 
-	// Select a directory entry as string 
+	// Select a directory entry as string
 	int		GetDirEntry(int index,LPSTR entry,int maxlen);
 #if defined _UNICODE
 	int		GetDirEntry(int index,LPWSTR entry,int maxlen);
 #endif
 
-	// Populate the directory Info structure passed in 
+	// Populate the directory Info structure passed in
 	// with the one at index
 	// v4.2 CUT_DIRINFO has _TCHAR filename for UI. CUT_DIRINFOA used internally
 	int		GetDirEntry(int index,CUT_DIRINFO *dirInfo);
 
-	// Get help for the specified command 
+	// Get help for the specified command
 	virtual int		GetHelp(LPCSTR param);
 #if defined _UNICODE
 	virtual int		GetHelp(LPCWSTR param);
@@ -333,12 +383,11 @@ public:
 
 protected:
 
-	// Monitor progress and/or cancel the receive 
+	// Monitor progress and/or cancel the receive
 	virtual BOOL	ReceiveFileStatus(long bytesReceived);
 
 	// Monitor progress and/or cancel the send
 	virtual BOOL	SendFileStatus(long bytesSent);
-
 };
 
 

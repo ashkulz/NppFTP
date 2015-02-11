@@ -706,7 +706,7 @@ int QueueChmodFile::Perform() {
 		m_result = -1;
 	}
 
-	m_result = m_client->Chmod(m_filePath, m_newMode);
+	m_result = m_client->ChmodFile(m_filePath, m_newMode);
 
 	return m_result;
 }

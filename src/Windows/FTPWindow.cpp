@@ -855,7 +855,7 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_RENAMEFILE,TEXT("&Rename File"));
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_DELETEFILE,TEXT("D&elete File"));
 	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
-	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
+	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permission"));
 	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PROPSFILE,TEXT("&Properties"));
 
 	//Create context menu for directories in folder window
@@ -871,7 +871,7 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_REFRESHDIR,TEXT("Re&fresh"));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
-	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permission"));
 	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
 
 	//Create special context menu for links
@@ -939,6 +939,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 		case QueueOperation::QueueTypeFileCreate:
 		case QueueOperation::QueueTypeFileDelete:
 		case QueueOperation::QueueTypeFileRename:
+		case QueueOperation::QueueTypeFileChmod:
 		case QueueOperation::QueueTypeQuote:
 		default: {
 			//Other operations cannot be aborted
@@ -1102,6 +1103,16 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 				break;	//failure
 			}
 			OutMsg("Renamed %s to %s", oprename->GetFilePath(), oprename->GetNewPath());
+			break; }
+		case QueueOperation::QueueTypeFileChmod: {
+			QueueChmodFile * opchmod = (QueueChmodFile*)queueOp;
+			if (isStart)
+				break;
+			if (queueResult == -1) {
+				OutErr("Unable to chmod file %s", opchmod->GetFilePath());
+				break;	//failure
+			}
+			OutMsg("Chmod %s to %s", opchmod->GetFilePath(), opchmod->GetNewMode());
 			break; }
 		case QueueOperation::QueueTypeQuote: {
 			QueueQuote * opquote = (QueueQuote*)queueOp;
@@ -1321,3 +1332,69 @@ int FTPWindow::Rename(FileObject * fo) {
 
 	return 0;
 }
+
+int FTPWindow::Chmod(FileObject * fo) {
+	InputDialog id;
+
+	//int res = id.Create(m_hwnd, TEXT("Change Permission"), TEXT("Please enter the number of permission:"), fo->GetPermssion());
+	int res = id.Create(m_hwnd, TEXT("Change Permission"), TEXT("Please enter the number of permission:"), TEXT("Enter Number"));
+	if (res != 1)
+		return 0;
+
+	const TCHAR * newMode = id.GetValue();
+	const char *newMode_CP = SU::TCharToCP(newMode, CP_ACP);
+
+
+
+	res = m_ftpSession->Chmod(fo->GetPath(), newMode_CP);
+	if (res == -1)
+		return -1;
+
+	m_ftpSession->GetDirectory(fo->GetParent()->GetPath());
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//int FTPWindow::Chmod(FileObject * fo) {
+//	InputDialog id;
+//
+//	int res = id.Create(m_hwnd, TEXT("Chmoding"), TEXT("Please enter the number of chmod to set "), fo->GetLocalName());
+//	if (res != 1)
+//		return 0;
+//
+//	const TCHAR * newMode = id.GetValue();
+//	char mode[MAX_PATH];
+//	res = PU::ConcatLocalToExternal(fo->GetParent()->GetPath(), newMode, mode, MAX_PATH);
+//	if (res == -1)
+//		return -1;
+//
+//	res = m_ftpSession->Chmod(fo->GetPath(), mode);
+//	if (res == -1)
+//		return -1;
+//
+//	m_ftpSession->GetDirectory(fo->GetParent()->GetPath());
+//
+//	return 0;
+//}
+
+
+

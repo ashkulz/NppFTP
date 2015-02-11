@@ -280,7 +280,7 @@ public:
 	virtual bool			Equals(const QueueOperation & other);
 
 	virtual char*			GetFilePath();
-	virtual char*			GetNewChmod();
+	virtual char*			GetNewMode();
 protected:
 	char*					m_filePath;
 	char*					m_newMode;

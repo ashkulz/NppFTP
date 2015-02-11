@@ -200,8 +200,10 @@ int FTPClientWrapperSSH::Rename(const char * from, const char * to) {
 	return OnReturn((retcode == 0)?0:-1);
 }
 
-int FTPClientWrapperSSH::chmod(const char * path, const char * mode) {
-	int retcode = sftp_chmod(m_sftpsession, path, mode);
+int FTPClientWrapperSSH::ChmodFile(const char * path, const char * mode) {
+	int cpmode = atoi( mode );
+
+	int retcode = sftp_chmod(m_sftpsession, path, cpmode);
 
 	return OnReturn((retcode == 0)?0:-1);
 }

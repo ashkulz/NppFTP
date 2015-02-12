@@ -19,9 +19,9 @@
 #include "StdInc.h"
 #include "DockableWindow.h"
 
-#include "Docking.h"
-#include "dockingResource.h"
-#include "Notepad_plus_msgs.h"
+#include "Npp/Docking.h"
+#include "Npp/dockingResource.h"
+#include "Npp/Notepad_plus_msgs.h"
 
 const int DockableWindow::_titleSize = 128;
 const int DockableWindow::_infoSize = 128;

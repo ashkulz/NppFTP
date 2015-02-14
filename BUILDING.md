@@ -1,6 +1,8 @@
-All binaries were built with the Mingw-builds [1] toolchain, specifically
+All binaries are built with the Mingw-builds [1] toolchain, currently with
 i686-4.9.2-win32-sjlj-rt_v3-rev1. Just run `mingw32-make` in the root
-folder to produce the DLL.
+folder to produce the plugin ZIP. Cross-compilation from Linux is also
+possible with the MinGW-w64 toolchain (on Debian/Ubuntu just run
+`sudo apt-get install mingw-w64` to install it) by running `make`.
 
 Library versions used:
  * zlib 1.2.8

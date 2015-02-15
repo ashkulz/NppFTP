@@ -23,6 +23,7 @@
 #include "symbols.h"
 #include <libssh/libssh.h>
 #include <openssl/ssl.h>
+#include <zlib.h>
 
 AboutDialog::AboutDialog() :
 	Dialog(IDD_DIALOG_ABOUT),
@@ -48,10 +49,12 @@ INT_PTR AboutDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 INT_PTR AboutDialog::OnInitDialog() {
+	const TCHAR * zlibVersion = TEXT(ZLIB_VERSION);
 	const TCHAR * sshVersion = TEXT(SSH_STRINGIFY(LIBSSH_VERSION));
 	const TCHAR * sslVersion = TEXT(OPENSSL_VERSION_TEXT);
 	const TCHAR * nppFTPVersion = TEXT(IDT_VERSION_TEXT);
 
+	::SetDlgItemText(m_hwnd, IDC_STATIC_ZLIBVERSION, zlibVersion);
 	::SetDlgItemText(m_hwnd, IDC_STATIC_SSHVERSION, sshVersion);
 	::SetDlgItemText(m_hwnd, IDC_STATIC_SSLVERSION, sslVersion);
 	::SetDlgItemText(m_hwnd, IDC_STATIC_NPPFTPVERSION, nppFTPVersion);
@@ -66,14 +69,10 @@ INT_PTR AboutDialog::OnInitDialog() {
 		TEXT("\r\n")
 		TEXT("Enjoy the comfort of transferring your files from your favorite editor! =)")
 		TEXT("\r\n\r\n")
-		TEXT("NppFTP works because of the effort put in the following libraries:\r\n")
-		TEXT("- OpenSSL\r\n")
-		TEXT("- libssh\r\n")
-		TEXT("- Ultimate TCP/IP\r\n")
-		TEXT("- TinyXML\r\n")
-		TEXT("\r\n")
-		TEXT("And not to forget:\r\n")
-		TEXT("Silk icons from famfamfam\r\n");
+		TEXT("NppFTP works because of the effort put in the following libraries/projects:\r\n")
+		TEXT("- Ultimate TCP/IP 4.2\r\n")
+		TEXT("- TinyXML 2.6.2\r\n")
+		TEXT("- Silk icons from famfamfam\r\n");
 
 	::EnableWindow(GetDlgItem(m_hwnd, IDC_EDIT_ABOUTMSG), TRUE);
 	::SetDlgItemText(m_hwnd, IDC_EDIT_ABOUTMSG, aboutMessage);

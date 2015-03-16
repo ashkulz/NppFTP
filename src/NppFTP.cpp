@@ -106,7 +106,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 
 	res = m_ftpSession->SetCertificates(&m_certificates);
 
-	OutDebug("[NppFTP] Everything initialized");
+	OutDebug("[NppFTP.NppFTP] Everything initialized");
 
 	return 0;
 }
@@ -159,29 +159,64 @@ int NppFTP::ShowAboutDialog() const {
 }
 
 int NppFTP::OnSave(const TCHAR* path) {
-	if (!path || !m_ftpSession)
+	
+	if (!path) {
+		OutErr("[NppFTP.NppFTP] Save fail: no path!");
 		return -1;
-
-	TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
-	TCHAR hostname[FILENAME_MAX];
-	// username and hostname are SET inside this function
-	bool filenameHasHost = GetUserAndHostFromFilename(path, username, hostname);	
-
-	if (filenameHasHost && m_ftpSession->IsConnected())	// see if we're connected to the correct server for our file
-	{
-		DisconnectOnInfoMismatch(username, hostname);	// if our info doesnt match current profile, we'll disconnect here
 	}
+	
+	FTPProfile * matchProfile;
+	for(size_t i = 0; i < m_profiles.size(); i++) {
+	
+		matchProfile = m_profiles.at(i);	
 
-	if (!m_ftpSession->IsConnected())	// if we don't have a connection....
-	{
-		AttemptToAutoConnect(username, hostname);	// we'll try to connect to a matching profile
+		TCHAR* searchStr = SU::TSprintfNB(
+			TEXT("\\Cache\\%S@%S\\"), 
+			SU::Utf8ToTChar(matchProfile->GetUsername()),
+			SU::Utf8ToTChar(matchProfile->GetHostname())
+		);
+			
+		if (SU::InString(path, searchStr)) {
+			//OutMsg("[NppFTP.NppFTP] MATCH found for '%S' in file '%S'", search, path);
+			break;			
+		}
+		
+		matchProfile = 0;
 	}
-
-	if (m_ftpSession->IsConnected()) {
-		m_ftpSession->UploadFileCache(path);
+	
+	if (matchProfile == 0) {
+		//MessageBoxOutput(TEXT("No FTP profile could be found to upload this file to."));
+		return -1;
 	}
+	
+	if (m_ftpSession && m_ftpSession->IsConnected()) {
+		//OutMsg("[NppFTP.NppFTP] Checking if file to upload is in current session.");		
+		const FTPProfile * activeProfile = m_ftpSession->GetCurrentProfile();	
+		if(
+			_tcscmp(SU::Utf8ToTChar(activeProfile->GetUsername()), 	SU::Utf8ToTChar(matchProfile->GetUsername())) == 0
+			 && _tcscmp(	SU::Utf8ToTChar(activeProfile->GetHostname()), 	SU::Utf8ToTChar(matchProfile->GetHostname())) == 0			
+		) {   
+			//OutMsg("[NppFTP.NppFTP] Saved file exists in current session. Uploading to this session");	
+			return m_ftpSession->UploadFileCache(path);		
+		} else {
+			OutMsg("[NppFTP.NppFTP] This file is owned by another profile. Will terminating this session and open its profile to continue the upload.");
+			m_ftpSession->TerminateSession();
+		}
+	}
+	
+	OutDebug("[NppFTP.NppFTP] Starting new FTP session to upload file.");	
+	
+	int res = m_ftpSession->StartSession(matchProfile);
+	if (res == -1) {
+		OutDebug("[NppFTP.NppFTP] Failed to start new session.");		
+		return -1;
+	}
+	
+	m_ftpSession->Connect();
 
-	return 0;
+	OutDebug("[NppFTP.NppFTP] Uploading file.");
+	return m_ftpSession->UploadFileCache(path);		
+
 }
 
 int NppFTP::OnActivateLocalFile(const TCHAR* path) {

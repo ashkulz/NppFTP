@@ -191,9 +191,9 @@ HTREEITEM Treeview::OnClick() {
 }
 
 int Treeview::OnToolTip(const NMTVGETINFOTIP* nmt) {
-	FileObject* fo = GetItemFileObject(nmt->hItem);
+	FileObject * fo = GetItemFileObject(nmt->hItem);
 
-	if (fo->containsProfile()) {
+	if (fo->isDir()) {
 		return 0;
 	}
 
@@ -202,45 +202,36 @@ int Treeview::OnToolTip(const NMTVGETINFOTIP* nmt) {
 	FileTimeToSystemTime(&ftModified, &stModUTC);
 	SystemTimeToTzSpecificLocalTime(NULL, &stModUTC, &stModLocal);
 
-	wchar_t txtSize[41]{};
-	if (!fo->isDir())
-	{
-		long fsize = fo->GetSize();
-		if (fsize <= 0) {
-			CUT_Str::stprintf(txtSize, 40, TEXT("Size: 0\n"));
-		}
-		else {
-			TCHAR powSizes[5][6] = { TEXT("Bytes"), TEXT("KB"), TEXT("MB"), TEXT("GB"), TEXT("TB") };
-			for (
-				int i = 4; i >= 0; i--) {
-				if (fsize > pow(1024, i)) {
-					CUT_Str::stprintf(txtSize, 40, TEXT("Size: %.1lf %s\n"), fsize / pow(1024, i), (TCHAR*)powSizes[i]);
-					break;
-				}
+	long fsize = fo->GetSize();
+	wchar_t txtSize[15];	
+	if (fsize == 0) {
+		_stprintf(txtSize, 15, TEXT("0"));
+	} else {
+		TCHAR powSizes[4][6] = { TEXT("Bytes"), TEXT("KB"), TEXT("MB"), TEXT("GB") };
+		for (int i = 3; i >= 0; i--) {
+			if (fsize > pow(1024, i)) {
+				_stprintf(txtSize, 200, TEXT("%.1lf %s"), fsize / pow(1024, i), (TCHAR*)powSizes[i]);
+				break;
 			}
 		}
 	}
-
-	wchar_t txtMod[21]{};
-	if (!fo->GetMod()) {
-		CUT_Str::stprintf(txtMod, 20, TEXT(""));
-	}
-	else if (fo->GetMod() && strcmp(fo->GetMod(), "") == 0) {
-		CUT_Str::stprintf(txtMod, 20, TEXT(""));
-	}
-	else {
-		CUT_Str::stprintf(txtMod, 20, TEXT("Mod: %s\n"), SU::CharToWChar(fo->GetMod()));
+	
+	wchar_t txtMod[11];
+	if (strcmp(fo->GetMod(), "") == 0) {
+		_stprintf(txtMod, 15, TEXT(""));
+	} else {
+		_stprintf(txtMod, 15, TEXT("Mod: %s\n"), SU::CharToWChar(fo->GetMod()));	
 	}
 
-	CUT_Str::stprintf(nmt->pszText, 150,
-		TEXT(
+	_stprintf(nmt->pszText,
+	TEXT(
 			"Last Modified: %02d/%02d/%d %02d:%02d\n"
-			"%s"
+			"Size: %s\n"
 			"%s"
 		),
-		stModLocal.wMonth, stModLocal.wDay, stModLocal.wYear, stModLocal.wHour, stModLocal.wMinute,
-		txtSize,
-		txtMod
+	stModLocal.wMonth, stModLocal.wDay, stModLocal.wYear, stModLocal.wHour, stModLocal.wMinute,
+	txtSize,
+	txtMod
 	);
 
 	return 0;

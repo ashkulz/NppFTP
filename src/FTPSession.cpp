@@ -123,10 +123,10 @@ int FTPSession::StartSession(FTPProfile * sessionProfile) {
 
 int FTPSession::TerminateSession() {
 
-	OutDebug("[FTPSession] Terminating session.");
+	OutDebug("[NppFTP.FTPSession] Terminating session.");
 
 	if (!m_running) {
-		OutDebug("[FTPSession] session is not running, so no termination will be performed.");	
+		OutDebug("[NppFTP.FTPSession] session is not running, so no termination will be performed.");	
 		return 0;
 	}
 
@@ -140,9 +140,9 @@ int FTPSession::TerminateSession() {
 
 	// window's INVALID_HANDLE_VALUE does not work. need to keep track if timer has been initialied ourselves.	
 	if (m_timerIsInit) {
-		OutDebug("[FTPSession] Deleting session timer");
+		OutDebug("[NppFTP.FTPSession] Deleting session timer");
 		DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
-		OutDebug("[FTPSession] Successfully deleted session timer");
+		OutDebug("[NppFTP.FTPSession] Successfully deleted session timer");
 
 		m_timerIsInit = false;
 	}
@@ -156,7 +156,7 @@ int FTPSession::TerminateSession() {
 	delete m_rootObject;
 	m_rootObject = NULL;
 
-	OutDebug("[FTPSession] Finished terminating session.");
+	OutDebug("[NppFTP.FTPSession] Finished terminating session.");
 
 	return 0;
 }
@@ -196,7 +196,7 @@ int FTPSession::Connect() {
 	);
 	
 	if (!success) {
-		OutErr("[FTPSession] Could not create timer queue.");		
+		OutErr("[NppFTP.FTPSession] Could not create timer queue.");		
 	}
 	
 	m_timerIsInit = true;
@@ -213,16 +213,16 @@ void FTPSession::QueueTimerHandler() {
 	DWORD transSecs = m_transferWrapper->LastAction();
 
 	if (mainSecs == 0 && transSecs == 0) {
-		OutDebug("[FTPSession] Both main/trans wrappers report 0 seconds since last action");
+		OutDebug("[NppFTP.FTPSession] Both main/trans wrappers report 0 seconds since last action");
 		return;
 	}
 
 	DWORD minSecs = std::min(mainSecs, transSecs);
 
-	OutDebug("[FTPSession] There has been %d seconds since last action with server", minSecs);
+	OutDebug("[NppFTP.FTPSession] There has been %d seconds since last action with server", minSecs);
 
 	if (minSecs >= (DWORD) m_currentProfile->GetNoOp()) {
-		OutDebug("[FTPSession] Running NOOP");
+		OutDebug("[NppFTP.FTPSession] Running NOOP");
 		NoOp();
 	}
 

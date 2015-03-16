@@ -42,6 +42,7 @@ public:
 	static int				FreeChar(char * string);
 	static void				free(char * data);
 
+	static bool				InString(const tstring & source, const tstring & find);
 	static tstring			ReplaceString(const tstring & source, const tstring & find, const tstring & replace);
 	static TCHAR*			TSprintfNB(const TCHAR * format, ...);	//NB: no buffer
 	static int				TSprintf(TCHAR * buffer, size_t bufferSize, const TCHAR * format, ...);

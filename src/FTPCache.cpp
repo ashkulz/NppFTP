@@ -50,6 +50,8 @@ int FTPCache::SetEnvironment(const char * host, const char * user, int port) {
 	m_activeHost = SU::Utf8ToTChar(host);
 	m_activeUser = SU::Utf8ToTChar(user);
 	m_activePort = port;
+	
+	//OutMsg("Setting cache environment to host = '%S', user = '%S'", m_activeHost, m_activeUser);	
 
 	ExpandPaths();
 
@@ -125,20 +127,29 @@ int FTPCache::Clear() {
 
 // should return 0 on success
 int FTPCache::GetExternalPathFromLocal(const TCHAR * localpath, char * extbuf, int extsize) const {
+
 	TCHAR expanded[MAX_PATH];
 	BOOL res = PathSearchAndQualify(localpath, expanded, MAX_PATH);
+
 	if (res == FALSE) {
 		OutErr("[GetExternalPathFromLocal] PathSearchAndQualify res is false");
 		return -1;
 	}
 
+	//OutMsg("[GetExternalPathFromLocal] Search file path = '%S', host = '%S', user = '%S'", expanded, m_activeHost, m_activeUser);
+
 	for (size_t i = 0; i < m_vCachePaths.size(); i++) {
+	
+		//OutMsg("[GetExternalPathFromLocal] Looking in '%S'", m_vCachePaths[i].localpathExpanded);	
+	
 		const TCHAR * postfix = NULL;
 		if ( IsPathPrefixLocal(expanded, m_vCachePaths[i].localpathExpanded, &postfix) ) {
 			//get actual path using postfix
 			return PU::ConcatLocalToExternal(m_vCachePaths[i].externalpath, postfix, extbuf, extsize);
 		}
 	}
+	
+	//OutMsg("[GetExternalPathFromLocal] did not find file in IsPathPrefixLocal. Will search parent folder");
 
 	if (!m_cacheParent) {
 		OutErr("[GetExternalPathFromLocal] At root folder. End of search. No match was found.");
@@ -181,7 +192,7 @@ int FTPCache::ClearCurrentCache(bool permanent) {
 
 
 	for(size_t i = 0; i < m_vCachePaths.size(); i++) {
-		OutDebug("[FTPCache] Clearing cache in '%T'", m_vCachePaths[i].localpathExpanded);
+		OutDebug("[NppFTP.FTPCache] Clearing cache in '%T'", m_vCachePaths[i].localpathExpanded);
 		lstrcpy(dirPath, m_vCachePaths[i].localpathExpanded);
 		int len = lstrlen(dirPath);
 		dirPath[len+1] = 0;

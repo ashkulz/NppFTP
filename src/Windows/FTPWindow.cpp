@@ -1277,13 +1277,13 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			m_connecting = isStart;
 			if (isStart) {
 				SetInfo(TEXT("Connecting"));
-				OutMsg("[FTPWindow] Connecting to profile: %T...", m_ftpSession->GetCurrentProfile()->GetName());
+				OutMsg("[NppFTP.FTPWindow] Connecting to profile: %T...", m_ftpSession->GetCurrentProfile()->GetName());
 			} else {
 				if (queueOp->GetResult() != -1) {
 					OnConnect(code);
-					OutMsg("[FTPWindow] Connected");
+					OutMsg("[NppFTP.FTPWindow] Connected");
 				} else {
-					OutErr("[FTPWindow] Unable to connect");
+					OutErr("[NppFTP.FTPWindow] Unable to connect");
 					OnDisconnect(code);
 					m_ftpSession->TerminateSession();
 					result = 1;
@@ -1294,7 +1294,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart) {
 				break;
 			}
-			OutMsg("[FTPWindow] Disconnected.");
+			OutMsg("[NppFTP.FTPWindow] Disconnected.");
 			OnDisconnect(code);
 			result = 1;
 			break; }
@@ -1317,11 +1317,11 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Failure retrieving contents of directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
+				OutErr("[NppFTP.FTPWindow] Failure retrieving contents of directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
 				//break commented: even if failed, update the treeview etc., count should result in 0 anyway
 				//break;	//failure
 			}
-			OutMsg("[FTPWindow] Loaded directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
+			OutMsg("[NppFTP.FTPWindow] Loaded directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
 
 			FTPFile* files = (FTPFile*)queueData;
 			int count = dirop->GetFileCount();
@@ -1335,7 +1335,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Download of %T failed", SU::Utf8ToTChar(opdld->GetExternalPath()));
+				OutErr("[NppFTP.FTPWindow] Download of %T failed", SU::Utf8ToTChar(opdld->GetExternalPath()));
 				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
@@ -1343,7 +1343,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (queueOp->GetType() == QueueOperation::QueueTypeDownload) {
 				if (code == 0) {
 					//Download to cache: Open file
-					OutMsg("[FTPWindow] Download of %T succeeded, opening file.", SU::Utf8ToTChar(opdld->GetExternalPath()));
+					OutMsg("[NppFTP.FTPWindow] Download of %T succeeded, opening file.", SU::Utf8ToTChar(opdld->GetExternalPath()));
 					::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
 				} else {
 					//Download to other location: Ask
@@ -1353,7 +1353,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 					}
 				}
 			} else {
-				OutMsg("[FTPWindow] Download of %T succeeded.", SU::Utf8ToTChar(opdld->GetExternalPath()));
+				OutMsg("[NppFTP.FTPWindow] Download of %T succeeded.", SU::Utf8ToTChar(opdld->GetExternalPath()));
 			}
 			break; }
 		case QueueOperation::QueueTypeUpload: {
@@ -1361,12 +1361,12 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Upload of %T failed", opuld->GetLocalPath());
+				OutErr("[NppFTP.FTPWindow] Upload of %T failed", opuld->GetLocalPath());
 				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
 
-			OutMsg("[FTPWindow] Upload of %T succeeded.", SU::Utf8ToTChar(opuld->GetExternalPath()));
+			OutMsg("[NppFTP.FTPWindow] Upload of %T succeeded.", SU::Utf8ToTChar(opuld->GetExternalPath()));
 
 			char path[MAX_PATH];
 			strcpy(path, opuld->GetExternalPath());
@@ -1383,50 +1383,50 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to create directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
+				OutErr("[NppFTP.FTPWindow] Unable to create directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
 				break;	//failure
 			}
-			OutMsg("[FTPWindow] Created directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
+			OutMsg("[NppFTP.FTPWindow] Created directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
 			break; }
 		case QueueOperation::QueueTypeDirectoryRemove: {
 			QueueRemoveDir * oprmdir = (QueueRemoveDir*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to remove directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
+				OutErr("[NppFTP.FTPWindow] Unable to remove directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
 				break;	//failure
 			}
-			OutMsg("[FTPWindow] Removed directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
+			OutMsg("[NppFTP.FTPWindow] Removed directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
 			break; }
 		case QueueOperation::QueueTypeFileCreate: {
 			QueueCreateFile * opmkfile = (QueueCreateFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to create file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
+				OutErr("[NppFTP.FTPWindow] Unable to create file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("[FTPWindow] Created file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
+			OutMsg("[NppFTP.FTPWindow] Created file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
 			break; }
 		case QueueOperation::QueueTypeFileDelete: {
 			QueueDeleteFile * opdelfile = (QueueDeleteFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to delete file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
+				OutErr("[NppFTP.FTPWindow] Unable to delete file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("[FTPWindow] Deleted file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
+			OutMsg("[NppFTP.FTPWindow] Deleted file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
 			break; }
 		case QueueOperation::QueueTypeFileRename: {
 			QueueRenameFile * oprename = (QueueRenameFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to rename file %T", SU::Utf8ToTChar(oprename->GetFilePath()));
+				OutErr("[NppFTP.FTPWindow] Unable to rename file %T", SU::Utf8ToTChar(oprename->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("[FTPWindow] Renamed %T to %T", SU::Utf8ToTChar(oprename->GetFilePath()), SU::Utf8ToTChar(oprename->GetNewPath()));
+			OutMsg("[NppFTP.FTPWindow] Renamed %T to %T", SU::Utf8ToTChar(oprename->GetFilePath()), SU::Utf8ToTChar(oprename->GetNewPath()));
 			break; }
 		case QueueOperation::QueueTypeFileChmod: {
 			QueueChmodFile * opchmod = (QueueChmodFile*)queueOp;
@@ -1443,7 +1443,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("[FTPWindow] Unable to perform quote operation %T", SU::Utf8ToTChar(opquote->GetQuote()));
+				OutErr("[NppFTP.FTPWindow] Unable to perform quote operation %T", SU::Utf8ToTChar(opquote->GetQuote()));
 				break;	//failure
 			}
 			break; }
@@ -1542,7 +1542,7 @@ int FTPWindow::OnConnect(int code) {
 
 int FTPWindow::OnDisconnect(int /*code*/) {
 
-	OutDebug("[FTPWindow] OnDisconnect called.");
+	OutDebug("[NppFTP.FTPWindow] OnDisconnect called.");
 
 	m_currentSelection = NULL;
 	m_currentDragObject = NULL;
@@ -1559,7 +1559,7 @@ int FTPWindow::OnDisconnect(int /*code*/) {
 	InitProfilesTree();
 	SetToolbarState();
 
-	OutDebug("[FTPWindow] OnDisconnect complete.");
+	OutDebug("[NppFTP.FTPWindow] OnDisconnect complete.");
 
 	return 0;
 }

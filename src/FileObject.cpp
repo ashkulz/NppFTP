@@ -213,6 +213,10 @@ long FileObject::GetSize() const {
 	return m_size;
 }
 
+const char* FileObject::GetMod() const {
+	return m_mod;
+}
+
 FILETIME FileObject::GetCTime() const {
 	return m_ctime;
 }

@@ -212,6 +212,14 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 					m_currentProfile->SetTimeout(timeout);
 			}
 			break; }
+		case IDC_EDIT_NOOP: {
+			if (notifCode == EN_USERCHANGE) {
+				BOOL success = FALSE;
+				int noop = GetDlgItemInt(m_hPageConnection, ctrlId, &success, FALSE);
+				if (success)
+					m_currentProfile->SetNoOp(noop);
+			}
+			break; }
 		case IDC_EDIT_INITDIR: {
 			if (notifCode == EN_USERCHANGE) {
 				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
@@ -566,6 +574,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageConnection, IDC_EDIT_NOOP), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_KEYFILE), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
@@ -670,6 +679,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_CHECK_ASKPASSWORD), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_TIMEOUT), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_INITDIR), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_NOOP), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY), enableSettings);
 
 		::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_PASSWORD), enableSettings);
@@ -722,6 +732,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_TIMEOUT, m_currentProfile->GetTimeout(), FALSE);
 
 	::SetDlgItemText(m_hPageConnection, IDC_EDIT_INITDIR, SU::Utf8ToTChar(m_currentProfile->GetInitialDir()) );
+	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_NOOP, m_currentProfile->GetNoOp(), FALSE);
 
 
 	AuthenticationMethods methods = m_currentProfile->GetAcceptedMethods();
@@ -769,6 +780,8 @@ int ProfilesDialog::Clear() {
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_PASSWORD, "");
 
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_TIMEOUT, 0, FALSE);
+
+	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_NOOP, 0, FALSE);
 
 	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_INITDIR, "");
 

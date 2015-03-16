@@ -53,7 +53,7 @@ public:
 	virtual int				Focus();
 
 	virtual int				Init(FTPSession * session, vProfile * vProfiles, FTPSettings * ftpSettings);
-
+	
 	virtual int				OnSize(int newWidth, int newHeight);
 	virtual int				OnProfileChange();
 	virtual int				OnActivateLocalFile(const TCHAR* filename);

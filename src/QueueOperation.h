@@ -46,7 +46,7 @@ public:
 	enum QueueType { QueueTypeConnect, QueueTypeDisconnect, QueueTypeDownload, QueueTypeUpload,
 	                 QueueTypeDirectoryGet, QueueTypeDirectoryCreate, QueueTypeDirectoryRemove,
 	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote,
-	                 QueueTypeDownloadHandle, QueueTypeCopyFile, QueueTypeFileChmod
+	                 QueueTypeDownloadHandle, QueueTypeCopyFile, QueueTypeFileChmod, QueueTypeNoOp
 	               };
 
 	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
@@ -114,6 +114,16 @@ class QueueDisconnect : public QueueOperation {
 public:
 							QueueDisconnect(HWND hNotify, int notifyCode = 0, void * notifyData = NULL);
 	virtual					~QueueDisconnect();
+
+	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
+};
+
+class QueueNoOp : public QueueOperation {
+public:
+							QueueNoOp(HWND hNotify, int notifyCode = 0, void * notifyData = NULL);
+	virtual					~QueueNoOp();
 
 	virtual int				Perform();
 

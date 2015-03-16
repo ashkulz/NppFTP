@@ -36,6 +36,9 @@ public:
 	const char*				GetEncryptionKey() const;	//array of size 8
 	int						SetEncryptionKey(const char * key);	//key must array of size 8
 
+	bool					GetDebugMode() const;
+	int						SetDebugMode(bool debugMode);
+
 	bool					GetClearCache() const;
 	int						SetClearCache(bool clearCache);
 
@@ -55,8 +58,9 @@ private:
 	FTPCache				m_globalCache;
 	bool					m_clearCache;
 	bool					m_clearCachePermanent;
-	bool					m_showOutput;
+	bool					m_showOutput;		
 	double					m_splitRatio;
+	bool					m_debugMode;
 };
 
 #endif //FTPSETTINGS_H

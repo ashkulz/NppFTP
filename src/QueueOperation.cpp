@@ -579,6 +579,32 @@ char * QueueCreateDir::GetDirPath() {
 
 //////////////////////////////////////
 
+QueueNoOp::QueueNoOp(HWND hNotify, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeNoOp, hNotify, notifyCode, notifyData)
+{
+
+}
+
+QueueNoOp::~QueueNoOp() {
+
+}
+
+int QueueNoOp::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		return 0;
+	}
+	return m_client->NoOp();
+}
+
+bool QueueNoOp::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other)) {
+		return false;
+	}
+	return true;
+}
+
+//////////////////////////////////////
+
 QueueRemoveDir::QueueRemoveDir(HWND hNotify, const char * dirPath, int notifyCode, void * notifyData) :
 	QueueOperation(QueueTypeDirectoryRemove, hNotify, notifyCode, notifyData)
 {

@@ -137,8 +137,12 @@ void beNotified(SCNotification * scNotification) {
 	}
 }
 
-LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) {
-	return TRUE;
+LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam) {
+	if (Message == NPPM_RELOADFILE) {
+		OutMsg("Reload command called");
+	}
+
+	return true;
 }
 
 #ifdef UNICODE

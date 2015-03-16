@@ -19,7 +19,7 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is @ 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -53,6 +53,7 @@ Modification made May 2012:
 
 #include "ut_strop.h"
 
+#include "Output.h"
 
 /***************************************************
 
@@ -2424,7 +2425,7 @@ int CUT_FTPClient::GetDirEntry(int index, CUT_DIRINFO *dirInfo) {
     //also not explicitly requested via OPTS UTF8 ON, see https://tools.ietf.org/html/draft-ietf-ftpext-utf-8-option-00
     //see also issue https://github.com/ashkulz/NppFTP/issues/55
     CUT_Str::cvtcpy(dirInfo->fileName,MAX_PATH, di->fileName, CP_UTF8);
-    CUT_Str::cvtcpy(dirInfo->mod, sizeof(dirInfo->mod), di->mod, CP_UTF8);
+	CUT_Str::cvtcpy(dirInfo->mod,MAX_PATH, di->mod);
     dirInfo->fileSize   = di->fileSize;
     dirInfo->day        = di->day;
     dirInfo->month      = di->month;
@@ -2856,6 +2857,9 @@ void CUT_FTPClient::GetInfoInDOSFormat( CUT_DIRINFOA * di){
     long    value;
 
         //parse and store the directory information
+        
+        // mod info is not present
+        di->mod[0] = '\0';
 
         // Get the file name
         int nSpaces = 0, loop = 0;
@@ -2975,9 +2979,10 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
             ++ loop;
     }
 
-    strncpy(di->mod, &m_szBuf[0], sizeof(di->mod)-1);
-    di->mod[sizeof(di->mod)-1] = '\0';
-
+    //CUT_StrMethods::ParseString(m_szBuf," ", 0, di->mod, sizeof(di->mod));
+      
+    strncpy(di->mod, m_szBuf, 10);
+    
     //directory attribute
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')
         di->isDir = TRUE;

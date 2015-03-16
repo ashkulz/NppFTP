@@ -35,8 +35,8 @@ FTPClientWrapper::FTPClientWrapper(Client_Type type, const char * host, int port
 }
 
 FTPClientWrapper::~FTPClientWrapper() {
-	if (m_connected){	//cannot simply call Disconnect as it's virtual
-		OutErr("[FTPClientWrapper] connection active in destructor");
+	if (m_connected) {	//cannot simply call Disconnect as it's virtual
+		OutErr("[NppFTP.FTPClientWrapper] connection active in destructor");
 	}
 
 	SU::free(m_hostname);

@@ -100,7 +100,7 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 
 	dir = sftp_opendir(m_sftpsession, path);
 	if(!dir) {
-		OutErr("[SFTP] Directory not opened(%s)\n", ssh_get_error(m_sshsession));
+		OutErr("[NppFTP.SSH] Directory not opened(%s)\n", ssh_get_error(m_sshsession));
 		return OnReturn(-1);
 	}
 
@@ -163,13 +163,13 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 
 	/* when file=NULL, an error has occured OR the directory listing is end of file */
 	if(!sftp_dir_eof(dir)){
-		OutErr("[SFTP] Unexpected end of directory list: %s\n", ssh_get_error(m_sshsession));
+		OutErr("[NppFTP.SSH] Unexpected end of directory list: %s\n", ssh_get_error(m_sshsession));
 		if (count == 0)
 			return OnReturn(-1);
 	}
 
 	if(sftp_closedir(dir)){
-		OutErr("[SFTP] Unable to close directory: %s\n", ssh_get_error(m_sshsession));
+		OutErr("[NppFTP.SSH] Unable to close directory: %s\n", ssh_get_error(m_sshsession));
 	}
 
 	FTPFile * arrayFiles = new FTPFile[count];
@@ -184,7 +184,7 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 int FTPClientWrapperSSH::Cwd(const char * path) {
 	sftp_dir dir = sftp_opendir(m_sftpsession, path);
 	if(!dir) {
-		OutErr("[SFTP] Cannot Cwd to %s(%s)\n", path, ssh_get_error(m_sshsession));
+		OutErr("[NppFTP.SSH] Cannot Cwd to %s(%s)\n", path, ssh_get_error(m_sshsession));
 		return OnReturn(-1);
 	}
 
@@ -285,7 +285,7 @@ int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 
 	sfile = sftp_open(m_sftpsession, ftpfile, (O_RDONLY), 0664);	//default rw-rw-r-- permission
 	if (sfile == NULL) {
-		OutErr("[SFTP] File not opened %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
+		OutErr("[NppFTP.SSH] File not opened %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
 		return OnReturn(-1);
 	}
 
@@ -468,7 +468,7 @@ int FTPClientWrapperSSH::connect_ssh() {
 	ssh_options_set(session, SSH_OPTIONS_TIMEOUT, &m_timeout);
 
 	if(ssh_connect(session)) {
-		OutErr("[SFTP] Connection failed : %s\n",ssh_get_error(session));
+		OutErr("[NppFTP.SSHWrapper] Connection failed : %s\n",ssh_get_error(session));
 		ssh_disconnect(session);
 		ssh_free(session);
 		return -1;
@@ -490,14 +490,14 @@ int FTPClientWrapperSSH::connect_ssh() {
 	sftp_session sftp = sftp_new(session);
 
 	if(!sftp) {
-		OutErr("[SFTP] Error initialising channel: %s\n",ssh_get_error(session));
+		OutErr("[NppFTP.SSHWrapper] Error initialising channel: %s\n",ssh_get_error(session));
 		ssh_disconnect(session);
 		ssh_free(session);
 		return -1;
 	}
 
 	if(sftp_init(sftp)) {
-		OutErr("[SFTP] Error initialising sftp: %s\n",ssh_get_error(session));
+		OutErr("[NppFTP.SSHWrapper] Error initialising sftp: %s\n",ssh_get_error(session));
 		sftp_free(sftp);
 		ssh_disconnect(session);
 		ssh_free(session);
@@ -520,16 +520,16 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	if (authres == SSH_AUTH_AGAIN)
 		authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_ERROR) {
-		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
+		OutErr("[NppFTP.SSHWrapper] Error during authentication: %s", ssh_get_error(session));
 		return -1;
 	} else if (authres == SSH_AUTH_SUCCESS) {
-		OutDebug("[SFTP] Authenticated without credentials.");
+		OutDebug("[NppFTP.SSHWrapper] Authenticated without credentials.");
 		return 0;
 	}
 
 	char * banner = ssh_get_issue_banner(session);
 	if (banner) {
-		OutDebug("[SFTP] Banner: %s\n", banner);
+		OutDebug("[NppFTP.SSHWrapper] Banner: %s\n", banner);
 		ssh_string_free_char(banner);
 	}
 
@@ -541,7 +541,7 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		}
 
 		if (methods == SSH_AUTH_METHOD_UNKNOWN) {
-			OutErr("[SFTP] Unknown authentication method.");
+			OutErr("[NppFTP.SSHWrapper] Unknown authentication method.");
 			return -1;
 		}
 
@@ -561,23 +561,23 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		}
 
 		if (methods == 0) {
-			OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
+			OutErr("[NppFTP.SSHWrapper] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
 			return -1;
 		}
 
 		if (authres == SSH_AUTH_ERROR) {
-			OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
+			OutErr("[NppFTP.SSHWrapper] Error during authentication: %s", ssh_get_error(session));
 			return -1;
 		}
 
 		if (authres == SSH_AUTH_SUCCESS) {
-			OutDebug("[SFTP] Successfully authenticated");
+			OutDebug("[NppFTP.SSHWrapper] Successfully authenticated");
 			return 0;
 		}
 		retries++;
 	} while (authres == SSH_AUTH_PARTIAL && retries <= maxRetries);
 
-	OutErr("[SFTP] Unable to authenticate");
+	OutErr("[NppFTP.SSHWrapper] Unable to authenticate");
 
 	return -1;
 }
@@ -604,7 +604,7 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	ssh_key_free(privkey);
 
 	if (rc == SSH_AUTH_DENIED) {
-		OutDebug("[SFTP] Key authentication denied.");
+		OutDebug("[NppFTP.SSHWrapper] Key authentication denied.");
 	}
 
 	return rc;
@@ -615,7 +615,7 @@ int FTPClientWrapperSSH::authenticate_password(ssh_session session) {
 
 	rc = ssh_userauth_password(session, NULL, m_password);
 	if (rc == SSH_AUTH_DENIED) {
-		OutDebug("[SFTP] Password authentication denied.");
+		OutDebug("[NppFTP.SSHWrapper] Password authentication denied.");
 	}
 
 	return rc;
@@ -631,10 +631,10 @@ int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
 	while (rc == SSH_AUTH_INFO && i < 10) {
 		int res = kbdlg.Create(_MainOutputWindow, session);
 		if (res == -1) {
-			OutErr("[SFTP] Error creating interactive dialog");
+			OutErr("[NppFTP.SSHWrapper] Error creating interactive dialog");
 			return SSH_AUTH_ERROR;
 		} else if (res != 1 && res != 0) {	//1: Gave answer, 0: No input required
-			OutDebug("[SFTP] Keyboard interactive authentication cancelled.");
+			OutDebug("[NppFTP.SSHWrapper] Keyboard interactive authentication cancelled.");
 			return SSH_AUTH_ERROR;
 		}
 		rc = ssh_userauth_kbdint(session, NULL, NULL);
@@ -642,7 +642,7 @@ int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
 	}
 
 	if (rc == SSH_AUTH_DENIED) {
-		OutDebug("[SFTP] Keyboard interactive authentication denied.");
+		OutDebug("[NppFTP.SSHWrapper] Keyboard interactive authentication denied.");
 	}
 
 	return rc;
@@ -676,11 +676,11 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 
 	switch(state){
 		case SSH_SERVER_KNOWN_OK:
-			OutDebug("[SFTP] Host key accepted");
+			OutDebug("[NppFTP.SSHWrapper] Host key accepted");
 			result = 0;
 			break; /* ok */
 		case SSH_SERVER_FILE_NOT_FOUND:
-			OutDebug("[SFTP] Creating known hosts file.");
+			OutDebug("[NppFTP.SSHWrapper] Creating known hosts file.");
 			/* fallback to SSH_SERVER_NOT_KNOWN behavior */
 		case SSH_SERVER_NOT_KNOWN: {
 			SU::TSprintf(errMessage, 512, TEXT("The server is unknown. Do you trust the host key\r\n%s %s ?"), keytype, hashHex);
@@ -696,7 +696,7 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 			break;
 		case SSH_SERVER_ERROR:
 		default:
-			OutErr("[SFTP] SSH_SERVER_ERROR: %s",ssh_get_error(session));
+			OutErr("[NppFTP.SSHWrapper] SSH_SERVER_ERROR: %s",ssh_get_error(session));
 			result = -1;
 			break;
 	}
@@ -705,15 +705,15 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 		int res = ::MessageBox(_MainOutputWindow, errMessage, TEXT("SFTP authentication"), MB_YESNO|MB_DEFBUTTON2);
 		if (res == IDYES) {
 			if (ssh_session_update_known_hosts(session) < 0) {
-				OutErr("[SFTP] Writing known hosts file failed: %s", strerror(errno));
-				OutErr("[SFTP] The session will continue but the key will not be stored");
+				OutErr("[NppFTP.SSHWrapper] Writing known hosts file failed: %s", strerror(errno));
+				OutErr("[NppFTP.SSHWrapper] The session will continue but the key will not be stored");
 				result = 0;	//return 0 even if an error occured
 			} else {
-				OutDebug("[SFTP] Host key written to file");
+				OutDebug("[NppFTP.SSHWrapper] Host key written to file");
 				result = 0;
 			}
 		} else {
-			OutErr("[SFTP] Rejected host key");
+			OutErr("[NppFTP.SSHWrapper] Rejected host key");
 			result = -1;
 		}
 	}

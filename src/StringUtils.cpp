@@ -222,6 +222,14 @@ void SU::free(char * data) {
 	return;
 }
 
+bool SU::InString(const tstring & source, const tstring & find) {
+	tstring result(source);
+
+	tstring::size_type pos = result.find(find, pos);
+	
+	return pos != tstring::npos ? true : false;
+}
+
 tstring SU::ReplaceString(const tstring & source, const tstring & find, const tstring & replace) {
 	tstring result(source);
 	size_t findlen = find.length();

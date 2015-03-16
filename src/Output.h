@@ -19,6 +19,8 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
+
+
 enum Output_Type { Output_System, Output_Client, Output_Error };
 
 class Output {

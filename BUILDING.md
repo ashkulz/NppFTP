@@ -6,7 +6,7 @@ possible with the MinGW-w64 toolchain (on Debian/Ubuntu just run
 
 Library versions used:
  * zlib 1.2.8
- * OpenSSL 1.0.1l
+ * OpenSSL 1.0.2a
  * libssh 0.6.4
 
 All the above libraries were cross-compiled on Ubuntu 14.04.1 using

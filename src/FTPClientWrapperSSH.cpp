@@ -479,6 +479,8 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	int authres = 0;
 
 	authres = ssh_userauth_none(session, NULL);
+	if (authres == SSH_AUTH_AGAIN)
+		authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_ERROR) {
 		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
 		return -1;

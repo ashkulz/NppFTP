@@ -7,7 +7,7 @@ SET(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
 SET(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
 
 # here is the target environment located
-SET(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32 /home/build/mingw-w64-cross-win32)
+SET(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32 /home/wkhtmltopdf/mingw-w64-cross-win32)
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 

@@ -1,6 +1,6 @@
-diff -ur libssh-0.6.4/cmake/Modules/FindOpenSSL.cmake libssh-0.6.4.orig/cmake/Modules/FindOpenSSL.cmake
---- libssh-0.6.4/cmake/Modules/FindOpenSSL.cmake	2014-09-16 00:24:34.000000000 +0530
-+++ libssh-0.6.4.orig/cmake/Modules/FindOpenSSL.cmake	2014-12-30 16:29:50.895051986 +0530
+diff -ur libssh-0.6.5/cmake/Modules/FindOpenSSL.cmake libssh-0.6.5.orig/cmake/Modules/FindOpenSSL.cmake
+--- libssh-0.6.5/cmake/Modules/FindOpenSSL.cmake	2014-09-16 00:24:34.000000000 +0530
++++ libssh-0.6.5.orig/cmake/Modules/FindOpenSSL.cmake	2014-12-30 16:29:50.895051986 +0530
 @@ -138,22 +138,32 @@
              mark_as_advanced(LIB_EAY_DEBUG LIB_EAY_RELEASE)
          elseif (MINGW)
@@ -75,13 +75,3 @@ diff -ur libssh-0.6.4/cmake/Modules/FindOpenSSL.cmake libssh-0.6.4.orig/cmake/Mo
      endif (WIN32 AND NOT CYGWIN)
  
      include(FindPackageHandleStandardArgs)
-diff -ur libssh-0.6.4/src/CMakeLists.txt libssh-0.6.4.orig/src/CMakeLists.txt
---- libssh-0.6.4/src/CMakeLists.txt	2014-12-19 13:41:17.000000000 +0530
-+++ libssh-0.6.4.orig/src/CMakeLists.txt	2014-12-30 17:18:25.263160794 +0530
-@@ -288,6 +288,3 @@
-   )
- endif (WITH_STATIC_LIB)
- 
--if (Threads_FOUND)
--    add_subdirectory(threads)
--endif (Threads_FOUND)

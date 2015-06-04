@@ -586,7 +586,7 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	}
 
 	privatekey_free(privkey);
-	string_free(pubstringkey);
+	ssh_string_free(pubstringkey);
 
 	if (rc == SSH_AUTH_DENIED) {
 		OutMsg("[SFTP] Key authentication denied.");

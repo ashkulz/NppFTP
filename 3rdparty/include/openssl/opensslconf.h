@@ -110,8 +110,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/home/wkhtmltopdf/0.13/static-build/mingw-w64-cross-win32/deplibs/lib/engines"
-#define OPENSSLDIR "/home/wkhtmltopdf/0.13/static-build/mingw-w64-cross-win32/deplibs"
+#define ENGINESDIR "/home/wkhtmltopdf/deplibs/lib/engines"
+#define OPENSSLDIR "/home/wkhtmltopdf/deplibs"
 #endif
 #endif
 

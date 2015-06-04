@@ -1,20 +1,11 @@
-All binaries are built with the Mingw-builds [1] toolchain, currently with
-i686-4.9.2-win32-sjlj-rt_v3-rev1. Just run `mingw32-make` in the root
-folder to produce the plugin ZIP. Cross-compilation from Linux is also
-possible with the MinGW-w64 toolchain (on Debian/Ubuntu just run
-`sudo apt-get install mingw-w64` to install it) by running `make`.
+All binaries are built with the [MinGW-builds](http://mingw-w64.sourceforge.net/download.php)
+toolchain, currently with `i686-4.9.2-win32-sjlj-rt_v3-rev1`.
 
-Library versions used:
- * zlib 1.2.8
- * OpenSSL 1.0.2a
- * libssh 0.6.5
+Just run `mingw32-make` in the root folder to produce the plugin ZIP.
+Cross-compilation from Linux is also possible with the MinGW-w64 toolchain
+by running `make` after installing the `mingw-w64` package in Debian.
 
-All the above libraries were cross-compiled on Ubuntu 14.04.2 using
-the MinGW-w64 package present on it. For compiling libssh, the
-mingw-w64-cross-compile.cmake was used for cross-compiling setup.
-The following commands were used to perform the build:
-
-    cmake -DCMAKE_TOOLCHAIN_FILE=~/mingw-w64-cross-compile.cmake -DWITH_STATIC_LIB=ON -DCMAKE_INSTALL_PREFIX=/home/wkhtmltopdf/mingw-w64-cross-win32 <libssh-src-dir>
-    make && make install
-
-[1] http://mingw-w64.sourceforge.net/download.php#mingw-builds
+The 3rd-party libraries (zlib, OpenSSL and libssh) were produced on
+Debian 8, after installing the `python mingw-w64 cmake` packages
+and running the `build_3rdparty.py` script. The necessary files
+were then copied manually to the `3rdparty` folder.

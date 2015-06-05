@@ -41,17 +41,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_WINDLL;LIBSSH_STATIC;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\UTCP\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\tinyxml\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\src\Windows;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\3rdparty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -76,9 +78,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <AdditionalOptions> /Qvec-report:2</AdditionalOptions>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_WINDLL;LIBSSH_STATIC;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\UTCP\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\tinyxml\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\src\Windows;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\3rdparty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

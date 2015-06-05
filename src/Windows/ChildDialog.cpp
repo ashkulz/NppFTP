@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "StdInc.h"
+#include "../StdInc.h"
 #include "ChildDialog.h"
 
 ChildDialog::ChildDialog(int dialogResource) :

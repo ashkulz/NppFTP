@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "StdInc.h"
+#include "../StdInc.h"
 #include "FTPWindow.h"
 
-#include "FTPSession.h"
+#include "../FTPSession.h"
 #include "resource.h"
 #include "InputDialog.h"
 #include "MessageDialog.h"

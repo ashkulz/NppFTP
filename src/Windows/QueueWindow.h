@@ -21,7 +21,7 @@
 
 #include "Window.h"
 
-#include "QueueOperation.h"
+#include "../QueueOperation.h"
 
 class QueueWindow : public Window {
 public:

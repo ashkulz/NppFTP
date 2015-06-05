@@ -24,13 +24,13 @@
 #include "Toolbar.h"
 #include "Treeview.h"
 #include "QueueWindow.h"
-#include "FTPProfile.h"
-#include "FTPSettings.h"
-#include "QueueOperation.h"
+#include "../FTPProfile.h"
+#include "../FTPSettings.h"
+#include "../QueueOperation.h"
 #include "OutputWindow.h"
 #include "SettingsDialog.h"
 #include "ProfilesDialog.h"
-#include "DragDropSupport.h"
+#include "../DragDropSupport.h"
 #include "DragDropWindow.h"
 
 class FTPSession;

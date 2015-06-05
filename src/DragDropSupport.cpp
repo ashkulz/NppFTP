@@ -665,7 +665,7 @@ DropHelper::DropHelper(DropDataWindow * dataWindow) :
 DropHelper::~DropHelper() {
 }
 
-int DropHelper::DropHelper::PerformDragDrop() {
+int DropHelper::PerformDragDrop() {
 	if (m_hThread != NULL)
 		return -1;
 

@@ -110,7 +110,7 @@ def download_tarball(url, sha1, dir, name):
 
 def main():
     build = os.path.abspath('obj')
-    dest  = os.path.abspath('deplibs')
+    dest  = os.path.abspath('3rdparty')
     mkdir_p(build)
     mkdir_p(dest, 'include')
     mkdir_p(dest, 'lib')

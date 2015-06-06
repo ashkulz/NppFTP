@@ -1,11 +1,17 @@
-All binaries are built with the [MinGW-builds](http://mingw-w64.sourceforge.net/download.php)
-toolchain, currently with `i686-4.9.2-win32-sjlj-rt_v3-rev1`.
+Currently, NppFTP can only be built with MinGW-w64.
 
-Just run `mingw32-make` in the root folder to produce the plugin ZIP.
-Cross-compilation from Linux is also possible with the MinGW-w64 toolchain
-by running `make` after installing the `mingw-w64` package in Debian.
+For running `build_3rdparty.py`, you need a working internet connection
+to download/compile the 3rd-party libraries (zlib, OpenSSL and libssh).
 
-The 3rd-party libraries (zlib, OpenSSL and libssh) were produced on
-Debian 8, after installing the `python mingw-w64 cmake` packages
-and running the `build_3rdparty.py` script. The necessary files
-were then copied manually to the `3rdparty` folder.
+MinGW-w64
+---------
+
+Cross-compiling from Debian 8 "jessie":
+* Install the necessary packages: `apt-get install python mingw-w64 cmake zip`.
+* Run `./build_3rdparty.py` to download and compile required libraries.
+* Run `make` to compile the code and produce the zipped plugin.
+
+Compiling on Windows:
+* Install the latest [MinGW-builds](http://mingw-w64.sourceforge.net/download.php) toolchain.
+* Copy the `3rdparty` folder from the above cross-compilation setup.
+* Run `mingw32-make` to compile the code and produce the zipped plugin.

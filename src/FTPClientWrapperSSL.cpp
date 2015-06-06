@@ -21,6 +21,7 @@
 
 #include "SSLCertificates.h"
 #include "MessageDialog.h"
+#include <algorithm>
 
 FTPClientWrapperSSL::FTPClientWrapperSSL(const char * host, int port, const char * user, const char * password) :
 	FTPClientWrapper(Client_SSL, host, port, user, password),

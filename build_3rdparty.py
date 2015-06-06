@@ -17,6 +17,16 @@ DEPENDENT_LIBS = {
                     'make',
                     'make install_sw'
                 ]
+            },
+            'msvc': {
+                'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
+                # fix CMake <= 3.2 detection, see https://github.com/Kitware/CMake/commit/c5d9a8283cfac15b4a5a07f18d5eb10c1f388505
+                'replace':  [('crypto/opensslv.h', '# define OPENSSL_VERSION_NUMBER', '#define OPENSSL_VERSION_NUMBER')],
+                'commands': [
+                    'perl Configure --openssldir=%(dest)s no-asm VC-WIN32',
+                    'ms\\do_ms.bat',
+                    'nmake /f ms\\nt.mak install'
+                ]
             }
         }
     },
@@ -32,6 +42,16 @@ DEPENDENT_LIBS = {
                     'make -f win32/Makefile.gcc PREFIX=i686-w64-mingw32-',
                     'cp zlib.h zconf.h %(dest)s/include',
                     'cp libz.a %(dest)s/lib'
+                ]
+            },
+            'msvc': {
+                'result':   ['include/zlib.h', 'include/zconf.h', 'lib/zlib.lib'],
+                'replace':  [('win32/Makefile.msc', '-MD', '-MT')],
+                'commands': [
+                    'nmake /f win32/Makefile.msc zlib.lib',
+                    'copy /Y zlib.h   %(dest)s\\include >nul',
+                    'copy /Y zconf.h  %(dest)s\\include >nul',
+                    'copy /Y zlib.lib %(dest)s\\lib     >nul'
                 ]
             }
         }
@@ -53,7 +73,20 @@ DEPENDENT_LIBS = {
                     'make',
                     'make install'
                 ]
+            },
+            'msvc': {
+                'result':   ['include/libssh/libssh.h', 'lib/ssh.lib'],
+                'commands': [
+                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DCMAKE_BUILD_TYPE=Release \
+                        "-DCMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
+                        -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
+                    'nmake install',
+                    'del %(dest)s\\lib\\ssh.lib >nul',
+                    'move %(dest)s\\lib\\static\\ssh.lib %(dest)s\\lib >nul'
+                ]
             }
+
         }
     }
 }
@@ -133,7 +166,7 @@ def main():
     mkdir_p(dest, 'include')
     mkdir_p(dest, 'lib')
 
-    target = 'mingw-w64' # only supported platform for now
+    target = platform.system() == 'Windows' and 'msvc' or 'mingw-w64'
     for library in sorted(DEPENDENT_LIBS, key=lambda x: DEPENDENT_LIBS[x]['order']):
         if target not in DEPENDENT_LIBS[library]['target']:
             print '%s: skipping (not available)' % library

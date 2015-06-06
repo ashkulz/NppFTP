@@ -11,7 +11,7 @@ endif
 CXX    = i686-w64-mingw32-g++
 CFLAGS = -MMD -Os -O3 -Wall -Werror -fexpensive-optimizations -DLIBSSH_STATIC -DUNICODE -D_UNICODE
 LFLAGS = -static -Lobj -L3rdparty/lib -lcomdlg32 -lcomctl32 -luuid -lole32 -lshlwapi -lssh -lssl -lcrypto -lz -lgdi32 -lws2_32
-INC    = -I3rdparty/include -Isrc -Isrc/Windows -Itinyxml/include -IUTCP/include
+INC    = -I3rdparty/include -Isrc -Isrc/Windows -Itinyxml/include -IUTCP/include -I.
 RES    = obj/NppFTP.res
 
 TGT    = bin/NppFTP.dll

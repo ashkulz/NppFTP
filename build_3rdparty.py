@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://openssl.org/source/openssl-1.0.2c.tar.gz',
-        'sha1'  : '6e4a5e91159eb32383296c7c83ac0e59b83a0a44',
+        'url'   : 'https://openssl.org/source/openssl-1.0.2d.tar.gz',
+        'sha1'  : 'd01d17b44663e8ffa6a33a5a30053779d9593c3d',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -40,8 +40,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-libssh-0.7.0.tar.gz',
-        'sha1'  : 'a3099b960108f3be4ef1c85be38cb3c3be82e3ee',
+        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-libssh-0.7.1.tar.gz',
+        'sha1'  : '7556c919732e714e79debe8dbdb0a900b9c69064',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],

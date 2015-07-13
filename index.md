@@ -4,7 +4,7 @@ layout: default
 
 ## Download
 
-You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [GitHub](https://github.com/ashkulz/NppFTP/releases/latest).
+You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [GitHub](https://github.com/ashkulz/NppFTP/releases/latest) and [install it manually](http://docs.notepad-plus-plus.org/index.php?title=Plugin_Development#How_to_install_a_plugin).
 
 ## Support
 

@@ -4,7 +4,7 @@ layout: default
 
 ## Download
 
-You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [SourceForge](http://sourceforge.net/projects/nppftp/files/latest/download).
+You can install it via the "Plugin Manager". In case the latest version is not available via the Plugin Manager, you can download it from [GitHub](https://github.com/ashkulz/NppFTP/releases/latest).
 
 ## Support
 

@@ -5,15 +5,14 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://openssl.org/source/openssl-1.0.2d.tar.gz',
-        'sha1'  : 'd01d17b44663e8ffa6a33a5a30053779d9593c3d',
+        'url'   : 'https://openssl.org/source/openssl-1.0.2h.tar.gz',
+        'sha1'  : '577585f5f5d299c44dd3c993d3c0ac7a219e4949',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
                 'commands': [
                     'perl Configure --openssldir=%(dest)s --cross-compile-prefix=i686-w64-mingw32- no-shared no-asm mingw64',
-                    'make',
-                    'make install_sw'
+                    'make depend', 'make', 'make install_sw'
                 ]
             },
             'msvc': {
@@ -56,8 +55,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-libssh-0.7.1.tar.gz',
-        'sha1'  : '7556c919732e714e79debe8dbdb0a900b9c69064',
+        'url'   : 'https://red.libssh.org/attachments/download/195/libssh-0.7.3.tar.xz',
+        'sha1'  : '9de2a8fde51aa7b7855008fafd5bf47ebb01289f',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],

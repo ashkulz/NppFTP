@@ -6,8 +6,8 @@ to download/compile the 3rd-party libraries (zlib, OpenSSL and libssh).
 MinGW-w64
 ---------
 
-Cross-compiling from Debian 8 "jessie":
-* Install the necessary packages: `apt-get install python mingw-w64 cmake zip`.
+Cross-compiling from Ubuntu 16.04 "xenial":
+* Install the necessary packages: `sudo apt install -y python3 mingw-w64 cmake zip`.
 * Run `./build_3rdparty.py` to download and compile required libraries.
 * Run `make -f Makefile.mingw` to compile and produce the zipped plugin.
 

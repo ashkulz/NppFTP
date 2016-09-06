@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # --------------------------------------------------------------- CONFIGURATION
 
@@ -10,8 +10,6 @@ DEPENDENT_LIBS = {
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
-                # fix CMake <= 3.2 detection, see https://github.com/Kitware/CMake/commit/c5d9a8283cfac15b4a5a07f18d5eb10c1f388505
-                'replace':  [('crypto/opensslv.h', '# define OPENSSL_VERSION_NUMBER', '#define OPENSSL_VERSION_NUMBER')],
                 'commands': [
                     'perl Configure --openssldir=%(dest)s --cross-compile-prefix=i686-w64-mingw32- no-shared no-asm mingw64',
                     'make',
@@ -20,8 +18,6 @@ DEPENDENT_LIBS = {
             },
             'msvc': {
                 'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
-                # fix CMake <= 3.2 detection, see https://github.com/Kitware/CMake/commit/c5d9a8283cfac15b4a5a07f18d5eb10c1f388505
-                'replace':  [('crypto/opensslv.h', '# define OPENSSL_VERSION_NUMBER', '#define OPENSSL_VERSION_NUMBER')],
                 'commands': [
                     'perl Configure --openssldir=%(dest)s no-asm VC-WIN32',
                     'ms\\do_ms.bat',
@@ -93,7 +89,7 @@ DEPENDENT_LIBS = {
 
 # --------------------------------------------------------------- HELPERS
 
-import os, sys, platform, shutil, urllib, hashlib, tarfile
+import os, sys, platform, shutil, urllib.request, hashlib, tarfile
 
 def join_path(*p):
     return os.path.abspath(os.path.join(*p))
@@ -134,7 +130,7 @@ def download_file(url, sha1, dir):
     def hook(cnt, bs, total):
         pct = int(cnt*bs*100/total)
         message("\rDownloading: %s [%d%%]" % (name, pct))
-    urllib.urlretrieve(url, loc, reporthook=hook)
+    urllib.request.urlretrieve(url, loc, reporthook=hook)
     message("\r")
     hash = hashlib.sha1(open(loc, 'rb').read()).hexdigest()
     if hash != sha1:
@@ -169,7 +165,7 @@ def main():
     target = platform.system() == 'Windows' and 'msvc' or 'mingw-w64'
     for library in sorted(DEPENDENT_LIBS, key=lambda x: DEPENDENT_LIBS[x]['order']):
         if target not in DEPENDENT_LIBS[library]['target']:
-            print '%s: skipping (not available)' % library
+            print('%s: skipping (not available)' % library)
             continue
 
         cfg = DEPENDENT_LIBS[library]['target'][target]
@@ -177,9 +173,9 @@ def main():
         for path in cfg['result']:
             built = built and os.path.exists(join_path(dest, path))
         if built:
-            print '%s: skipping (already built)' % library
+            print('%s: skipping (already built)' % library)
             continue
-        print '-' * 60, library
+        print('-' * 60, library)
         download_tarball(DEPENDENT_LIBS[library]['url'],
                          DEPENDENT_LIBS[library]['sha1'], build, library)
 

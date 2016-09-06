@@ -21,19 +21,12 @@
 
 /* Tree view extended styles */
 #if 1
-    #define TVS_EX_MULTISELECT          0x00000002L
     #define TVS_EX_DOUBLEBUFFER         0x00000004L
-    #define TVS_EX_NOINDENTSTATE        0x00000008L
-    #define TVS_EX_RICHTOOLTIP          0x00000010L
     #define TVS_EX_AUTOHSCROLL          0x00000020L
     #define TVS_EX_FADEINOUTEXPANDOS    0x00000040L
-    #define TVS_EX_PARTIALCHECKBOXES    0x00000080L
-    #define TVS_EX_EXCLUSIONCHECKBOXES  0x00000100L
-    #define TVS_EX_DIMMEDCHECKBOXES     0x00000200L
-    #define TVS_EX_DRAWIMAGEASYNC       0x00000400L
-
+#endif
+#ifndef TVM_SETEXTENDEDSTYLE
     #define TVM_SETEXTENDEDSTYLE		(TV_FIRST + 44)
-
 #endif
 
 

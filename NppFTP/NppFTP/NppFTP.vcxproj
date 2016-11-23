@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8EE39672-75E5-4EA7-B0D0-559138E89ED6}</ProjectGuid>
+    <RootNamespace>NppFTP</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_WINDLL;LIBSSH_STATIC;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\UTCP\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\tinyxml\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\src\Windows;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\3rdparty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnablePREfast>true</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalOptions> /Qvec-report:2</AdditionalOptions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_WINDLL;LIBSSH_STATIC;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\UTCP\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\tinyxml\include;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\src\Windows;C:\Users\Alexander Riccio\Documents\GitHub\NppFTP\3rdparty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>true</StringPooling>
+      <EnablePREfast>true</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DragDropSupport.cpp" />
+    <ClCompile Include="..\..\src\Encryption.cpp" />
+    <ClCompile Include="..\..\src\FileObject.cpp" />
+    <ClCompile Include="..\..\src\FTPCache.cpp" />
+    <ClCompile Include="..\..\src\FTPClientWrapper.cpp" />
+    <ClCompile Include="..\..\src\FTPClientWrapperSSH.cpp" />
+    <ClCompile Include="..\..\src\FTPClientWrapperSSL.cpp" />
+    <ClCompile Include="..\..\src\FTPProfile.cpp" />
+    <ClCompile Include="..\..\src\FTPQueue.cpp" />
+    <ClCompile Include="..\..\src\FTPSession.cpp" />
+    <ClCompile Include="..\..\src\FTPSettings.cpp" />
+    <ClCompile Include="..\..\src\Monitor.cpp" />
+    <ClCompile Include="..\..\src\NppFTP.cpp" />
+    <ClCompile Include="..\..\src\Output.cpp" />
+    <ClCompile Include="..\..\src\PathUtils.cpp" />
+    <ClCompile Include="..\..\src\PluginInterface.cpp" />
+    <ClCompile Include="..\..\src\ProgressMonitor.cpp" />
+    <ClCompile Include="..\..\src\QueueOperation.cpp" />
+    <ClCompile Include="..\..\src\RefObject.cpp" />
+    <ClCompile Include="..\..\src\SSLCertificates.cpp" />
+    <ClCompile Include="..\..\src\StringUtils.cpp" />
+    <ClCompile Include="..\..\src\Windows\AboutDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\ChildDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\Dialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\DockableWindow.cpp" />
+    <ClCompile Include="..\..\src\Windows\DragDropWindow.cpp" />
+    <ClCompile Include="..\..\src\Windows\FTPWindow.cpp" />
+    <ClCompile Include="..\..\src\Windows\InputDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\KBIntDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\MessageDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\OutputWindow.cpp" />
+    <ClCompile Include="..\..\src\Windows\ProfilesDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\QueueWindow.cpp" />
+    <ClCompile Include="..\..\src\Windows\SettingsDialog.cpp" />
+    <ClCompile Include="..\..\src\Windows\Toolbar.cpp" />
+    <ClCompile Include="..\..\src\Windows\Treeview.cpp" />
+    <ClCompile Include="..\..\src\Windows\Window.cpp" />
+    <ClCompile Include="..\..\src\WinPlatform.cpp" />
+    <ClCompile Include="..\..\tinyxml\src\tinystr.cpp" />
+    <ClCompile Include="..\..\tinyxml\src\tinyxml.cpp" />
+    <ClCompile Include="..\..\tinyxml\src\tinyxmlerror.cpp" />
+    <ClCompile Include="..\..\tinyxml\src\tinyxmlparser.cpp" />
+    <ClCompile Include="..\..\UTCP\src\ftp_c.cpp" />
+    <ClCompile Include="..\..\UTCP\src\uh_ctrl.cpp" />
+    <ClCompile Include="..\..\UTCP\src\UTDataSource.cpp" />
+    <ClCompile Include="..\..\UTCP\src\utfile.cpp" />
+    <ClCompile Include="..\..\UTCP\src\utstrlst.cpp" />
+    <ClCompile Include="..\..\UTCP\src\ut_clnt.cpp" />
+    <ClCompile Include="..\..\UTCP\src\UT_Queue.cpp" />
+    <ClCompile Include="..\..\UTCP\src\UT_StrOp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DragDropSupport.h" />
+    <ClInclude Include="..\..\src\Encryption.h" />
+    <ClInclude Include="..\..\src\FileObject.h" />
+    <ClInclude Include="..\..\src\FTPCache.h" />
+    <ClInclude Include="..\..\src\FTPClientWrapper.h" />
+    <ClInclude Include="..\..\src\FTPFile.h" />
+    <ClInclude Include="..\..\src\FTPProfile.h" />
+    <ClInclude Include="..\..\src\FTPQueue.h" />
+    <ClInclude Include="..\..\src\FTPSession.h" />
+    <ClInclude Include="..\..\src\FTPSettings.h" />
+    <ClInclude Include="..\..\src\Monitor.h" />
+    <ClInclude Include="..\..\src\NppFTP.h" />
+    <ClInclude Include="..\..\src\Output.h" />
+    <ClInclude Include="..\..\src\PathUtils.h" />
+    <ClInclude Include="..\..\src\ProgressMonitor.h" />
+    <ClInclude Include="..\..\src\QueueOperation.h" />
+    <ClInclude Include="..\..\src\RefObject.h" />
+    <ClInclude Include="..\..\src\SSLCertificates.h" />
+    <ClInclude Include="..\..\src\StdInc.h" />
+    <ClInclude Include="..\..\src\StringUtils.h" />
+    <ClInclude Include="..\..\src\Windows\AboutDialog.h" />
+    <ClInclude Include="..\..\src\Windows\ChildDialog.h" />
+    <ClInclude Include="..\..\src\Windows\Commands.h" />
+    <ClInclude Include="..\..\src\Windows\Dialog.h" />
+    <ClInclude Include="..\..\src\Windows\DockableWindow.h" />
+    <ClInclude Include="..\..\src\Windows\DragDropWindow.h" />
+    <ClInclude Include="..\..\src\Windows\FTPWindow.h" />
+    <ClInclude Include="..\..\src\Windows\InputDialog.h" />
+    <ClInclude Include="..\..\src\Windows\KBIntDialog.h" />
+    <ClInclude Include="..\..\src\Windows\MessageDialog.h" />
+    <ClInclude Include="..\..\src\Windows\OutputWindow.h" />
+    <ClInclude Include="..\..\src\Windows\ProfilesDialog.h" />
+    <ClInclude Include="..\..\src\Windows\QueueWindow.h" />
+    <ClInclude Include="..\..\src\Windows\resource.h" />
+    <ClInclude Include="..\..\src\Windows\SettingsDialog.h" />
+    <ClInclude Include="..\..\src\Windows\symbols.h" />
+    <ClInclude Include="..\..\src\Windows\Toolbar.h" />
+    <ClInclude Include="..\..\src\Windows\Treeview.h" />
+    <ClInclude Include="..\..\src\Windows\Window.h" />
+    <ClInclude Include="..\..\src\WinPlatform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\Windows\NppFTP.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

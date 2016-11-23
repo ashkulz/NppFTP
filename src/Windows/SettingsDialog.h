@@ -20,7 +20,7 @@
 #define SETTINGSDIALOG_H
 
 #include "Dialog.h"
-#include "FTPSettings.h"
+#include "../FTPSettings.h"
 
 class SettingsDialog : public Dialog {
 public:

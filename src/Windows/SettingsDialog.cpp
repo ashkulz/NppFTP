@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "StdInc.h"
+#include "../StdInc.h"
 #include "SettingsDialog.h"
 
-#include "Encryption.h"
+#include "../Encryption.h"
 #include "resource.h"
 #include <windowsx.h>
 

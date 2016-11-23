@@ -20,7 +20,7 @@
 #define DRAGDROPWINDOW_H
 
 #include "Window.h"
-#include "DragDropSupport.h"
+#include "../DragDropSupport.h"
 
 class DragDropWindow : public Window {
 public:

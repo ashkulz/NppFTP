@@ -131,7 +131,7 @@ int CUH_Control::CreateHistoryWindow(HWND parent,DWORD style,RECT &rect){
         return UH_ERROR;
 
     #ifdef WIN32
-        HINSTANCE hInstance = (HINSTANCE)(ULONG_PTR)GetWindowLong(parent,GWLP_HINSTANCE);
+        HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(parent,GWLP_HINSTANCE);
     #else
         HINSTANCE hInstance = (HINSTANCE)GetWindowWord(parent,GWW_HINSTANCE);
     #endif
@@ -242,7 +242,7 @@ Params
 Return
     n/a
 ***********************************/
-long CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam){
+LRESULT CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam){
 
     switch(message){
         case WM_NCCREATE:{
@@ -258,7 +258,7 @@ long CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM l
     }
 
     //get the pointer to the calling class
-    CUH_Control *_this = (CUH_Control*)(ULONG_PTR)GetWindowLong(hwnd,0);
+    CUH_Control *_this = (CUH_Control*)GetWindowLongPtr(hwnd,0);
 
     //call the functions that match in incoming message
     if(_this != NULL){

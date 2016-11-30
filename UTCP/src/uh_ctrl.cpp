@@ -242,7 +242,7 @@ Params
 Return
     n/a
 ***********************************/
-long CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam){
+LRESULT CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam){
 
     switch(message){
         case WM_NCCREATE:{

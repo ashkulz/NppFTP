@@ -103,7 +103,7 @@ protected:
     void OnPaint();
     void OnSize();
 
-    static long CALLBACK WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam);
+    static long long CALLBACK WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam);
 
     void OnHScroll(int code,int pos);
     void OnVScroll(int code,int pos);

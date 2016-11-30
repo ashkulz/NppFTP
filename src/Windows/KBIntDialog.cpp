@@ -100,12 +100,12 @@ INT_PTR KBIntDialog::OnInitDialog() {
 			::CreateWindowEx(0, WC_EDIT, TEXT(""),
 							WS_CHILD | WS_VSCROLL | ES_AUTOHSCROLL | ES_MULTILINE | ES_READONLY | WS_VISIBLE,
 							promptRect.left, promptRect.top, promptRect.right-promptRect.left, promptRect.bottom-promptRect.top,
-							m_hwnd, (HMENU)curPromptID, m_hInstance, NULL);
+							m_hwnd, (HMENU)(INT_PTR)curPromptID, m_hInstance, NULL);
 
 			::CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, TEXT(""),
 							WS_CHILD | WS_BORDER | ES_AUTOHSCROLL | WS_VISIBLE,
 							answerRect.left, answerRect.top, answerRect.right-answerRect.left, answerRect.bottom-answerRect.top,
-							m_hwnd, (HMENU)curPromptID, m_hInstance, NULL);
+							m_hwnd, (HMENU)(INT_PTR)curPromptID, m_hInstance, NULL);
 		}
 
 		int totalDeltaY = deltaY * (m_nrPrompt-1);

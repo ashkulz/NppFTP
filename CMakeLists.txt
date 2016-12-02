@@ -32,7 +32,7 @@ if (MINGW)
     )
 
     set (CMAKE_MODULE_LINKER_FLAGS
-        "-s"
+        "-s -static"
     )
 else (MINGW)
     set (defs
@@ -75,7 +75,7 @@ set (project_sources
     ${UTCP_sources}
 )
 
-include_directories (/)
+include_directories (${CMAKE_SOURCE_DIR}/)
 include_directories (src/)
 include_directories (src/Windows/)
 include_directories (tinyxml/include/)
@@ -100,7 +100,7 @@ if (MINGW)
 
     include_directories (${win32_inc_dir})
 
-    target_link_libraries (NppFTP comctl32 Shlwapi ws2_32 ssh libeay32 ssleay32 z)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto z ws2_32)
 else (MINGW)
-    target_link_libraries (NppFTP comctl32 Shlwapi ws2_32 ssh libeay32 ssleay32 zlib )
+    target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 zlib ws2_32)
 endif (MINGW)

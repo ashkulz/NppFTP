@@ -82,11 +82,15 @@ include_directories (tinyxml/include/)
 include_directories (UTCP/include/)
 
 #3rdparty stuff
-include_directories (3rdparty/include/)
-include_directories (3rdparty/include/libssh/)
-include_directories (3rdparty/include/openssl/)
+set (output_dir "x86")
+if(EXISTS ${CMAKE_SOURCE_DIR}/x64)
+set (output_dir "x64")
+endif()
+include_directories (${output_dir}/3rdparty/include/)
+include_directories (${output_dir}/3rdparty/include/libssh/)
+include_directories (${output_dir}/3rdparty/include/openssl/)
 
-link_directories(${CMAKE_SOURCE_DIR}/3rdparty/lib/)
+link_directories(${CMAKE_SOURCE_DIR}/${output_dir}/3rdparty/lib/)
 
 add_definitions (${defs})
 

@@ -1,4 +1,3 @@
-bin/
-obj/
-3rdparty/
-NppFTP.zip
+x86/
+x64/
+*.zip

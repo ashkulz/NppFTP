@@ -11,7 +11,7 @@ DEPENDENT_LIBS = {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s --cross-compile-prefix=i686-w64-mingw32- no-shared no-asm mingw64',
+                    'perl Configure --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-shared no-asm mingw64',
                     'make depend', 'make', 'make install_sw'
                 ]
             },
@@ -42,7 +42,7 @@ DEPENDENT_LIBS = {
             'mingw-w64': {
                 'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],
                 'commands': [
-                    'make -f win32/Makefile.gcc PREFIX=i686-w64-mingw32-',
+                    'make -f win32/Makefile.gcc PREFIX=%(prefix)s-',
                     'cp zlib.h zconf.h %(dest)s/include',
                     'cp libz.a %(dest)s/lib'
                 ]
@@ -80,7 +80,7 @@ DEPENDENT_LIBS = {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
-                        -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++ \
+                        -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
@@ -183,15 +183,15 @@ def download_tarball(url, sha1, dir, name):
 
 # --------------------------------------------------------------- BUILDING
 
-def main(argv):
-    build = os.path.abspath('obj')
-    dest  = os.path.abspath('3rdparty')
+def main(outdir, prefix):
+    build = os.path.abspath(os.path.join(outdir, 'obj'))
+    dest  = os.path.abspath(os.path.join(outdir, '3rdparty'))
     mkdir_p(build)
     mkdir_p(dest, 'include')
     mkdir_p(dest, 'lib')
 
-    if(len(argv) == 1):
-        target = argv[0]
+    if(prefix == 'msvc_x64'):
+        target = 'msvc_x64'
     else:
         target = platform.system() == 'Windows' and 'msvc' or 'mingw-w64'
     for library in sorted(DEPENDENT_LIBS, key=lambda x: DEPENDENT_LIBS[x]['order']):
@@ -222,11 +222,13 @@ def main(argv):
             open(join_path(build, library, location), 'w').write(data.replace(src, tgt))
 
         for cmd in cfg['commands']:
-            shell(cmd % { 'dest' : dest, 'src': join_path(build, library) })
+            shell(cmd % { 'dest' : dest, 'src': join_path(build, library), 'prefix': prefix })
         os.chdir(dest)
         for path in cfg['result']:
             if not os.path.exists(path):
                 error('Unable to build %s, missing: %s' % (library, path))
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    outdir = sys.argv[1] if len(sys.argv) in (2,3) else 'x86'
+    prefix = sys.argv[2] if len(sys.argv) ==    3  else ''
+    main(outdir, prefix)

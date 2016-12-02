@@ -24,7 +24,6 @@
 #include <time.h>
 #include <windowsx.h>
 #include "Npp/Scintilla.h"
-#include "Npp/SciLexer.h"
 
 Output* _MainOutput = NULL;
 
@@ -296,7 +295,7 @@ int OutputWindow::SetScintillaParameters() {
 	::SendMessage(m_hScintilla, SCI_SETUNDOCOLLECTION, (WPARAM)false, 0);
 	::SendMessage(m_hScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0);
 
-	::SendMessage(m_hScintilla, SCI_SETLEXER, SCLEX_NULL, 0);
+	::SendMessage(m_hScintilla, SCI_SETLEXER, 1, 0);	// 1 = SCLEX_NULL
 	::SendMessage(m_hScintilla, SCI_SETSTYLEBITS, 8, 0);
 	::SendMessage(m_hScintilla, SCI_STARTSTYLING, (WPARAM)0, (LPARAM)0xff);
 

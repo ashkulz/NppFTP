@@ -1,0 +1,30 @@
+language: cpp
+dist:     trusty
+sudo:     false
+
+matrix:
+  include:
+  - os:  linux
+    env: BITS=32
+    addons:
+      apt:
+        packages:
+        - g++-mingw-w64-i686
+  - os:  linux
+    env: BITS=64
+    addons:
+      apt:
+        packages:
+        - g++-mingw-w64-x86-64
+script:
+- make -f Makefile.mingw BITS=$BITS
+
+deploy:
+  provider:     releases
+  file:         NppFTP*.zip
+  file_glob:    true
+  skip_cleanup: true
+  api_key:
+    secure: jOsdexeW9EJMtU06ElaBqSkHANTMbihGuMAfQydymOIwyIwqsXhKVowRLU7HYN8QUOMQnwi4CIdQZYCIIW9juSUTMIlcY0E1JxiRK/7R1JHWl6wfFr+kvOySYhpI2IYmKO0C07UEIdzoNhONWA4ZWUC3MFNOcKIg1qqMXQg2qNLgkhC+jNXQTQbXDaJZlKsgmWw8DGletqAMjakI3bchtgSlL5vzUs6B0sxHkZ9xoEeYsxdsDw3RJcLn8j35E6IY7mugurw2JxlQLS9mSE4j8iNnF/hFWe4j1qSjTYfI8q+T2dFIFZ0I7oqSRz4bbbj9W5zOPIkGQASES5PRL2GLxC0/R8k40lUL2uyltPXza7bJ9R26UyB1rRKiGrSYQUMBvdUwRIGYhrKm7snCuHNKYQVq3+Nxw75pVGKewPx4/C0hvuccIyFb7yZ7GebJHfjVTYsfncXCq5cgmvGTsvnPvtKy1KB3ggfoSAM3/EIzoWy9i/FkcpaxB5/jGmj9IEqTqCKkd+lHM8/bEKUXRR12md3/EXIMqrUaHUI9xVcP/HfIDLCYpRa9oUsapdVEMAkL3pmIi2GThydGSpjyigrvKIMjKwDoGgI+JfZPS8Pj7QZ3936bGXuJsZqvQCCpRduKA9fMm4q84Cp/De8YLlv+eSetmQ5C0IAgBZrnNOPLyk0=
+  on:
+    tags: true

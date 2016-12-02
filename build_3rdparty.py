@@ -117,7 +117,7 @@ DEPENDENT_LIBS = {
 
 # --------------------------------------------------------------- HELPERS
 
-import os, sys, platform, shutil, urllib.request, hashlib, tarfile
+import os, sys, platform, shutil, urllib.request, hashlib, tarfile, subprocess
 
 def join_path(*p):
     return os.path.abspath(os.path.join(*p))
@@ -131,9 +131,11 @@ def error(msg):
     sys.exit(1)
 
 def shell(cmd):
-    ret = os.system(cmd)
-    if ret != 0:
-        error("%s\ncommand failed: exit code %d" % (cmd, ret))
+    message('    %s\n' % cmd)
+    try:
+        subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as e:
+        error("\n%s\ncommand failed: exit code %d" % (e.output.decode('utf-8'), e.returncode))
 
 def rmdir(path):
     if os.path.exists(path):

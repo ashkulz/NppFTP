@@ -18,7 +18,7 @@ DEPENDENT_LIBS = {
             'msvc': {
                 'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s no-asm VC-WIN32',
+                    'perl Configure --openssldir=%(dest)s  no-shared no-asm VC-WIN32',
                     'ms\\do_ms.bat',
                     'nmake /f ms\\nt.mak install'
                 ]
@@ -81,7 +81,6 @@ DEPENDENT_LIBS = {
                     'move %(dest)s\\lib\\static\\ssh.lib %(dest)s\\lib >nul'
                 ]
             }
-
         }
     }
 }

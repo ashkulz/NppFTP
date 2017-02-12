@@ -80,6 +80,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_port(other->m_port),
+	m_askPassword(other->m_askPassword),
+	m_askPassphrase(other->m_askPassphrase),
 	m_timeout(other->m_timeout),
 	m_securityMode(other->m_securityMode),
 	m_transferMode(other->m_transferMode),

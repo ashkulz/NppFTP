@@ -206,8 +206,11 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		vfiles.push_back(ftpfile);
 	}
 
-	ftpfiles = new FTPFile[vfiles.size()];
+	if (!vfiles.size()) {
+		return OnReturn(-1);
+	}
 
+	ftpfiles = new FTPFile[vfiles.size()];
 	memcpy(ftpfiles, &vfiles[0], sizeof(FTPFile)*vfiles.size());
 	*files = ftpfiles;
 

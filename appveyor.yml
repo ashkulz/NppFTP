@@ -1,0 +1,91 @@
+version: 0.26.7.{build}
+image: Visual Studio 2015
+
+
+environment:
+  matrix:
+    - PlatformToolset: v140_xp
+    #- PlatformToolset: v120_xp
+    #- PlatformToolset: mingw-w64
+
+
+platform:
+    - x64
+    - Win32
+
+configuration:
+    - Release
+    #- Debug
+
+install:
+    - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="Win32" set archi=x86
+    - if "%PlatformToolset%"=="v140_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+    - if "%PlatformToolset%"=="v120_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %archi%
+
+    - ps: |
+        if ($env:PLATFORMTOOLSET -match "mingw-w64") {
+          $env:Path += ";C:\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\bin"
+          $env:Path += ";C:\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\i686-w64-mingw32\lib"
+          $env:Path = $env:Path.Replace('C:\Program Files\Git\usr\bin;','')
+          g++ --version
+          mingw32-make --version
+        }
+build:
+    verbosity: minimal
+
+before_build:
+- ps: |
+    Write-Output "Configuration: $env:CONFIGURATION"
+    Write-Output "Platform: $env:PLATFORM"
+    $generator = switch ($env:PLATFORMTOOLSET)
+    {
+        "v140_xp" {"Visual Studio 14 2015"}
+        "v120_xp" {"Visual Studio 12 2013"}
+        "mingw-w64" { "MinGW Makefiles"}
+    }
+    #not applicable with MinGW Makefiles generator
+    if ($env:PLATFORM -eq "x64" -and $env:PLATFORMTOOLSET -notmatch "mingw-w64")
+    {
+        $generator = "$generator Win64"
+    }
+    #cmake build type, depended on the used generator, see https://cmake.org/cmake/help/v3.6/variable/CMAKE_BUILD_TYPE.html#variable:CMAKE_BUILD_TYPE
+    if ($env:PLATFORMTOOLSET -match "mingw-w64")
+    {
+        $build_type = "-DCMAKE_BUILD_TYPE=$env:CONFIGURATION"
+        $build_config = ""
+    }
+    else
+    {
+        #seems vs build always needs also the debug config, choose via the config option to the build command
+        $build_type = "-DCMAKE_CONFIGURATION_TYPES=""Debug;Release"" "
+        $build_config = "--config $env:CONFIGURATION"
+    }
+    Write-Output "build_type: $build_type"
+    Write-Output "build_config: $build_config"
+build_script:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    # Python 3 needed for urllib.request
+    - if "%platform%"=="X64"    C:\Python34-x64\python build_3rdparty.py x64 msvc_x64
+    - if "%platform%"=="Win32"  C:\Python34-x64\python build_3rdparty.py
+    - mkdir _build
+    - cd _build
+
+    - ps: |
+        cmake -G "$generator" $build_type ..
+        if ($LastExitCode -ne 0) {
+            throw "Exec: $ErrorMessage"
+        }
+        & cmake --build . --config $env:CONFIGURATION
+        if ($LastExitCode -ne 0) {
+            throw "Exec: $ErrorMessage"
+        }
+
+after_build:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - ps: >-
+        $nppFtpFileName = "NppFtp.$env:PLATFORM.$env:CONFIGURATION.dll"
+
+        if ($env:CONFIGURATION -eq "Release") {
+            Push-AppveyorArtifact "_build\Release\NppFTP.dll" -FileName "$nppFtpFileName"
+        }

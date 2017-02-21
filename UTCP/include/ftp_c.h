@@ -198,6 +198,12 @@ protected: // changed to protected to allow for inheritance
 	// Get the directory information in a unix format
 	virtual void	GetInfoInUNIXFormat( CUT_DIRINFOA * di);
 
+	// Get the directory information in a zos format
+	virtual void	GetInfoInZOSFormat(CUT_DIRINFOA * di);
+
+	// Get the directory information in a zos format (container format)
+	virtual void	GetInfoInZOSFormatContainer(CUT_DIRINFOA * di);
+
 	// Get the directory information in a DOS format
 	virtual void	GetInfoInDOSFormat( CUT_DIRINFOA * di);
 

@@ -27,6 +27,7 @@
 #include "SSLCertificates.h"
 
 enum Client_Type { Client_SSL, Client_SSH };
+enum Server_Type { Server_Default = 0, Server_ZOS = 1, Server_Max = 2};
 
 enum Security_Mode {Mode_FTP = 0, Mode_FTPES = 1, Mode_FTPS = 2, Mode_SFTP = 3, Mode_SecurityMax = 4};
 enum Connection_Mode {Mode_Passive = 0, Mode_Active = 1, Mode_ConnectionMax = 2};
@@ -230,6 +231,27 @@ protected:
 	char*					m_ftpListParams;
 
 	FILETIME				ConvertFiletime(int day, int month, int year, int hour, int minute);
+};
+
+class FTPClientWrapperZOS : public FTPClientWrapperSSL {
+public:
+							FTPClientWrapperZOS(const char * host, int port, const char * user, const char * password);
+
+	virtual FTPClientWrapper*	Clone();
+	virtual int				GetDir(const char * path, FTPFile** files);
+	virtual int				SendFile(const TCHAR * localfile, const char * ftpfile);
+	virtual int				ReceiveFile(const TCHAR * localfile, const char * ftpfile);
+	virtual int				Rename(const char * from, const char * to);
+	virtual int				MkFile(const char * path);
+	virtual int				DeleteFile(const char * path);
+	virtual int				MkDir(const char * path);
+	virtual int				RmDir(const char * path);
+
+protected:
+	
+	virtual char*			CleanToZOSPath(const char* ftpfile);
+	virtual BOOL			AddParenthesis(char* path);
+	virtual char*			GetZOSPath(const char* ftpfile);
 };
 
 /////////////////////////////////////////////////////////

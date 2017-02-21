@@ -2204,6 +2204,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
         }
 
     BOOL once = TRUE;
+	int zos_format = 0;
     //clear the DirInfo linked list
     ClearDirInfo();
     CUT_DIRINFOA * di = NULL;
@@ -2230,6 +2231,22 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
             once = FALSE;
             continue;
             }
+		
+		// The first line of ZOS system is the layout of field
+		if (strstr(m_szBuf, "Volume") == m_szBuf && once == TRUE) {
+			once = FALSE;
+			zos_format = 1;
+			continue;
+		}
+		if (strstr(m_szBuf, "Name") && once == TRUE) {
+			once = FALSE;
+			zos_format = 2;
+			continue;
+		}
+
+		// If ZOS, ignore VSAM files
+		if (zos_format && (strstr(m_szBuf, "vsam") != NULL || strstr(m_szBuf, "VSAM") != NULL))
+			continue;
 
         //create the linked list item
         if(di==NULL) {
@@ -2246,7 +2263,11 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
         //parse and store the directory information
 
         //filename
-        if ( isdigit(m_szBuf[0]))  //  call the dos function
+		if (zos_format == 1)
+			GetInfoInZOSFormat(di);
+		else if (zos_format == 2)
+			GetInfoInZOSFormatContainer(di);
+        else if ( isdigit(m_szBuf[0]))  //  call the dos function
             GetInfoInDOSFormat(di);
             // end of Dos Format file names
         else   /// Unix  Style
@@ -2969,6 +2990,144 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     else
         di->year = atoi(buf);
 
+}
+
+// Return true if it's a migrated
+BOOL parseMigrated(CUT_DIRINFOA* di, char* buf) {
+	if (strstr(buf, "Migrated") == NULL)
+		return FALSE;
+	char* name = NULL;
+
+	strtok(buf, " ");
+	name = strtok(NULL, " ");
+
+	//strcat(di->fileName, "Migrated - ");
+	strcat(di->fileName, name);
+
+	// attributes are generic
+	di->isDir = FALSE;
+	di->fileSize = 0;
+	di->year = 1900;
+	di->month = 1;
+	di->day = 1;
+	di->hour = 0;
+	di->minute = 0;
+
+	return TRUE;
+}
+
+/***********************************************
+GetInfoInZOSFormat()
+This function parses the directory entry information
+based on the ZOS format.
+PARAM:
+CUT_DIRINFO di - the directory information entry to be populated
+RET:
+VOID
+**********************************************/
+void CUT_FTPClient::GetInfoInZOSFormat(CUT_DIRINFOA * di) {
+	char        buf[32];
+	char        buf2[5];
+	int         loop;
+	di->fileName[0] = '\0';
+
+	if (parseMigrated(di, m_szBuf))
+		return;
+
+	// Get the file name
+	int nSpaces = 0;
+	loop = 0;
+
+	while (m_szBuf[loop] != 0) {
+		if (m_szBuf[loop] == ' ') {
+			++nSpaces;
+			int spaceCounter = 0;
+			while (m_szBuf[loop] == ' ')
+			{
+				spaceCounter++;
+				++loop;
+			}
+
+		}
+		else if (nSpaces == 9) {
+			strncpy(di->fileName, &m_szBuf[loop], sizeof(di->fileName));
+			break;
+		}
+		else
+			++loop;
+	}
+
+
+	//directory  attrib
+	if (strstr(m_szBuf, "PS") != NULL && strstr(m_szBuf, "PS") != &m_szBuf[loop])
+		di->isDir = FALSE;
+	else if (strstr(m_szBuf, "PO") != NULL && strstr(m_szBuf, "PO") != &m_szBuf[loop])
+		di->isDir = TRUE;
+	else
+		di->isDir = 2;
+
+	//file size
+	di->fileSize = 0;
+	CUT_StrMethods::ParseString(m_szBuf, " ", 1, &di->fileSize);
+
+	// Date
+	CUT_StrMethods::ParseString(m_szBuf, " ", 2, buf, sizeof(buf));
+
+	//find the year number from the string
+	di->year = 1900;
+	strncpy(buf2, buf, 4);
+	buf2[4] = '\0';
+	di->year = atoi(buf2);
+
+	//find the month number from the string
+	di->month = 1;
+	strncpy(buf2, buf + 5, 2);
+	buf2[2] = '\0';
+	di->month = atoi(buf2);
+
+	//find the day number from the string
+	di->day = 1;
+	strncpy(buf2, buf + 8, 2);
+	buf2[2] = '\0';
+	di->day = atoi(buf2);
+
+	di->hour = 0;
+	di->minute = 0;
+}
+
+/***********************************************
+GetInfoInZOSFormatContainer()
+This function parses the directory entry information
+based on the ZOS format (in a container).
+PARAM:
+CUT_DIRINFO di - the directory information entry to be populated
+RET:
+VOID
+**********************************************/
+void CUT_FTPClient::GetInfoInZOSFormatContainer(CUT_DIRINFOA * di) {
+	size_t i;
+	di->fileName[0] = '\0';
+
+	if (parseMigrated(di, m_szBuf))
+		return;
+
+	// Get the filename
+	for (i = 0; i < strlen(m_szBuf); i++) {
+		if (m_szBuf[i] == ' ')
+			break;
+	}
+
+	strncpy(di->fileName, m_szBuf, i);
+	di->fileName[i] = '\0';
+
+	// attributes are generic
+	di->isDir = FALSE;
+	di->fileSize = 0;
+	di->year = 1900;
+	di->month = 1;
+	di->day = 1;
+	di->hour = 0;
+	di->minute = 0;
 }
 
 /***********************************************

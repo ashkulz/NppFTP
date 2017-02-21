@@ -36,8 +36,11 @@ FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 	strcpy(m_path, path);
 
 	m_name = strrchr(m_path, '/');
-	if (m_name[1] != 0)		//root directory case
-		m_name++;			//skip slash
+
+	if (m_name == NULL)
+		m_name = m_path;
+	else if (m_name[1] != 0)  //root directory case
+		m_name++;  //skip slash
 
 	m_localName = SU::Utf8ToTChar(m_name);
 

@@ -59,6 +59,8 @@ public:
 
 	Security_Mode			GetSecurityMode() const;
 	int						SetSecurityMode(Security_Mode mode);
+	Server_Type				GetServerType() const;
+	int						SetServerType(Server_Type mode);
 	Transfer_Mode			GetTransferMode() const;
 	int						SetTransferMode(Transfer_Mode mode);
 	Connection_Mode			GetConnectionMode() const;
@@ -131,6 +133,7 @@ private:
 	int						m_timeout;
 
 	Security_Mode			m_securityMode;
+	Server_Type				m_serverType;
 	Transfer_Mode			m_transferMode;
 	Connection_Mode			m_connectionMode;
 

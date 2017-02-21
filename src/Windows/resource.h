@@ -66,6 +66,7 @@
 	#define IDC_EDIT_TIMEOUT			136
 	#define IDC_EDIT_INITDIR			137
 	#define IDC_COMBO_SECURITY			138
+    #define IDC_COMBO_SERVER			195
 #define IDD_DIALOG_PROFILESAUTHENTICATION	139
 	#define IDC_EDIT_KEYFILE			140
 	#define IDC_BUTTON_KEYBROWSE		141
@@ -120,4 +121,4 @@
 	#define IDC_EDIT_PROMPTMAX			182
 	#define IDC_EDIT_ANSWERMAX			183
 	#define IDC_STATIC_MARKER			184
-//next id:								195
+//next id:								196

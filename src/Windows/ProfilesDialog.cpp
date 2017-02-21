@@ -201,6 +201,10 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 		case IDC_COMBO_SECURITY: {
 			if (notifCode == CBN_SELCHANGE) {
 				int sel = ComboBox_GetCurSel(idHwnd);
+
+				if (LockZOS())
+					break;
+
 				if (sel != CB_ERR) {
 					m_currentProfile->SetSecurityMode((Security_Mode)sel);	//index matches enum
 					int port = m_currentProfile->GetPort();
@@ -226,7 +230,30 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				}
 			}
 			break; }
+		case IDC_COMBO_SERVER: {
+			if (notifCode == CBN_SELCHANGE) {
+				int sel = ComboBox_GetCurSel(idHwnd);
+				if (sel != CB_ERR) {
+					m_currentProfile->SetServerType((Server_Type)sel);
 
+					if ((Server_Type)sel == Server_ZOS) {
+						// ZOS only works with these attributes
+						m_currentProfile->SetConnectionMode(Mode_Passive);
+						m_currentProfile->SetTransferMode(Mode_ASCII);
+						m_currentProfile->SetSecurityMode(Mode_FTP);
+						
+						// Set port if not custom
+						int port = m_currentProfile->GetPort();
+						bool setport = (port == 21 || port == 22 || port == 990);
+						if (setport) {
+							m_currentProfile->SetPort(21);
+						}
+
+						OnSelectProfile(m_currentProfile, TRUE);
+					}
+				}
+			}
+			break; }
 		case IDC_EDIT_KEYFILE: {
 			if (notifCode == EN_USERCHANGE) {
 				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
@@ -282,24 +309,36 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 
 		case IDC_RADIO_ACTIVE: {
 			if (notifCode == BN_CLICKED) {
+				if (LockZOS())
+					break;
+
 				CheckRadioButton(m_hPageTransfer, IDC_RADIO_ACTIVE, IDC_RADIO_PASSIVE, IDC_RADIO_ACTIVE);
 				m_currentProfile->SetConnectionMode(Mode_Active);
 			}
 			break; }
 		case IDC_RADIO_PASSIVE: {
 			if (notifCode == BN_CLICKED) {
+				if (LockZOS())
+					break;
+
 				CheckRadioButton(m_hPageTransfer, IDC_RADIO_ACTIVE, IDC_RADIO_PASSIVE, IDC_RADIO_PASSIVE);
 				m_currentProfile->SetConnectionMode(Mode_Passive);
 			}
 			break; }
 		case IDC_RADIO_ASCII: {
 			if (notifCode == BN_CLICKED) {
+				if (LockZOS())
+					break;
+
 				CheckRadioButton(m_hPageTransfer, IDC_RADIO_ASCII, IDC_RADIO_BINARY, IDC_RADIO_ASCII);
 				m_currentProfile->SetTransferMode(Mode_ASCII);
 			}
 			break; }
 		case IDC_RADIO_BINARY: {
 			if (notifCode == BN_CLICKED) {
+				if (LockZOS())
+					break;
+
 				CheckRadioButton(m_hPageTransfer, IDC_RADIO_ASCII, IDC_RADIO_BINARY, IDC_RADIO_BINARY);
 				m_currentProfile->SetTransferMode(Mode_Binary);
 			}
@@ -576,6 +615,10 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	ComboBox_AddString(hCombobox, TEXT("FTPS (Implicit)"));
 	ComboBox_AddString(hCombobox, TEXT("SFTP"));
 
+	HWND hCombobox2 = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SERVER);
+	ComboBox_AddString(hCombobox2, TEXT("Default"));
+	ComboBox_AddString(hCombobox2, TEXT("MVS, OS/390, z/OS"));
+
 	int ret = LoadProfiles();
 	if (ret == -1) {
 		EndDialog(m_hwnd, -1);
@@ -611,8 +654,17 @@ int ProfilesDialog::LoadProfiles() {
 	return 0;
 }
 
-int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
-	if (profile == m_currentProfile && profile != NULL)
+BOOL ProfilesDialog::LockZOS() {
+	if (m_currentProfile->GetServerType() == Server_ZOS) {
+		OnSelectProfile(m_currentProfile, TRUE);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+int ProfilesDialog::OnSelectProfile(FTPProfile * profile, BOOL force) {
+	if (profile == m_currentProfile && profile != NULL && !force)
 		return 0;
 
 	//BOOL prevEnable = (m_currentProfile!=NULL)?TRUE:FALSE;
@@ -702,6 +754,9 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);
 	ComboBox_SetCurSel(hCombobox, (int)m_currentProfile->GetSecurityMode());
 
+	HWND hCombobox2 = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SERVER);
+	ComboBox_SetCurSel(hCombobox2, (int)m_currentProfile->GetServerType());
+
 	bool isActive = m_currentProfile->GetConnectionMode() == Mode_Active;
 	bool isAscii = m_currentProfile->GetTransferMode() == Mode_ASCII;
 
@@ -745,6 +800,9 @@ int ProfilesDialog::Clear() {
 
 	HWND hCombobox = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SECURITY);
 	ComboBox_SetCurSel(hCombobox, 0);
+
+	HWND hCombobox2 = ::GetDlgItem(m_hPageConnection, IDC_COMBO_SERVER);
+	ComboBox_SetCurSel(hCombobox2, 0);
 
 	CheckRadioButton(m_hPageTransfer, IDC_RADIO_ACTIVE, IDC_RADIO_PASSIVE, IDC_RADIO_ACTIVE);
 	CheckRadioButton(m_hPageTransfer, IDC_RADIO_ASCII, IDC_RADIO_BINARY, IDC_RADIO_ASCII);

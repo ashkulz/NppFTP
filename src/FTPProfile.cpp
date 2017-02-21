@@ -36,6 +36,7 @@ FTPProfile::FTPProfile() :
 	m_askPassphrase(false),
 	m_timeout(30),
 	m_securityMode(Mode_FTP),
+	m_serverType(Server_Default),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
 	m_dataPortMin(10000),
@@ -55,6 +56,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_askPassphrase(false),
 	m_timeout(30),
 	m_securityMode(Mode_FTP),
+	m_serverType(Server_Default),
 	m_transferMode(Mode_Binary),
 	m_connectionMode(Mode_Passive),
 	m_dataPortMin(10000),
@@ -84,6 +86,7 @@ FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_askPassphrase(other->m_askPassphrase),
 	m_timeout(other->m_timeout),
 	m_securityMode(other->m_securityMode),
+	m_serverType(other->m_serverType),
 	m_transferMode(other->m_transferMode),
 	m_connectionMode(other->m_connectionMode),
 	m_dataPortMin(other->m_dataPortMin),
@@ -197,6 +200,15 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 			SSHwrapper->SetAcceptedMethods(m_acceptedMethods);
 			break; }
 		case Mode_FTP:
+			if (m_serverType == Server_ZOS) {
+				FTPClientWrapperZOS * ZOSwrapper = new FTPClientWrapperZOS(m_hostname, m_port, m_username, password);
+				wrapper = ZOSwrapper;
+				ZOSwrapper->SetMode(CUT_FTPClient::FTP);
+				ZOSwrapper->SetConnectionMode(m_connectionMode);
+				ZOSwrapper->SetPortRange(m_dataPortMin, m_dataPortMax);
+				ZOSwrapper->SetListParams(m_ftpListParams);
+				break;
+			}
 		case Mode_FTPS:
 		case Mode_FTPES: {
 			FTPClientWrapperSSL * SSLwrapper = new FTPClientWrapperSSL(m_hostname, m_port, m_username, password);
@@ -309,6 +321,18 @@ int FTPProfile::SetSecurityMode(Security_Mode mode) {
 		return -1;
 
 	m_securityMode = mode;
+	return 0;
+}
+
+Server_Type FTPProfile::GetServerType() const {
+	return m_serverType;
+}
+
+int FTPProfile::SetServerType(Server_Type type) {
+	if (type < 0 || type > Server_Max)
+		return -1;
+
+	m_serverType = type;
 	return 0;
 }
 
@@ -629,6 +653,7 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 
 		//TODO: this is rather risky casting, check if the compiler accepts it
 		profileElem->Attribute("securityMode", (int*)(&profile->m_securityMode));
+		profileElem->Attribute("serverType", (int*)(&profile->m_serverType));
 		profileElem->Attribute("transferMode", (int*)(&profile->m_transferMode));
 		profileElem->Attribute("connectionMode", (int*)(&profile->m_connectionMode));
 
@@ -724,6 +749,7 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	profileElem->SetAttribute("timeout", m_timeout);
 
 	profileElem->SetAttribute("securityMode", m_securityMode);
+	profileElem->SetAttribute("serverType", m_serverType);
 	profileElem->SetAttribute("transferMode", m_transferMode);
 	profileElem->SetAttribute("connectionMode", m_connectionMode);
 
@@ -779,6 +805,9 @@ int FTPProfile::Sanitize() {
 
 	if (m_securityMode < 0 || m_securityMode >= Mode_SecurityMax)
 		m_securityMode = Mode_FTP;
+
+	if (m_serverType < 0 || m_serverType >= Server_Max)
+		m_serverType = Server_Default;
 
 	if (m_transferMode < 0 || m_transferMode >= Mode_TransferMax)
 		m_transferMode = Mode_Binary;

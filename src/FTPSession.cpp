@@ -407,6 +407,14 @@ FileObject* FTPSession::GetRootObject() {
 
 	int res = 0;
 
+	// For ZOS, first container is the first child
+	if (m_currentProfile->GetServerType() == Server_ZOS) {
+		FileObject* child = new FileObject(dir, true, false);
+		m_rootObject->AddChild(child);
+		m_rootObject->SetRefresh(false);
+		return m_rootObject;
+	}
+
 	if (strlen(dir) < 1 || dir[0] != '/') {	//no initial dir or invalid
 		res = -1;
 	} else {

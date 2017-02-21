@@ -40,7 +40,8 @@ protected:
 
 	int						Clear();
 	int						LoadProfiles();
-	int						OnSelectProfile(FTPProfile * profile);
+	int						OnSelectProfile(FTPProfile * profile, BOOL force=FALSE);
+	BOOL					LockZOS();
 
 	int						LoadFiletypes();
 	int						LoadCacheMaps();

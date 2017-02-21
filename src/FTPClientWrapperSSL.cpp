@@ -260,7 +260,7 @@ int FTPClientWrapperSSL::MkFile(const char * path) {
 }
 
 int FTPClientWrapperSSL::SendFile(const TCHAR * localfile, const char * ftpfile) {
-
+	
 	m_client.SetCurrentTotal(-1);
 	HANDLE hFile = ::CreateFile(localfile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {

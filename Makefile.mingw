@@ -32,7 +32,7 @@ all:     release
 debug:   $(OUTDIR)/bin $(OUTDIR)/obj $(OUTDIR)/3rdparty $(TGT_D)
 release: $(OUTDIR)/bin $(OUTDIR)/obj $(OUTDIR)/3rdparty $(TGT)
 	@echo ============ creating NppFTP-$(OUTDIR).zip ============
-	@cp -R doc $(OUTDIR)/ && cd $(OUTDIR) && zip -9 -r ../NppFTP-$(OUTDIR).zip bin/ doc/
+	@cp -R docs/ $(OUTDIR)/doc/ && cd $(OUTDIR) && zip -9 -r ../NppFTP-$(OUTDIR).zip bin/ doc/
 
 $(OUTDIR)/obj/%.o: tinyxml/src/%.cpp
 	@echo CXX  $< & $(CXX) -c $(CFLAGS) $(INC) $< -o $@

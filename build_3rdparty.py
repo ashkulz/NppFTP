@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2j.tar.gz',
-        'sha1'  : 'bdfbdb416942f666865fa48fe13c2d0e588df54f',
+        'url'   : 'https://www.openssl.org/source/openssl-1.0.2k.tar.gz',
+        'sha1'  : '5f26a624479c51847ebd2f22bb9f84b3b44dcb44',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -36,8 +36,8 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'http://downloads.sourceforge.net/libpng/zlib-1.2.8.tar.gz',
-        'sha1'  : 'a4d316c404ff54ca545ea71a27af7dbc29817088',
+        'url'   : 'http://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
+        'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
         'target': {
             'mingw-w64': {
                 'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],
@@ -73,8 +73,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://red.libssh.org/attachments/download/195/libssh-0.7.3.tar.xz',
-        'sha1'  : '9de2a8fde51aa7b7855008fafd5bf47ebb01289f',
+        'url'   : 'https://red.libssh.org/attachments/download/210/libssh-0.7.4.tar.xz',
+        'sha1'  : '6d575d93b27aa1f3f35c110222255bcd2d372348',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],

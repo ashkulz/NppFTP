@@ -80,6 +80,8 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_port(other->m_port),
+	m_askPassword(other->m_askPassword),
+	m_askPassphrase(other->m_askPassphrase),
 	m_timeout(other->m_timeout),
 	m_securityMode(other->m_securityMode),
 	m_transferMode(other->m_transferMode),
@@ -508,14 +510,19 @@ const TCHAR* FTPProfile::GetBinaryType(int i) {
 
 Transfer_Mode FTPProfile::GetFileTransferMode(const TCHAR* file) const {
 	LPCTSTR suffix = NULL;
-	suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_asciiTypes[0]), m_asciiTypes.size());
-	if (suffix) {
-		return Mode_ASCII;
+
+	if (m_asciiTypes.size()) {
+		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_asciiTypes[0]), m_asciiTypes.size());
+		if (suffix) {
+			return Mode_ASCII;
+		}
 	}
 
-	suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_binTypes[0]), m_binTypes.size());
-	if (suffix) {
-		return Mode_Binary;
+	if (m_binTypes.size()) {
+		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_binTypes[0]), m_binTypes.size());
+		if (suffix) {
+			return Mode_Binary;
+		}
 	}
 
 	return m_transferMode;

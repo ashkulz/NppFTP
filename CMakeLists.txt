@@ -19,7 +19,39 @@ if (MINGW)
     set (win32_lib_dir ${CMAKE_SYSROOT}/${toolchain_prefix}/lib)
 endif (MINGW)
 
+# needed to build 3rdparty libs via python script
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp 3)
+if( NOT PYTHONINTERP_FOUND )
+  message(FATAL_ERROR
+"Unable to find Python interpreter, required for builds and testing.
+
+Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
+endif()
+
+if( ${PYTHON_VERSION_STRING} VERSION_LESS 3 )
+  message(FATAL_ERROR "Python 3 or newer is required")
+endif()
+
+# needed to build 3rdparty lib openssl
+find_package(Perl)
+
 project (NppFTP)
+
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+set (output_dir "x64")
+set (3rdparty_prefix "x86_64-w64-mingw32")
+else()
+set (output_dir "x86")
+set (3rdparty_prefix "i686-w64-mingw32")
+endif()
+
+#check if ExternalProject_Add could be used as replacement of the python script
+#this would remove the dependency to python
+add_custom_target(
+    NppFTP3rdPartyPrerequists
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_3rdparty.py ${output_dir} ${3rdparty_prefix}
+    )
 
 if (MINGW)
     set (defs
@@ -76,31 +108,45 @@ set (project_sources
 )
 
 include_directories (${CMAKE_SOURCE_DIR}/)
-include_directories (src/)
-include_directories (src/Windows/)
-include_directories (tinyxml/include/)
-include_directories (UTCP/include/)
+include_directories (${CMAKE_SOURCE_DIR}/src/)
+include_directories (${CMAKE_SOURCE_DIR}/src/Windows/)
+include_directories (${CMAKE_SOURCE_DIR}/tinyxml/include/)
+include_directories (${CMAKE_SOURCE_DIR}/UTCP/include/)
 
 #3rdparty stuff
-set (output_dir "x86")
-if(EXISTS ${CMAKE_SOURCE_DIR}/x64)
-set (output_dir "x64")
-endif()
-include_directories (${output_dir}/3rdparty/include/)
-include_directories (${output_dir}/3rdparty/include/libssh/)
-include_directories (${output_dir}/3rdparty/include/openssl/)
+include_directories (${CMAKE_BINARY_DIR}/${output_dir}/3rdparty/include/)
+include_directories (${CMAKE_BINARY_DIR}/${output_dir}/3rdparty/include/libssh/)
+include_directories (${CMAKE_BINARY_DIR}/${output_dir}/3rdparty/include/openssl/)
 
-link_directories(${CMAKE_SOURCE_DIR}/${output_dir}/3rdparty/lib/)
+link_directories(${CMAKE_BINARY_DIR}/${output_dir}/3rdparty/lib/)
 
 add_definitions (${defs})
 
 add_library (NppFTP MODULE ${project_rc_files} ${project_sources})
 
+add_dependencies(NppFTP NppFTP3rdPartyPrerequists)
+
 if (MINGW)
 
     include_directories (${win32_inc_dir})
+    #remove the lib from the generated target lib
+    SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 
     target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto z ws2_32)
 else (MINGW)
     target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 zlib ws2_32)
 endif (MINGW)
+
+# build a CPack driven zip package
+#include (InstallRequiredSystemLibraries)
+
+install(TARGETS NppFTP 
+  DESTINATION ${CMAKE_BINARY_DIR}/zip/bin)
+
+FILE(GLOB files "${CMAKE_SOURCE_DIR}/doc/*")
+INSTALL(FILES ${files} DESTINATION ${CMAKE_BINARY_DIR}/zip/doc)
+
+
+set(CPACK_GENERATOR ZIP)
+
+INCLUDE(CPack)

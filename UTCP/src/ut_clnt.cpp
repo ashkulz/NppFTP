@@ -2217,7 +2217,7 @@ LRESULT CALLBACK CUT_WSClient::WndProc(HWND hwnd, UINT message, WPARAM wParam, L
 	}
 
 	// Get the pointer to the calling class
-	CUT_WSClient *_this = (CUT_WSClient*)(ULONG_PTR)GetWindowLong(hwnd,0);
+	CUT_WSClient *_this = (CUT_WSClient*)GetWindowLongPtr(hwnd,0);
 
 	// Call the functions that match in incoming message
 	if (_this == NULL)

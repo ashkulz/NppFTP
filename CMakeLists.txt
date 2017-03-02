@@ -66,6 +66,17 @@ if (MINGW)
     set (CMAKE_MODULE_LINKER_FLAGS
         "-s -static"
     )
+else (MINGW)
+    set (defs
+        -DUNICODE -D_UNICODE -D_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES -D_CRT_SECURE_NO_WARNINGS -D_WIN32 -DWIN32
+        -D_WIN32_WINNT=0x0501 -DWIN32_LEAN_AND_MEAN -DNOCOMM -DLIBSSH_STATIC
+    )
+
+    set (CMAKE_CXX_FLAGS
+        "/EHsc /MP /W4"
+    )
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 endif (MINGW)
 
 set (project_rc_files
@@ -122,6 +133,8 @@ if (MINGW)
     SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 
     target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto z ws2_32)
+else (MINGW)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 zlib ws2_32)
 endif (MINGW)
 
 # build a CPack driven zip package

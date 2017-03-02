@@ -1,0 +1,66 @@
+version: 0.26.8.{build}
+image: Visual Studio 2015
+
+
+environment:
+  matrix:
+    - PlatformToolset: v140_xp
+    #- PlatformToolset: v120_xp
+
+platform:
+    - x64
+    - Win32
+
+configuration:
+    - Release
+    #- Debug
+
+install:
+    - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="Win32" set archi=x86
+    - if "%PlatformToolset%"=="v140_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+    - if "%PlatformToolset%"=="v120_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %archi%
+
+build:
+    verbosity: minimal
+
+before_build:
+- ps: |
+    Write-Output "Configuration: $env:CONFIGURATION"
+    Write-Output "Platform: $env:PLATFORM"
+    $generator = switch ($env:PLATFORMTOOLSET)
+    {
+        "v140_xp" {"Visual Studio 14 2015"}
+        "v120_xp" {"Visual Studio 12 2013"}
+    }
+    if ($env:PLATFORM -eq "x64")
+    {
+        $generator = "$generator Win64"
+    }
+
+build_script:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    # Python 3 needed
+    - set PATH=C:\Python34-x64;C:\Python34-x64\Scripts;%PATH%
+    #done within cmake - if "%platform%"=="X64"    python build_3rdparty.py x64 msvc_x64
+    #done within cmake - if "%platform%"=="Win32"  C:\Python34-x64\python build_3rdparty.py
+    - mkdir _build
+    - cd _build
+
+    - ps: |
+        cmake -G "$generator" -T "$env:PLATFORMTOOLSET" ..
+        if ($LastExitCode -ne 0) {
+            throw "Exec: $ErrorMessage"
+        }
+        & cmake --build . --config $env:CONFIGURATION
+        if ($LastExitCode -ne 0) {
+            throw "Exec: $ErrorMessage"
+        }
+
+after_build:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - ps: >-
+
+        if ($env:CONFIGURATION -eq "Release") {
+            Push-AppveyorArtifact "_build\Release\NppFTP.dll" -FileName "NppFTP.dll"
+        }

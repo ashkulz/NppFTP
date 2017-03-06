@@ -33,8 +33,12 @@ if( ${PYTHON_VERSION_STRING} VERSION_LESS 3 )
   message(FATAL_ERROR "Python 3 or newer is required")
 endif()
 
+# Locate perl and check its version.
 # needed to build 3rdparty lib openssl
 find_package(Perl)
+if(${PERL_VERSION_STRING} VERSION_LESS "5.10.0")
+  message(FATAL_ERROR "NppFTP requires Perl 5.10.0 or later")
+endif()
 
 project (NppFTP)
 

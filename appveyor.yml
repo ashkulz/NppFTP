@@ -40,10 +40,8 @@ before_build:
 
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
-    # Python 3 needed
+    # Python 3 needed for python build_3rdparty.py
     - set PATH=C:\Python34-x64;C:\Python34-x64\Scripts;%PATH%
-    #done within cmake - if "%platform%"=="X64"    python build_3rdparty.py x64 msvc_x64
-    #done within cmake - if "%platform%"=="Win32"  C:\Python34-x64\python build_3rdparty.py
     - mkdir _build
     - cd _build
 

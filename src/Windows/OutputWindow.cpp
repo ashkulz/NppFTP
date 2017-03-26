@@ -232,9 +232,9 @@ int OutputWindow::OutVA(Output_Type type, const TCHAR * message, va_list vaList)
 		return -1;
 
 	TCHAR * msgBuffer = new TCHAR[1024];
-	msgBuffer[0] = 0;
+	memset(msgBuffer, 0, (1024*sizeof(TCHAR)));
 
-	/*int ret =*/SU::TSprintfV(msgBuffer, 1024, message, vaList);
+	/*int ret =*/SU::TSprintfV(msgBuffer, (1024-1), message, vaList);
     //if (ret == -1)	//-1 indicates truncation, not necessarily failure
 	//	return -1;
 

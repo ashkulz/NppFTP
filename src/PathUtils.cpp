@@ -198,13 +198,19 @@ int PU::QuoteExternalPath(const char * path, char * buffer, int buffersize) {
 }
 
 int PU::CreateLocalDir(const TCHAR * local) {
+
+	//if dir already exists, nothing needs to be created
+	//also breaks out on root dirs, which can't be created by SHCreateDirectoryEx()
+	if (PathIsDirectory(local))
+		return 0;
+
 	int res = SHCreateDirectoryEx(NULL, local, NULL);
 	if (
 		res != ERROR_SUCCESS &&
 		res != ERROR_ALREADY_EXISTS &&
 		res != ERROR_FILE_EXISTS
 		) {
-		OutErr("Failed to create directory %T", local);
+		OutErr("Failed to create directory %T with errorcode %d", local, res);
 		return -1;
 		}
 
@@ -276,8 +282,6 @@ int PU::GetSaveFilename(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (res == FALSE)
 		return -1;
 	return 0;
-
-	return 0;
 }
 
 int PU::BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner) {
@@ -317,8 +321,8 @@ int PU::SimplifyExternalPath(const char * path, const char * currentDir, char * 
 	if (currentDir == NULL && path[0] != '/')	//relative paths only supported if curDir is given
 		return -1;
 
-	int pathlen = strlen(path);
-	int dirlen = strlen(currentDir);
+	size_t pathlen = strlen(path);
+	size_t dirlen = strlen(currentDir);
 	char * temp = new char[pathlen+dirlen+2];	//pathlen + '/' + dirlen + '\0'
 	temp[0] = 0;
 	if (path[0] != '/') {

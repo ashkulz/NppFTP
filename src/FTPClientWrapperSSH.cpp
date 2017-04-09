@@ -243,7 +243,7 @@ int FTPClientWrapperSSH::ReceiveFile(const TCHAR * localfile, const char * ftpfi
 }
 
 int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
-	int retcode = 0;
+	ssize_t retcode = 0;
 	int res = TRUE;
 	sftp_file sfile = NULL;
 	const int bufsize = 4096;
@@ -274,7 +274,7 @@ int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 
 	retcode = sftp_read(sfile, buf, bufsize);
 	while(retcode > 0 && !m_aborting) {
-		res = WriteFile(hFile, buf, retcode, &len, NULL);
+		res = WriteFile(hFile, buf, static_cast<DWORD>(retcode), &len, NULL);
 		if (res == FALSE)
 			break;
 
@@ -293,7 +293,7 @@ int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 }
 
 int FTPClientWrapperSSH::SendFile(HANDLE hFile, const char * ftpfile) {
-	int retcode = 0;
+	ssize_t retcode = 0;
 	int res = TRUE;
 	sftp_file sfile = NULL;
 	const int bufsize = 4096;
@@ -542,8 +542,15 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 }
 
 int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
-	int rc;
+	int rc = SSH_AUTH_ERROR;
 	int type = 0;
+
+	// Search for the presence of the key file privatekey_from_file crashes otherwise.
+	BOOL exist = PathFileExists(m_keyFile);
+	if (exist == FALSE) {
+		OutErr("[SFTP] File for key authentication not found at specified file location %T.", m_keyFile);
+		return SSH_AUTH_ERROR;
+	}
 
 	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
 	ssh_private_key privkey = NULL;

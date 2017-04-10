@@ -152,7 +152,8 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		char * utf8name = SU::TCharToUtf8(di.fileName);
 		char nameCpy[MAX_PATH+1];	//buffer used to handle symlinks
 
-		strcpy(nameCpy, utf8name);
+		strncpy(nameCpy, utf8name, MAX_PATH);
+		nameCpy[MAX_PATH] = '\0';
 		SU::FreeChar(utf8name);
 
 		char * linkLocation = strstr(nameCpy, " -> ");
@@ -160,11 +161,12 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 			*linkLocation = 0;
 		}
 
-		strcpy(ftpfile.filePath, path);
+		strncpy(ftpfile.filePath, path, MAX_PATH);
+		ftpfile.filePath[MAX_PATH] = '\0';
 		if (!endslash) {
-			strcat(ftpfile.filePath, "/");
+			strncat(ftpfile.filePath, "/", (MAX_PATH + 1) - strlen(ftpfile.filePath) - 1);
 		}
-		strcat(ftpfile.filePath, nameCpy);
+		strncat(ftpfile.filePath, nameCpy, (MAX_PATH + 1) - strlen(ftpfile.filePath) - 1);
 /*
 		char * fullName = nameCpy;
 		if (linkLocation != NULL) {

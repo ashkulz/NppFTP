@@ -222,7 +222,7 @@ bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
 	} else {
 		res = lstrcmpiA(fo1->GetPath(), fo2->GetPath());
 	}
-	return (res <= 0);
+	return (res < 0);
 }
 
 FileObject* FileObject::GetChildByName(const char *filename) {

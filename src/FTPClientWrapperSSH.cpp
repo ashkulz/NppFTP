@@ -543,7 +543,6 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 
 int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	int rc = SSH_AUTH_ERROR;
-	int type = 0;
 
 	// Search for the presence of the key file privatekey_from_file crashes otherwise.
 	BOOL exist = PathFileExists(m_keyFile);
@@ -553,47 +552,19 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	}
 
 	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
-	ssh_private_key privkey = NULL;
-	if (m_passphrase[0] == 0)	//in case the passphrase is empty, use NULL instead
-		privkey = privatekey_from_file(session, keyfile, 0, NULL);
-	else
-		privkey = privatekey_from_file(session, keyfile, 0, m_passphrase);
+	ssh_key privkey = NULL;
+	//in case the passphrase is empty, use NULL instead
+	rc = ssh_pki_import_privkey_file(keyfile, m_passphrase[0] ? m_passphrase : NULL, NULL, NULL, &privkey);
 	SU::FreeChar(keyfile);
 
-	if (privkey == NULL)
-		return SSH_AUTH_ERROR;
-
-	type = ssh_privatekey_type(privkey);
-	if (type == SSH_KEX) {
-		privatekey_free(privkey);
+	if (rc != SSH_OK) {
+		OutErr("[SFTP] Invalid private key file or incorrect passphrase");
 		return SSH_AUTH_ERROR;
 	}
 
-	ssh_public_key pubkeyfrompriv = publickey_from_privatekey(privkey);
-	if (pubkeyfrompriv == NULL) {
-		privatekey_free(privkey);
-		return SSH_AUTH_ERROR;
-	}
+	rc = ssh_userauth_publickey(session, m_username, privkey);
 
-	ssh_string pubstringkey = publickey_to_string(pubkeyfrompriv);
-	publickey_free(pubkeyfrompriv);
-
-
-	if (pubstringkey == NULL) {
-		privatekey_free(privkey);
-		return SSH_AUTH_ERROR;
-	}
-
-	if (pubstringkey == NULL || privkey == NULL)
-		return SSH_AUTH_ERROR;
-
-	rc = ssh_userauth_offer_pubkey(session, m_username, type, pubstringkey);
-	if (rc == SSH_AUTH_SUCCESS) {
-		rc = ssh_userauth_pubkey(session, m_username, pubstringkey, privkey);
-	}
-
-	privatekey_free(privkey);
-	ssh_string_free(pubstringkey);
+	ssh_key_free(privkey);
 
 	if (rc == SSH_AUTH_DENIED) {
 		OutMsg("[SFTP] Key authentication denied.");

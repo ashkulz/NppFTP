@@ -622,6 +622,8 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 	if (rc < 0)
 		return -1;
 
+	const char *keytype = ssh_key_type_to_char(ssh_key_type(srv_pubkey));
+
 	rc = ssh_get_publickey_hash(srv_pubkey, SSH_PUBLICKEY_HASH_SHA1, &hash, &hlen);
 	ssh_key_free(srv_pubkey);
 	if (rc < 0)
@@ -640,15 +642,15 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 			OutMsg("[SFTP] Creating known hosts file.");
 			/* fallback to SSH_SERVER_NOT_KNOWN behavior */
 		case SSH_SERVER_NOT_KNOWN: {
-			SU::TSprintf(errMessage, 512, TEXT("The server is unknown. Do you trust the host key\r\n%s ?"), hashHex);
+			SU::TSprintf(errMessage, 512, TEXT("The server is unknown. Do you trust the host key\r\n%s %s ?"), keytype, hashHex);
 			askSavekey = true;
 			break; }
 		case SSH_SERVER_KNOWN_CHANGED: {
-			SU::TSprintf(errMessage, 512, TEXT("The host key had changed, and is now: %s\r\nDo you trust this new host key?"), hashHex);
+			SU::TSprintf(errMessage, 512, TEXT("The host key had changed, and is now: %s %s\r\nDo you trust this new host key?"), keytype, hashHex);
 			askSavekey = true;
 			break; }
 		case SSH_SERVER_FOUND_OTHER:
-			SU::TSprintf(errMessage, 512, TEXT("A different type of host key was returned by the server than that was stored, and now reads: %s\r\nDo you trust this different host key?"), hashHex);
+			SU::TSprintf(errMessage, 512, TEXT("A different type of host key was returned by the server than that was stored, and now reads: %s %s\r\nDo you trust this different host key?"), keytype, hashHex);
 			askSavekey = true;
 			break;
 		case SSH_SERVER_ERROR:

@@ -544,20 +544,16 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	int rc = SSH_AUTH_ERROR;
 
-	// Search for the presence of the key file privatekey_from_file crashes otherwise.
-	BOOL exist = PathFileExists(m_keyFile);
-	if (exist == FALSE) {
-		OutErr("[SFTP] File for key authentication not found at specified file location %T.", m_keyFile);
-		return SSH_AUTH_ERROR;
-	}
-
 	char * keyfile = SU::TCharToCP(m_keyFile, CP_ACP);
 	ssh_key privkey = NULL;
 	//in case the passphrase is empty, use NULL instead
 	rc = ssh_pki_import_privkey_file(keyfile, m_passphrase[0] ? m_passphrase : NULL, NULL, NULL, &privkey);
 	SU::FreeChar(keyfile);
 
-	if (rc != SSH_OK) {
+	if (rc == SSH_EOF) {
+		OutErr("[SFTP] Private key file not found or permission denied");
+		return SSH_AUTH_ERROR;
+	} else if (rc != SSH_OK) {
 		OutErr("[SFTP] Invalid private key file or incorrect passphrase");
 		return SSH_AUTH_ERROR;
 	}
@@ -567,7 +563,7 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	ssh_key_free(privkey);
 
 	if (rc == SSH_AUTH_DENIED) {
-		OutMsg("[SFTP] Key authentication denied.");
+		OutErr("[SFTP] Key authentication denied.");
 	}
 
 	return rc;

@@ -1,0 +1,59 @@
+# Makefile for building NppFTP with MSVC 2013
+
+!include build.mk
+
+INCLUDES   = /I3rdparty/include /Isrc /Isrc/Windows /Itinyxml/include /IUTCP/include /I.
+DEFINES    = /D LIBSSH_STATIC /D UNICODE /D _UNICODE /D _WINDLL /D _CRT_SECURE_NO_DEPRECATE
+CXXFLAGS   = /nologo /W4 /Zi /MP /MT /GL /Gm- /O2 /Ob2 /Oy- /EHsc /c $(INCLUDES) $(DEFINES)
+CXXFLAGS_D = /nologo /W4 /Zi /MP /MTd /GL /Gm- /Oy- /EHsc /c $(INCLUDES) $(DEFINES)
+OBJECTS    = $(OBJECTS_REL:.cpp=.obj)
+OBJECTS_D  = $(OBJECTS_DBG:.cpp=.obj)
+
+{tinyxml\src\}.cpp{obj\release}.obj::
+	@$(CXX) $(CXXFLAGS) /Foobj\release\ /Fdbin\NppFTP.pdb $<
+
+{UTCP\src\}.cpp{obj\release}.obj::
+	@$(CXX) $(CXXFLAGS) /Foobj\release\ /Fdbin\NppFTP.pdb $<
+
+{src\}.cpp{obj\release}.obj::
+	@$(CXX) $(CXXFLAGS) /Foobj\release\ /Fdbin\NppFTP.pdb $<
+
+{src\Windows\}.cpp{obj\release}.obj::
+	@$(CXX) $(CXXFLAGS) /Foobj\release\ /Fdbin\NppFTP.pdb $<
+
+{src\Windows\}.rc{obj\release}.res:
+	@$(RC) $(INCLUDES) /fo$@ $<
+
+{tinyxml\src\}.cpp{obj\debug}.obj::
+	@$(CXX) $(CXXFLAGS_D) /Foobj\debug\ /Fdbin\NppFTPd.pdb $<
+
+{UTCP\src\}.cpp{obj\debug}.obj::
+	@$(CXX) $(CXXFLAGS_D) /Foobj\debug\ /Fdbin\NppFTPd.pdb $<
+
+{src\}.cpp{obj\debug}.obj::
+	@$(CXX) $(CXXFLAGS_D) /Foobj\debug\ /Fdbin\NppFTPd.pdb $<
+
+{src\Windows\}.cpp{obj\debug}.obj::
+	@$(CXX) $(CXXFLAGS_D) /Foobj\debug\ /Fdbin\NppFTPd.pdb $<
+
+{src\Windows\}.rc{obj\debug}.res:
+	@$(RC) $(INCLUDES) /fo$@ $<
+
+all:     release
+debug:   3rdparty bin obj/debug   $(OBJECTS_D)
+release: 3rdparty bin obj/release $(OBJECTS)
+3rdparty:
+	@python build_3rdparty.py
+
+bin:
+	@mkdir bin
+
+obj/debug:
+	@mkdir obj\debug
+
+obj/release:
+	@mkdir obj\release
+
+clean:
+	@if exist bin rd /s /q bin
+	@if exist obj rd /s /q obj

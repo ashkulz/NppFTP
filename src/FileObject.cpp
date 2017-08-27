@@ -218,7 +218,7 @@ int FileObject::SortVector(FOVector & foVect) {
 bool FileObject::CompareFO(const FileObject * fo1, const FileObject * fo2) {
 	int res = 0;
 	if (fo1->isDir() != fo2->isDir()) {
-		res = fo1->isDir()?false:true;
+		res = fo1->isDir()?-1:1;
 	} else {
 		res = lstrcmpiA(fo1->GetPath(), fo2->GetPath());
 	}

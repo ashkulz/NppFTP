@@ -101,7 +101,7 @@ int FileObject::AddChild(FileObject * child) {
 int FileObject::RemoveChild(FileObject * child, bool del) {
 	FOVector::iterator it;
 
-	for(it = m_children.begin(); it < m_children.end(); it++) {
+	for(it = m_children.begin(); it < m_children.end(); ++it) {
 		if (*it == child) {
 			if (del)
 				delete child;
@@ -118,7 +118,7 @@ int FileObject::RemoveAllChildren(bool del) {
 	FOVector::iterator it;
 
 	if (del) {
-		for(it = m_children.begin(); it < m_children.end(); it++) {
+		for(it = m_children.begin(); it < m_children.end(); ++it) {
 			delete *it;
 		}
 	}

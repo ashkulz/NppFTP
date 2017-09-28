@@ -295,7 +295,7 @@ bool FTPCache::IsPathPrefixExternal(const char * localpath, const char * prefix,
 	
 	// Some system don't start with / (hello z/OS)
 	if (localpath[0] != '/') {
-		prefix++;
+		//prefix++;
 		*postfix = localpath;
 		return true;
 	}

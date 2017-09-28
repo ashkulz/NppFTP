@@ -45,7 +45,9 @@ FTPClientWrapper* FTPClientWrapperZOS::Clone() {
 }
 
 char* FTPClientWrapperZOS::CleanToZOSPath(const char * ftpfile) {
-	char* path = strdup(ftpfile);
+	char* path = (char*) malloc(2048 * sizeof(char));
+	strcpy(path, ftpfile);
+	//char* path = strdup(ftpfile);
 
 	// Remove first '/' if exists (no '/' in ZOS)
 	if (path[1] == '\'') {
@@ -58,6 +60,9 @@ char* FTPClientWrapperZOS::CleanToZOSPath(const char * ftpfile) {
 		if (path[i] == '/')
 			path[i] = '.';
 		if (path[i] == '\'') {
+			// BEFORE
+			//memmove(&path[i], &path[i + 1], strlen(path) - i);
+			// AFTER
 			memmove(&path[i], &path[i + 1], strlen(path) - i);
 			i--;
 		}
@@ -75,7 +80,8 @@ char* FTPClientWrapperZOS::CleanToZOSPath(const char * ftpfile) {
 
 BOOL FTPClientWrapperZOS::AddParenthesis(char* path) {
 	// Check if file is in root or in container
-	int res = m_client.GetDirInfo(path);
+	const char* pathCopy = strdup(path);
+	int res = m_client.GetDirInfo(pathCopy);
 	if (res != UTE_SUCCESS) {
 		// Add parenthesis to last part (separated by .)
 		char* m_name = strrchr(path, '.');

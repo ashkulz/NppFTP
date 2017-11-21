@@ -512,14 +512,14 @@ Transfer_Mode FTPProfile::GetFileTransferMode(const TCHAR* file) const {
 	LPCTSTR suffix = NULL;
 
 	if (m_asciiTypes.size()) {
-		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_asciiTypes[0]), m_asciiTypes.size());
+		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_asciiTypes[0]), static_cast<int>(m_asciiTypes.size()) );
 		if (suffix) {
 			return Mode_ASCII;
 		}
 	}
 
 	if (m_binTypes.size()) {
-		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_binTypes[0]), m_binTypes.size());
+		suffix = PathFindSuffixArray(file, (const TCHAR**)(&m_binTypes[0]), static_cast<int>(m_binTypes.size()) );
 		if (suffix) {
 			return Mode_Binary;
 		}

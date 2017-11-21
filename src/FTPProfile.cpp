@@ -623,7 +623,7 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			Encryption::FreeData(decryptpass);
 		}
 
-		profileElem->Attribute("askPassword", (int*)(&profile->m_askPassword));
+		profileElem->QueryBoolAttribute("askPassword", &profile->m_askPassword);
 
 		profileElem->Attribute("timeout", &profile->m_timeout);
 
@@ -670,8 +670,8 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			Encryption::FreeData(decryptphrase);
 		}
 
-		profileElem->Attribute("askPassphrase", (int*)(&profile->m_askPassphrase));
-		profileElem->Attribute("useAgent", (int*)(&profile->m_useAgent));
+		profileElem->QueryBoolAttribute("askPassphrase", &profile->m_askPassphrase);
+		profileElem->QueryBoolAttribute("useAgent", &profile->m_useAgent);
 		profileElem->Attribute("acceptedMethods", (int*)(&profile->m_acceptedMethods));
 
 		const TiXmlElement * typesElem = profileElem->FirstChildElement("FileTypes");

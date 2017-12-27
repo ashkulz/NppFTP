@@ -780,7 +780,7 @@ int HandleDataSource::WriteLine(LPCSTR /*buffer*/){
 // Read data
 int HandleDataSource::Read(LPSTR buffer, size_t count) {
 	DWORD len = 0;
-	BOOL res = ReadFile(m_handle, buffer, count, &len, NULL);
+	BOOL res = ReadFile(m_handle, buffer, static_cast<DWORD>(count), &len, NULL);
 	if (res == FALSE)
 		return -1;
 
@@ -790,7 +790,7 @@ int HandleDataSource::Read(LPSTR buffer, size_t count) {
 // Write data
 int HandleDataSource::Write(LPCSTR buffer, size_t count) {
 	DWORD len = 0;
-	BOOL res = WriteFile(m_handle, buffer, count, &len, NULL);
+	BOOL res = WriteFile(m_handle, buffer, static_cast<DWORD>(count), &len, NULL);
 	if (res == FALSE)
 		return -1;
 

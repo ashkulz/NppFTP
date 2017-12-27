@@ -3232,7 +3232,7 @@ Return:
 			UTE_FAILED_TO_VERIFY_CERTIFICATE_TRUST
 
 **************************************************************/
-int CUT_FTPClient::SocketOnConnected(SOCKET s, const char *lpszName){
+int CUT_FTPClient::SocketOnConnected(SOCKET /*s*/, const char * /*lpszName*/){
 
 	int rt = UTE_SUCCESS;
 

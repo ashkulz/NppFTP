@@ -116,7 +116,7 @@ INT_PTR Dialog::OnInitDialog() {
 	return TRUE;	//Allow focus to be set
 }
 
-INT_PTR Dialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
+INT_PTR Dialog::OnCommand(int ctrlId, int /*notifCode*/, HWND /*idHwnd*/) {
 	if (ctrlId == IDCANCEL) {
 		EndDialog(m_hwnd, 99);
 		return TRUE;
@@ -124,7 +124,7 @@ INT_PTR Dialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 	return FALSE;
 }
 
-INT_PTR Dialog::OnNotify(NMHDR * pnmh) {
+INT_PTR Dialog::OnNotify(NMHDR * /*pnmh*/) {
 	return FALSE;
 }
 

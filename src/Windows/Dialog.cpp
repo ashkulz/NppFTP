@@ -166,6 +166,12 @@ LRESULT Dialog::EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case VK_RETURN: {
 					return 0;
 					break; }
+				case VK_DELETE: {
+					if (hParent) {
+						int id = (int)::GetWindowLongPtr(hwnd, GWLP_ID);
+						::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_USERCHANGE), (LPARAM)hwnd);
+					}
+					break; }
 			}
 			break; }
 		case WM_KEYDOWN: {
@@ -173,7 +179,7 @@ LRESULT Dialog::EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			switch(code) {
 				case VK_RETURN: {
 					if (hParent) {
-						int id = (int)::GetWindowLongPtr(hwnd, GWL_ID);
+						int id = (int)::GetWindowLongPtr(hwnd, GWLP_ID);
 						::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_KEYRETURN), (LPARAM) hwnd);
 						return 0;
 					}
@@ -187,13 +193,13 @@ LRESULT Dialog::EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch(uMsg) {
 		case WM_CHAR: {
 			if (hParent) {
-				int id = (int)::GetWindowLongPtr(hwnd, GWL_ID);
+				int id = (int)::GetWindowLongPtr(hwnd, GWLP_ID);
 				::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_USERCHANGE), (LPARAM) hwnd);
 			}
 		break; }
 		case WM_PASTE: {
 			if (hParent) {
-				int id = (int)::GetWindowLongPtr(hwnd, GWL_ID);
+				int id = (int)::GetWindowLongPtr(hwnd, GWLP_ID);
 				::SendMessage(hParent, WM_COMMAND, MAKEWPARAM(id, EN_USERCHANGE), (LPARAM) hwnd);
 			}
 			break; }

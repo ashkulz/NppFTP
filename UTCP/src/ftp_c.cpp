@@ -2369,7 +2369,10 @@ int CUT_FTPClient::GetDirEntry(int index, CUT_DIRINFO *dirInfo) {
         }
 
     //copy the record, switching from char to _TCHAR for filename
-	CUT_Str::cvtcpy(dirInfo->fileName,MAX_PATH, di->fileName);
+    //use CP_UTF8 to transparently handle servers which send uft8 filenames
+    //also not explicitly requested via OPTS UTF8 ON, see https://tools.ietf.org/html/draft-ietf-ftpext-utf-8-option-00
+    //see also issue https://github.com/ashkulz/NppFTP/issues/55
+    CUT_Str::cvtcpy(dirInfo->fileName,MAX_PATH, di->fileName, CP_UTF8);
     dirInfo->fileSize   = di->fileSize;
     dirInfo->day        = di->day;
     dirInfo->month      = di->month;

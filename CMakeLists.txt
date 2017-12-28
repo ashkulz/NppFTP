@@ -44,10 +44,16 @@ project (NppFTP)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 set (output_dir "x64")
-set (3rdparty_prefix "x86_64-w64-mingw32")
+    if (MINGW)
+        set (3rdparty_prefix "x86_64-w64-mingw32")
+    else()
+        set (3rdparty_prefix "msvc_x64")
+    endif()
 else()
 set (output_dir "x86")
-set (3rdparty_prefix "i686-w64-mingw32")
+    if (MINGW)
+        set (3rdparty_prefix "i686-w64-mingw32")
+    endif()
 endif()
 
 #check if ExternalProject_Add could be used as replacement of the python script

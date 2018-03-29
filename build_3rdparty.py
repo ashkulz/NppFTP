@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2n.tar.gz',
-        'sha1'  : '0ca2957869206de193603eca6d89f532f61680b1',
+        'url'   : 'https://www.openssl.org/source/openssl-1.0.2o.tar.gz',
+        'sha1'  : 'a47faaca57b47a0d9d5fb085545857cc92062691',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],

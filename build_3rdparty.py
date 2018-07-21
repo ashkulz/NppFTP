@@ -73,7 +73,7 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://red.libssh.org/attachments/download/218/libssh-0.7.5.tar.xz',
+        'url'   : 'https://www.libssh.org/files/0.7/libssh-0.7.5.tar.xz',
         'sha1'  : '0cf54e96e91d73e730ae4bc76d3f5277100c0f1a',
         'target': {
             'mingw-w64': {

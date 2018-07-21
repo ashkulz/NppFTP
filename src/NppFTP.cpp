@@ -164,6 +164,11 @@ int NppFTP::OnSave(const TCHAR* path) {
 	if (!path || !m_ftpSession)
 		return -1;
 
+	if (!m_ftpSession->IsConnected())
+	{
+		AttemptToAutoConnect(path);
+	}
+
 	if (m_ftpSession->IsConnected()) {
 		m_ftpSession->UploadFileCache(path);
 	}
@@ -292,4 +297,71 @@ int NppFTP::SaveSettings() {
 	delete certificatesDoc;
 
 	return 0;
+}
+
+//  TODO this method could probably be expanded to automatically connect to correct FTP server even when other connection is already present
+void NppFTP::AttemptToAutoConnect(const TCHAR* path)
+{
+	if (!path)
+		return;
+
+	FTPProfile* profile = nullptr;
+
+	// we're going to parse the current username from the file path
+	TCHAR* charScanner = const_cast<TCHAR*>(path);
+	int atSymbolIndex = 0;
+	int previousBackslashIndex = 0;
+	while (*charScanner != '\0')
+	{
+		if (charScanner[atSymbolIndex] == (TCHAR)'\\')
+			previousBackslashIndex = atSymbolIndex + 1;
+		if (charScanner[atSymbolIndex] == (TCHAR)'@')
+			break;
+		atSymbolIndex++;
+	}
+
+	// we store that parsed username into the variable username below
+	if (atSymbolIndex>0)
+	{
+		TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
+		memset(username, '\0', FILENAME_MAX);
+		int nameLength = (atSymbolIndex - previousBackslashIndex - 1);
+		memcpy(username, &path[previousBackslashIndex], nameLength * 2);	// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+
+		// now we try to find a reasonable partial match given all of our available saved ftp account names
+		for (u_int i = 0; i < m_profiles.size() && !profile; i++)
+		{
+			const TCHAR* profileName = m_profiles.at(i)->GetName();
+			bool notWrongYet = true;	// as long as we're matching char-by-char, this stays true
+			while (profileName && !profile)
+			{
+				for (int j = 0; j < nameLength && !profile && notWrongYet; j++)
+				{
+					if (notWrongYet && profileName + j)
+					{
+						if (username[j] != profileName[j])
+						{
+							notWrongYet = false;
+						}
+					}
+					if (notWrongYet && *(profileName + j + 1) == '\0')
+					{
+						// we found a good enough match
+						profile = m_profiles.at(i);
+						break;
+					}
+				}
+				profileName++;
+			}
+		}
+
+		if (profile)
+		{
+			int ret = m_ftpSession->StartSession(profile);
+			if (ret == -1) {
+				OutErr("[NppFTP] Cannot start FTP session");
+			}
+			m_ftpSession->Connect();
+		}
+	}
 }

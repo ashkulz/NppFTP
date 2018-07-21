@@ -44,6 +44,7 @@ public:
 private:
 	int						LoadSettings();		//-1 error, 0 success, 1 unable to load
 	int						SaveSettings();
+	void					AttemptToAutoConnect(const TCHAR* path);
 
 	FTPSettings*			m_ftpSettings;
 	FTPSession*				m_ftpSession;

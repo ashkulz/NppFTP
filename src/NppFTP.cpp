@@ -164,9 +164,18 @@ int NppFTP::OnSave(const TCHAR* path) {
 	if (!path || !m_ftpSession)
 		return -1;
 
-	if (!m_ftpSession->IsConnected())
+	TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
+	TCHAR hostname[FILENAME_MAX];
+	GetUserAndHostFromFilename(path, username, hostname);	// username and hostname are SET inside this function
+
+	if (m_ftpSession->IsConnected())	// see if we're connected to the correct server for our file
 	{
-		AttemptToAutoConnect(path);
+		DisconnectOnInfoMismatch(username, hostname);	// if our info doesnt match current profile, we'll disconnect here
+	}
+
+	if (!m_ftpSession->IsConnected())	// if we don't have a connection....
+	{
+		AttemptToAutoConnect(username, hostname);	// we'll try to connect to a matching profile
 	}
 
 	if (m_ftpSession->IsConnected()) {
@@ -299,13 +308,10 @@ int NppFTP::SaveSettings() {
 	return 0;
 }
 
-//  TODO this method could probably be expanded to automatically connect to correct FTP server even when other connection is already present
-void NppFTP::AttemptToAutoConnect(const TCHAR* path)
+bool NppFTP::GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername, TCHAR* returnHostname)
 {
-	if (!path)
-		return;
-
-	FTPProfile* profile = 0;	// make nullptr
+	memset(returnUsername, '\0', FILENAME_MAX * 2);
+	memset(returnHostname, '\0', FILENAME_MAX * 2);
 
 	// we're going to parse the current username from the file path, let's find the objects around at @ symbol
 	TCHAR* charScanner = const_cast<TCHAR*>(path);
@@ -314,7 +320,7 @@ void NppFTP::AttemptToAutoConnect(const TCHAR* path)
 	int previousBackslashIndex = 0;
 	int nextBackslashIndex = 0;
 	while (charScanner[charCounter] != '\0')
-	{	
+	{
 		if (charScanner[charCounter] == (TCHAR)'@')
 			atSymbolIndex = charCounter;
 		if (atSymbolIndex > 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
@@ -328,17 +334,27 @@ void NppFTP::AttemptToAutoConnect(const TCHAR* path)
 	}
 
 	// we store that parsed username into the variable username below if we found an @ symbol
-	if (previousBackslashIndex >0 && atSymbolIndex > previousBackslashIndex && nextBackslashIndex > atSymbolIndex)
+	if (previousBackslashIndex > 0 && atSymbolIndex > previousBackslashIndex && nextBackslashIndex > atSymbolIndex)
 	{
-		TCHAR username[FILENAME_MAX*2];	// assume username+path is smaller than largest allowed filename, x2 because TCHAR is 2 bytes
-		TCHAR hostname[FILENAME_MAX * 2];	// assume username+path is smaller than largest allowed filename, x2 because TCHAR is 2 bytes
-		memset(username, '\0', FILENAME_MAX*2);
-		memset(hostname, '\0', FILENAME_MAX * 2);
 		int nameLength = (atSymbolIndex - previousBackslashIndex);
 		int hostnameLength = (nextBackslashIndex - atSymbolIndex - 1);
-		memcpy(username, &path[previousBackslashIndex], nameLength * 2);	// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
-		memcpy(hostname, &path[atSymbolIndex+1], hostnameLength * 2);			// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+		memcpy(returnUsername, &path[previousBackslashIndex], nameLength * 2);	// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+		memcpy(returnHostname, &path[atSymbolIndex + 1], hostnameLength * 2);			// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+		return true;
+	}
+	else
+	{
+		// if we didn't find anything, return nullptrs and false
+		returnUsername = returnHostname = 0;	//nullptr
+		return false;
+	}
+}
 
+//  TODO this method could probably be expanded to automatically connect to correct FTP server even when other connection is already present
+void NppFTP::AttemptToAutoConnect(TCHAR* username, TCHAR* hostname)
+{
+	FTPProfile* profile = 0;	// make nullptr
+	{
 		// now we try to find a reasonable partial match given all of our available saved ftp account names
 		for (u_int i = 0; i < m_profiles.size() && !profile; i++)
 		{
@@ -362,4 +378,16 @@ void NppFTP::AttemptToAutoConnect(const TCHAR* path)
 			m_ftpSession->Connect();
 		}
 	}
+}
+
+void NppFTP::DisconnectOnInfoMismatch(TCHAR* username, TCHAR* hostname)
+{
+	if (_tcscmp(SU::Utf8ToTChar(m_ftpSession->GetCurrentProfile()->GetUsername()), username) == 0)
+	{
+		if (_tcscmp(SU::Utf8ToTChar(m_ftpSession->GetCurrentProfile()->GetHostname()), hostname) == 0)
+		{
+			return;	// we have the correct session, no need to disconnect
+		}
+	}
+	m_ftpSession->TerminateSession();
 }

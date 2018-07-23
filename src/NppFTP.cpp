@@ -311,10 +311,10 @@ int NppFTP::SaveSettings() {
 
 bool NppFTP::GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername, TCHAR* returnHostname)
 {
-	memset(returnUsername, '\0', FILENAME_MAX * 2);
-	memset(returnHostname, '\0', FILENAME_MAX * 2);
+	memset(returnUsername, '\0', FILENAME_MAX * sizeof(TCHAR));
+	memset(returnHostname, '\0', FILENAME_MAX * sizeof(TCHAR));
 
-	// we're going to parse the current username from the file path, let's find the objects around at @ symbol
+	// we're going to parse the current username from the file path, let's find important chars around the @ symbol so we can substring afterward
 	TCHAR* charScanner = const_cast<TCHAR*>(path);
 	int charCounter = 0;
 	int atSymbolIndex = 0;
@@ -327,20 +327,20 @@ bool NppFTP::GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername
 		if (atSymbolIndex > 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
 		{
 			nextBackslashIndex = charCounter;
-			break;	// prevents resetting of the previous backslash index by breaking out here
+			break;	// prevents resetting of the previousBackslashIndex (below) index by breaking out here
 		}
 		if (atSymbolIndex == 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
 			previousBackslashIndex = charCounter + 1;
 		charCounter++;
 	}
 
-	// we store that parsed username into the variable username below if we found an @ symbol
+	// we store that parsed username into the variable username below if we found all the appropriate things in appropriate places
 	if (previousBackslashIndex > 0 && atSymbolIndex > previousBackslashIndex && nextBackslashIndex > atSymbolIndex)
 	{
 		int nameLength = (atSymbolIndex - previousBackslashIndex);
 		int hostnameLength = (nextBackslashIndex - atSymbolIndex - 1);
-		memcpy(returnUsername, &path[previousBackslashIndex], nameLength * 2);	// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
-		memcpy(returnHostname, &path[atSymbolIndex + 1], hostnameLength * 2);			// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+		memcpy(returnUsername, &path[previousBackslashIndex], nameLength * sizeof(TCHAR));	// TCHAR is usually 2 bytes so we have to multiply to be correct in byte-space
+		memcpy(returnHostname, &path[atSymbolIndex + 1], hostnameLength * sizeof(TCHAR));
 		return true;
 	}
 	else
@@ -351,12 +351,11 @@ bool NppFTP::GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername
 	}
 }
 
-//  TODO this method could probably be expanded to automatically connect to correct FTP server even when other connection is already present
 void NppFTP::AttemptToAutoConnect(TCHAR* username, TCHAR* hostname)
 {
 	FTPProfile* profile = 0;	// make nullptr
 	{
-		// now we try to find a reasonable partial match given all of our available saved ftp account names
+		// now we try to find a reasonable given all of our available saved ftp account names
 		for (u_int i = 0; i < m_profiles.size() && !profile; i++)
 		{
 			const TCHAR* profileUserName = SU::Utf8ToTChar(m_profiles.at(i)->GetUsername());

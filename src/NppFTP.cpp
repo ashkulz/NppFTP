@@ -305,57 +305,55 @@ void NppFTP::AttemptToAutoConnect(const TCHAR* path)
 	if (!path)
 		return;
 
-	FTPProfile* profile = nullptr;
+	FTPProfile* profile = 0;	// make nullptr
 
-	// we're going to parse the current username from the file path
+	// we're going to parse the current username from the file path, let's find the objects around at @ symbol
 	TCHAR* charScanner = const_cast<TCHAR*>(path);
+	int charCounter = 0;
 	int atSymbolIndex = 0;
 	int previousBackslashIndex = 0;
-	while (*charScanner != '\0')
-	{
-		if (charScanner[atSymbolIndex] == (TCHAR)'\\')
-			previousBackslashIndex = atSymbolIndex + 1;
-		if (charScanner[atSymbolIndex] == (TCHAR)'@')
-			break;
-		atSymbolIndex++;
+	int nextBackslashIndex = 0;
+	while (charScanner[charCounter] != '\0')
+	{	
+		if (charScanner[charCounter] == (TCHAR)'@')
+			atSymbolIndex = charCounter;
+		if (atSymbolIndex > 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
+		{
+			nextBackslashIndex = charCounter;
+			break;	// prevents resetting of the previous backslash index by breaking out here
+		}
+		if (atSymbolIndex == 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
+			previousBackslashIndex = charCounter + 1;
+		charCounter++;
 	}
 
-	// we store that parsed username into the variable username below
-	if (atSymbolIndex>0)
+	// we store that parsed username into the variable username below if we found an @ symbol
+	if (previousBackslashIndex >0 && atSymbolIndex > previousBackslashIndex && nextBackslashIndex > atSymbolIndex)
 	{
-		TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
-		memset(username, '\0', FILENAME_MAX);
-		int nameLength = (atSymbolIndex - previousBackslashIndex - 1);
+		TCHAR username[FILENAME_MAX*2];	// assume username+path is smaller than largest allowed filename, x2 because TCHAR is 2 bytes
+		TCHAR hostname[FILENAME_MAX * 2];	// assume username+path is smaller than largest allowed filename, x2 because TCHAR is 2 bytes
+		memset(username, '\0', FILENAME_MAX*2);
+		memset(hostname, '\0', FILENAME_MAX * 2);
+		int nameLength = (atSymbolIndex - previousBackslashIndex);
+		int hostnameLength = (nextBackslashIndex - atSymbolIndex - 1);
 		memcpy(username, &path[previousBackslashIndex], nameLength * 2);	// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
+		memcpy(hostname, &path[atSymbolIndex+1], hostnameLength * 2);			// TCHAR is 2 bytes so we have to double the nameLength to be correct in byte-space
 
 		// now we try to find a reasonable partial match given all of our available saved ftp account names
 		for (u_int i = 0; i < m_profiles.size() && !profile; i++)
 		{
-			const TCHAR* profileName = m_profiles.at(i)->GetName();
-			bool notWrongYet = true;	// as long as we're matching char-by-char, this stays true
-			while (profileName && !profile)
+			const TCHAR* profileUserName = SU::Utf8ToTChar(m_profiles.at(i)->GetUsername());
+			if (_tcscmp(profileUserName, username) == 0)
 			{
-				for (int j = 0; j < nameLength && !profile && notWrongYet; j++)
+				const TCHAR* profileHostName = SU::Utf8ToTChar(m_profiles.at(i)->GetHostname());
+				if (_tcscmp(profileHostName, hostname) == 0)
 				{
-					if (notWrongYet && profileName + j)
-					{
-						if (username[j] != profileName[j])
-						{
-							notWrongYet = false;
-						}
-					}
-					if (notWrongYet && *(profileName + j + 1) == '\0')
-					{
-						// we found a good enough match
-						profile = m_profiles.at(i);
-						break;
-					}
+					profile = m_profiles.at(i);	// we found our match!
 				}
-				profileName++;
 			}
 		}
 
-		if (profile)
+		if (profile)	// if we found our match, let's connect to it eh
 		{
 			int ret = m_ftpSession->StartSession(profile);
 			if (ret == -1) {

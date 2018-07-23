@@ -166,9 +166,10 @@ int NppFTP::OnSave(const TCHAR* path) {
 
 	TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
 	TCHAR hostname[FILENAME_MAX];
-	GetUserAndHostFromFilename(path, username, hostname);	// username and hostname are SET inside this function
+	// username and hostname are SET inside this function
+	bool filenameHasHost = GetUserAndHostFromFilename(path, username, hostname);	
 
-	if (m_ftpSession->IsConnected())	// see if we're connected to the correct server for our file
+	if (filenameHasHost && m_ftpSession->IsConnected())	// see if we're connected to the correct server for our file
 	{
 		DisconnectOnInfoMismatch(username, hostname);	// if our info doesnt match current profile, we'll disconnect here
 	}

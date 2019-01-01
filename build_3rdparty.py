@@ -73,8 +73,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://www.libssh.org/files/0.7/libssh-0.7.5.tar.xz',
-        'sha1'  : '0cf54e96e91d73e730ae4bc76d3f5277100c0f1a',
+        'url'   : 'https://www.libssh.org/files/0.8/libssh-0.8.6.tar.xz',
+        'sha1'  : '2cb2775dcf2780520421a669eebfe5862ba51d29',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
@@ -82,7 +82,7 @@ DEPENDENT_LIBS = {
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
-                        -DWITH_STATIC_LIB=ON -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
+                        -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
                     'make install'
                 ]
@@ -90,8 +90,8 @@ DEPENDENT_LIBS = {
             'msvc': {
                 'result':   ['include/libssh/libssh.h', 'lib/ssh.lib'],
                 'commands': [
-                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DCMAKE_BUILD_TYPE=Release \
-                        "-DCMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" \
+                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
+                        "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
@@ -102,8 +102,8 @@ DEPENDENT_LIBS = {
             'msvc_x64': {
                 'result':   ['include/libssh/libssh.h', 'lib/ssh.lib'],
                 'commands': [
-                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DCMAKE_BUILD_TYPE=Release \
-                        "-DCMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /O2 /Ob2 /D NDEBUG" \
+                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
+                        "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',

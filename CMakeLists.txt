@@ -144,7 +144,7 @@ if (MINGW)
 
     target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto z ws2_32)
 else (MINGW)
-    target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 zlib ws2_32)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh libssl libcrypto zlib ws2_32)
 endif (MINGW)
 
 # build a CPack driven zip package

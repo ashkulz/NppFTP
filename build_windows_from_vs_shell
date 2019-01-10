@@ -1,0 +1,4 @@
+set PATH=C:\Program Files\CMake\bin;C:\Users\christian\Source\Repos\npp_ftp_plain\NppFTP\Python36;C:\Users\christian\Source\Repos\npp_ftp_plain\NppFTP\Python36\Scripts;C:\Users\christian\Source\Repos\npp_ftp_plain\NppFTP\strawberry-perl-5.24.1.1-64bit-portable\perl\bin;%PATH%
+cd build
+cmake -G "Visual Studio 15 2017 Win64" -T "v141_xp" ..
+cmake --build . --config Debug

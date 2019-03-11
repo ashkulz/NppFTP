@@ -120,7 +120,7 @@ public:
 class CUT_WSClient : public CUT_CLIENT_BASE_CLASS
 {
 public:
-    enum SSLMode {NONE, TLS, SSLv2, SSLv3, SSLv23};
+    enum SSLMode {NONE, TLS};
     virtual int EnableSSL(bool enable);
 
     virtual int SetSecurityMode(SSLMode mode);

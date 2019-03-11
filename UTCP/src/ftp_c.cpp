@@ -185,8 +185,8 @@ int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LP
 
     if (m_sMode != FTP) {
         if (m_sMode == FTPS) {  //in case of implicit SSL, negotiate security version with v23
-            SetSecurityMode(CUT_FTPClient::SSLv23);
-            m_wsData.SetSecurityMode(CUT_FTPClient::SSLv23);
+            SetSecurityMode(CUT_FTPClient::TLS);
+            m_wsData.SetSecurityMode(CUT_FTPClient::TLS);
         } else {
             //Try TLS first, SSL later
             SetSecurityMode(CUT_FTPClient::TLS);
@@ -3293,16 +3293,16 @@ int CUT_FTPClient::SocketOnConnected(SOCKET /*s*/, const char * /*lpszName*/){
             }
             else                                                                // If the SSL succeded then set the protocol to SSL
             {
-                SetSecurityMode(CUT_WSClient::SSLv3);
-                m_wsData.SetSecurityMode(CUT_WSClient::SSLv3);
+                SetSecurityMode(CUT_WSClient::TLS);
+                m_wsData.SetSecurityMode(CUT_WSClient::TLS);
                 rt = ConnectSSL();
             }
         }
         else
         {
-            //SSLv23 is the default starting with TLS 1.2 -> SSLV3
-            SetSecurityMode(CUT_WSClient::SSLv23);
-            m_wsData.SetSecurityMode(CUT_WSClient::SSLv23);
+            //TLS is the default starting with TLS 1.3 -> SSLV3
+            SetSecurityMode(CUT_WSClient::TLS);
+            m_wsData.SetSecurityMode(CUT_WSClient::TLS);
             rt = ConnectSSL();
         }
 

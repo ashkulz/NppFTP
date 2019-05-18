@@ -88,11 +88,11 @@ BOOL CUT_WSDataClient::SendFileStatus(long bytesSent){
 }
 
 int CUT_WSDataClient::OnLoadCertificates(SSL_CTX * ctx) {
-	return ptrFTPClient->OnLoadCertificates(ctx);
+    return ptrFTPClient->OnLoadCertificates(ctx);
 }
 
 int CUT_WSDataClient::OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult) {
-	return ptrFTPClient->OnSSLCertificate(ssl, certificate, verifyResult);
+    return ptrFTPClient->OnSSLCertificate(ssl, certificate, verifyResult);
 }
 
 /***************************************************
@@ -118,7 +118,7 @@ CUT_FTPClient::CUT_FTPClient() :
     m_cachedResponse(false),
 
     m_sMode(FTP),
-    m_dataSecLevel(0),					//Default is clear data
+    m_dataSecLevel(0),                  //Default is clear data
     m_nDataPortMin(10000),
     m_nDataPortMax(32000)
 {
@@ -168,7 +168,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::FTPConnect(LPCWSTR hostname,LPCWSTR userName,LPCWSTR password,LPCWSTR account){
-	return FTPConnect(AC(hostname), AC(userName), AC(password), AC(account));}
+    return FTPConnect(AC(hostname), AC(userName), AC(password), AC(account));}
 #endif
 int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LPCSTR account){
 
@@ -183,21 +183,21 @@ int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LP
     m_lastResponseCode = 0;
     m_cachedResponse = false;
 
-	if (m_sMode != FTP) {
-		if (m_sMode == FTPS) {	//in case of implicit SSL, negotiate security version with v23
-			SetSecurityMode(CUT_FTPClient::SSLv23);
-			m_wsData.SetSecurityMode(CUT_FTPClient::SSLv23);
-		} else {
-			//Try TLS first, SSL later
-			SetSecurityMode(CUT_FTPClient::TLS);
-			m_wsData.SetSecurityMode(CUT_FTPClient::TLS);
-		}
-		EnableSSL(true);
-		m_wsData.EnableSSL(true);
-	} else {
-		EnableSSL(false);
-		m_wsData.EnableSSL(false);
-	}
+    if (m_sMode != FTP) {
+        if (m_sMode == FTPS) {  //in case of implicit SSL, negotiate security version with v23
+            SetSecurityMode(CUT_FTPClient::SSLv23);
+            m_wsData.SetSecurityMode(CUT_FTPClient::SSLv23);
+        } else {
+            //Try TLS first, SSL later
+            SetSecurityMode(CUT_FTPClient::TLS);
+            m_wsData.SetSecurityMode(CUT_FTPClient::TLS);
+        }
+        EnableSSL(true);
+        m_wsData.EnableSSL(true);
+    } else {
+        EnableSSL(false);
+        m_wsData.EnableSSL(false);
+    }
 
     //connect
     if((error = Connect(m_nControlPort, hostname, m_nConnectTimeout)) != UTE_SUCCESS)
@@ -246,14 +246,14 @@ int CUT_FTPClient::FTPConnect(LPCSTR hostname,LPCSTR userName,LPCSTR password,LP
         }
     }
 
-	//set datachannel security
-	if (m_sMode != FTP) {
-		rt = SetDataSecure(m_dataSecLevel);
-		if (rt != UTE_SUCCESS) {
-			Close();
-			return OnError(rt);
-		}
-	}
+    //set datachannel security
+    if (m_sMode != FTP) {
+        rt = SetDataSecure(m_dataSecLevel);
+        if (rt != UTE_SUCCESS) {
+            Close();
+            return OnError(rt);
+        }
+    }
 
     //set transfer type and mode
     SetTransferType(0);
@@ -299,10 +299,10 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::ReceiveFile(LPCWSTR sourceFile, LPCTSTR destFile){
-	return ReceiveFile(AC(sourceFile), destFile);}
+    return ReceiveFile(AC(sourceFile), destFile);}
 #endif
 int CUT_FTPClient::ReceiveFile(LPCSTR sourceFile, LPCTSTR destFile){
-	CUT_FileDataSource ds(destFile);
+    CUT_FileDataSource ds(destFile);
     return ReceiveFile(ds, sourceFile);
 }
 
@@ -332,7 +332,7 @@ int CUT_FTPClient::ReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
     if ( m_nFirewallMode )
         return ReceiveFilePASV(dest, sourceFile);
 
-	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
@@ -363,8 +363,8 @@ int CUT_FTPClient::ReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
     m_nDataPort++;
     //if(m_nDataPort > 32000 || m_nDataPort < 0)
     //    m_nDataPort = 10000;
-	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
-		m_nDataPort = m_nDataPortMin;
+    if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+        m_nDataPort = m_nDataPortMin;
 
     //check for a return of 2??
     rt = GetResponseCode(this);
@@ -434,10 +434,10 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::ResumeReceiveFile(LPCWSTR sourceFile, LPCTSTR destFile){
-	return ResumeReceiveFile(AC(sourceFile), destFile);}
+    return ResumeReceiveFile(AC(sourceFile), destFile);}
 #endif
 int CUT_FTPClient::ResumeReceiveFile(LPCSTR sourceFile, LPCTSTR destFile){
-	CUT_FileDataSource ds(destFile);
+    CUT_FileDataSource ds(destFile);
     return ResumeReceiveFile(ds, sourceFile);
 }
 /***************************************
@@ -467,7 +467,7 @@ int CUT_FTPClient::ResumeReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
     if ( m_nFirewallMode )
         return ResumeReceiveFilePASV(dest, sourceFile);
 
-	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
@@ -594,7 +594,7 @@ Return
     UTE_CONNECT_TIMEOUT             - connection timeout
 ****************************************/
 int CUT_FTPClient::ReceiveFilePASV( LPCSTR sourceFile,LPCTSTR destFile ){
-	CUT_FileDataSource ds(destFile);
+    CUT_FileDataSource ds(destFile);
     return ReceiveFilePASV(ds, sourceFile);
 }
 /***************************************
@@ -717,7 +717,7 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
-		ClearReceiveBuffer();
+        ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -843,7 +843,7 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
-		ClearReceiveBuffer();
+        ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -889,10 +889,10 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::SendFile(LPCTSTR sourceFile,LPCWSTR destFile){
-	return SendFile(sourceFile, AC(destFile));}
+    return SendFile(sourceFile, AC(destFile));}
 #endif
 int CUT_FTPClient::SendFile(LPCTSTR sourceFile,LPCSTR destFile){
-	CUT_FileDataSource ds(sourceFile);
+    CUT_FileDataSource ds(sourceFile);
     return SendFile(ds, destFile);
 }
 
@@ -920,12 +920,12 @@ int CUT_FTPClient::SendFile(CUT_DataSource & source, LPCSTR destFile)
     if (m_nFirewallMode)
         return SendFilePASV(source, destFile);
 
-	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 128 times then fail
     for(loop=0;loop<128;loop++){
-		if(m_wsData.WaitForConnect((unsigned short)m_nDataPort)==UTE_SUCCESS)
+        if(m_wsData.WaitForConnect((unsigned short)m_nDataPort)==UTE_SUCCESS)
             break;
         m_nDataPort++;
         }
@@ -951,8 +951,8 @@ int CUT_FTPClient::SendFile(CUT_DataSource & source, LPCSTR destFile)
     m_nDataPort++;
     //if(m_nDataPort > 32000 || m_nDataPort < 0)
     //    m_nDataPort = 10000;
-	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
-		m_nDataPort = m_nDataPortMin;
+    if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+        m_nDataPort = m_nDataPortMin;
 
     //check for a return of 2??
     rt = GetResponseCode(this);
@@ -1034,7 +1034,7 @@ Return
     UTE_CONNECT_TIMEOUT             - connection time out
 ****************************************/
 int CUT_FTPClient::SendFilePASV(LPCTSTR sourceFile,LPCSTR destFile){
-	CUT_FileDataSource ds(sourceFile);
+    CUT_FileDataSource ds(sourceFile);
     return SendFilePASV(ds, destFile);
 }
 
@@ -1132,7 +1132,7 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
-		ClearReceiveBuffer();
+        ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -1177,7 +1177,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::DeleteFile(LPCWSTR file){
-	return DeleteFile(AC(file));}
+    return DeleteFile(AC(file));}
 #endif
 int CUT_FTPClient::DeleteFile(LPCSTR file){
 
@@ -1210,7 +1210,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::RenameFile(LPCWSTR sourceFile,LPCWSTR destFile){
-	return RenameFile(AC(sourceFile), AC(destFile));}
+    return RenameFile(AC(sourceFile), AC(destFile));}
 #endif
 int CUT_FTPClient::RenameFile(LPCSTR sourceFile,LPCSTR destFile){
 
@@ -1257,13 +1257,13 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::GetCurDir(LPWSTR directory,int maxlen){
-	char * directoryA = (char*) alloca(maxlen);
-	*directoryA = '\0';
-	int result = GetCurDir(directoryA, maxlen);
-	if(result == UTE_SUCCESS) {
-		CUT_Str::cvtcpy(directory, maxlen, directoryA);
-	}
-	return result;}
+    char * directoryA = (char*) alloca(maxlen);
+    *directoryA = '\0';
+    int result = GetCurDir(directoryA, maxlen);
+    if(result == UTE_SUCCESS) {
+        CUT_Str::cvtcpy(directory, maxlen, directoryA);
+    }
+    return result;}
 #endif
 int CUT_FTPClient::GetCurDir(LPSTR directory,int maxlen){
 
@@ -1301,7 +1301,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::ChDir(LPCWSTR directory){
-	return ChDir(AC(directory));}
+    return ChDir(AC(directory));}
 #endif
 int CUT_FTPClient::ChDir(LPCSTR directory){
 
@@ -1362,7 +1362,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::MkDir(LPCWSTR directory){
-	return MkDir(AC(directory));}
+    return MkDir(AC(directory));}
 #endif
 int CUT_FTPClient::MkDir(LPCSTR directory){
 
@@ -1392,7 +1392,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::RmDir(LPCWSTR directory){
-	return RmDir(AC(directory));}
+    return RmDir(AC(directory));}
 #endif
 int CUT_FTPClient::RmDir(LPCSTR directory){
 
@@ -1411,19 +1411,19 @@ int CUT_FTPClient::RmDir(LPCSTR directory){
 }
 
 int CUT_FTPClient::GetSize(LPCSTR path, long * size) {
-	int     rt;
+    int     rt;
 
-	_snprintf(m_szBuf,sizeof(m_szBuf)-1,"SIZE %s\r\n",path);
-	Send(m_szBuf);
-	//check for a return of 213
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"SIZE %s\r\n",path);
+    Send(m_szBuf);
+    //check for a return of 213
     rt = GetResponseCode(this);
     if(rt == 0)
         return OnError(UTE_NO_RESPONSE);   //no response
     else if(rt == 213) {
-    	//Response is a single line with "213 SIZE", so can safely substring
-    	LPCSTR response = GetMultiLineResponse(0);
-    	response += 4;	//skip "213 "
-    	*size = atol(response);
+        //Response is a single line with "213 SIZE", so can safely substring
+        LPCSTR response = GetMultiLineResponse(0);
+        response += 4;  //skip "213 "
+        *size = atol(response);
 
         return OnError(UTE_SUCCESS);
     }
@@ -1432,7 +1432,7 @@ int CUT_FTPClient::GetSize(LPCSTR path, long * size) {
 
 #if defined _UNICODE
 int CUT_FTPClient::GetSize(LPCWSTR path, long * size) {
-	return GetSize(AC(path), size);}
+    return GetSize(AC(path), size);}
 #endif
 /***************************************
 NoOp
@@ -1855,76 +1855,76 @@ int CUT_FTPClient::GetDataPort() const
 * level 1: PROT P
 */
 int CUT_FTPClient::SetDataSecure(int level) {
-	int rt = 0;
+    int rt = 0;
 
-	if (true) {	//always send PBSZ
-		Send("PBSZ 0\r\n");
+    if (true) { //always send PBSZ
+        Send("PBSZ 0\r\n");
 
-		rt = GetResponseCode(this);
+        rt = GetResponseCode(this);
 
-		if(rt == 0)
-			return OnError(UTE_NO_RESPONSE);        //no response
-		if(rt != 200) {
-			return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
-		}
-	}
+        if(rt == 0)
+            return OnError(UTE_NO_RESPONSE);        //no response
+        if(rt != 200) {
+            return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
+        }
+    }
 
-	if (level == 1) {
-		Send("PROT P\r\n");
-	} else if (level == 0) {
-		Send("PROT C\r\n");
-	} else {
-		return OnError(UTE_ERROR);	//unknown level
-	}
+    if (level == 1) {
+        Send("PROT P\r\n");
+    } else if (level == 0) {
+        Send("PROT C\r\n");
+    } else {
+        return OnError(UTE_ERROR);  //unknown level
+    }
 
-	m_dataSecLevel = level;
+    m_dataSecLevel = level;
 
-	rt = GetResponseCode(this);
+    rt = GetResponseCode(this);
 
-	if(rt == 0)
-			return OnError(UTE_NO_RESPONSE);        //no response
-	if(rt != 200) {
-		return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
-	}
+    if(rt == 0)
+            return OnError(UTE_NO_RESPONSE);        //no response
+    if(rt != 200) {
+        return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
+    }
 
-	m_wsData.EnableSSL((level == 1));
+    m_wsData.EnableSSL((level == 1));
 
-	return OnError(UTE_SUCCESS);
+    return OnError(UTE_SUCCESS);
 
 }
 
 int CUT_FTPClient::GetDataSecure() {
-	return m_dataSecLevel;
+    return m_dataSecLevel;
 }
 
 int CUT_FTPClient::SetDataPortRange(int min, int max) {
-	m_nDataPortMin = min;
-	m_nDataPortMax = max;
+    m_nDataPortMin = min;
+    m_nDataPortMax = max;
 
-	if (m_nDataPortMin < 1000)
-		m_nDataPortMin = 1000;
-	if (m_nDataPortMin > 65000)
-		m_nDataPortMin = 65000;
+    if (m_nDataPortMin < 1000)
+        m_nDataPortMin = 1000;
+    if (m_nDataPortMin > 65000)
+        m_nDataPortMin = 65000;
 
-	if (m_nDataPortMax < m_nDataPortMin)
-		m_nDataPortMax = m_nDataPortMin+1;
+    if (m_nDataPortMax < m_nDataPortMin)
+        m_nDataPortMax = m_nDataPortMin+1;
 
-	if (m_nDataPortMax > 65001)
-		m_nDataPortMax = 65001;
+    if (m_nDataPortMax > 65001)
+        m_nDataPortMax = 65001;
 
-	m_nDataPort = m_nDataPortMin + GetTickCount()%(m_nDataPortMax-m_nDataPortMin);
+    m_nDataPort = m_nDataPortMin + GetTickCount()%(m_nDataPortMax-m_nDataPortMin);
 
-	return UTE_SUCCESS;
+    return UTE_SUCCESS;
 }
 
 int CUT_FTPClient::GetDataPortRange(int * min, int * max) {
-	if (!min || !max)
-		return UTE_ERROR;
+    if (!min || !max)
+        return UTE_ERROR;
 
-	*min = m_nDataPortMin;
-	*max = m_nDataPortMax;
+    *min = m_nDataPortMin;
+    *max = m_nDataPortMax;
 
-	return UTE_SUCCESS;
+    return UTE_SUCCESS;
 }
 
 /***************************************
@@ -1932,7 +1932,7 @@ GetDirInfo
     Retrieves the current directory infomation
     on the currently connected FTP server.
 Params
-    path							- If NULL current directory, otherwise of given path
+    path                            - If NULL current directory, otherwise of given path
 Return
     UTE_SUCCESS                     - success
     UTE_DATAPORT_FAILED             - data port could not be opened
@@ -1942,14 +1942,14 @@ Return
     UTE_ABORTED                     - aborted
 ****************************************/
 int CUT_FTPClient::GetDirInfo(){
-	return GetDirInfo((LPCSTR)NULL);
+    return GetDirInfo((LPCSTR)NULL);
 }
 #if defined _UNICODE
 int CUT_FTPClient::GetDirInfo(LPCWSTR path){
-	if (path == NULL)
-		return GetDirInfo((LPCSTR)NULL);
-	else
-		return GetDirInfo(AC(path));
+    if (path == NULL)
+        return GetDirInfo((LPCSTR)NULL);
+    else
+        return GetDirInfo(AC(path));
 }
 #endif
 int CUT_FTPClient::GetDirInfo(LPCSTR path){
@@ -1960,12 +1960,12 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
     if (m_nFirewallMode)
         return GetDirInfoPASV(path);
 
-	m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //open up a data port, if the one requested is busy then
     //increment to the next port, try 50 times then fail
     for(loop=0;loop<128;loop++) {
-		if(m_wsData.WaitForConnect((unsigned short)m_nDataPort)==UTE_SUCCESS)
+        if(m_wsData.WaitForConnect((unsigned short)m_nDataPort)==UTE_SUCCESS)
             break;
         m_nDataPort++;
         }
@@ -1988,8 +1988,8 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
     m_nDataPort++;
     //if(m_nDataPort > 32000 || m_nDataPort < 0)
     //    m_nDataPort = 10000;
-    	if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
-		m_nDataPort = m_nDataPortMin;
+        if(m_nDataPort > m_nDataPortMax || m_nDataPort < m_nDataPortMin)
+        m_nDataPort = m_nDataPortMin;
 
     //send the port command
     Send(m_szBuf);
@@ -2004,9 +2004,9 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
 
     //send the list command
     if (path != NULL)
-		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
-	else
-		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
+        _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    else
+        _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
     Send(m_szBuf);
 
     //wait for a connection on the data port
@@ -2018,7 +2018,7 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
         }
 
 
-	  //check for a return of 100 or 200 code
+      //check for a return of 100 or 200 code
     rt = GetResponseCode(this);
     if(rt < 100 || rt >=300) {
         m_wsData.CloseConnection();
@@ -2032,8 +2032,8 @@ int CUT_FTPClient::GetDirInfo(LPCSTR path){
     CUT_DIRINFOA * di = NULL;
     BOOL once = TRUE;
 
-	// v4.2 change to eliminate C4127: conditional expression is constant
-	for(;;) {
+    // v4.2 change to eliminate C4127: conditional expression is constant
+    for(;;) {
         // Check for abortion flag
         if(IsAborted()) {
             m_wsData.CloseConnection();
@@ -2182,9 +2182,9 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.
     if (path != NULL)
-		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
-	else
-		_snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
+        _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST %s\r\n",path);
+    else
+        _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
     Send(m_szBuf);
 
     // connect to the server supplied port to establish the
@@ -2192,7 +2192,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     // connect using a timeout
     if((error = m_wsData.Connect(port, ipAddress, m_nConnectTimeout)) != UTE_SUCCESS) {
         m_wsData.CloseConnection();
-		ClearReceiveBuffer();
+        ClearReceiveBuffer();
         return OnError(error);
         }
 
@@ -2208,9 +2208,9 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     ClearDirInfo();
     CUT_DIRINFOA * di = NULL;
 
-	// v4.2 change to eliminate C4127: conditional expression is constant
-	for (;;) {
-		// Check for abortion flag
+    // v4.2 change to eliminate C4127: conditional expression is constant
+    for (;;) {
+        // Check for abortion flag
         if(IsAborted()) {
             m_wsData.CloseConnection();
             return OnError(UTE_ABORTED);
@@ -2304,13 +2304,13 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::GetDirEntry(int index, LPWSTR entry, int maxlen) {
-	char * entryA = (char*) alloca(maxlen);
-	*entryA = '\0';
-	int result = GetDirEntry(index, entryA, maxlen);
-	if(result == UTE_SUCCESS) {
-		CUT_Str::cvtcpy(entry, maxlen, entryA);
-	}
-	return result;}
+    char * entryA = (char*) alloca(maxlen);
+    *entryA = '\0';
+    int result = GetDirEntry(index, entryA, maxlen);
+    if(result == UTE_SUCCESS) {
+        CUT_Str::cvtcpy(entry, maxlen, entryA);
+    }
+    return result;}
 #endif
 int CUT_FTPClient::GetDirEntry(int index, LPSTR entry, int maxlen) {
 
@@ -2401,7 +2401,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::GetHelp(LPCWSTR param) {
-	return GetHelp(AC(param));}
+    return GetHelp(AC(param));}
 #endif
 int CUT_FTPClient::GetHelp(LPCSTR param) {
 
@@ -2437,7 +2437,7 @@ GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen)
     (including error codes) followed by a text string.  The codes
     are for use by programs and the text is usually intended for
     human users
-    "	The server sends FTP replies over the TELNET connection in response
+    "   The server sends FTP replies over the TELNET connection in response
    to user FTP commands.  The FTP replies constitute the acknowledgment
    or completion code (including errors).  The FTP-server replies are
    formatted for human or program interpretation.  Single line replies
@@ -2521,24 +2521,24 @@ RETURN
 ****************************************/
 int CUT_FTPClient::GetResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
 
-	if (m_cachedResponse) {
-		m_cachedResponse = false;
+    if (m_cachedResponse) {
+        m_cachedResponse = false;
 
-		//copy the rest of the data
-		const char * pbuf = GetMultiLineResponse(0);
-		if(string != NULL && pbuf != NULL) {
-			maxlen--;
-			strncpy(string, &pbuf[4], maxlen);
-			string[maxlen - 1]  =0;
-			}
+        //copy the rest of the data
+        const char * pbuf = GetMultiLineResponse(0);
+        if(string != NULL && pbuf != NULL) {
+            maxlen--;
+            strncpy(string, &pbuf[4], maxlen);
+            string[maxlen - 1]  =0;
+            }
 
-		return m_lastResponseCode;
-	}
+        return m_lastResponseCode;
+    }
 
-	int code = PeekResponseCode(ws, string, maxlen);
-	m_cachedResponse = false;
+    int code = PeekResponseCode(ws, string, maxlen);
+    m_cachedResponse = false;
 
-	return code;
+    return code;
 }
 
 int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) {
@@ -2547,12 +2547,12 @@ int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) 
     //int  once = TRUE;
     char mlCode[5];
 
-	m_cachedResponse = true;
+    m_cachedResponse = true;
 
     m_listResponse.ClearList();
 
     if(ws->ReceiveLine(m_szBuf,sizeof(m_szBuf),m_wsData.GetReceiveTimeOut ()/1000) <= 0) {
-    	m_lastResponseCode = 0;
+        m_lastResponseCode = 0;
         return 0;  //no response
     }
 
@@ -2604,7 +2604,7 @@ int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) 
         string[maxlen - 1]  =0;
         }
 
-	m_lastResponseCode = code;
+    m_lastResponseCode = code;
     return code;
 }
 
@@ -2709,74 +2709,74 @@ index    - index response
 size     - [out] length of response
 
   RETURN
-  UTE_SUCCES			- ok -
-  UTE_NULL_PARAM		- response and/or size is a null pointer
+  UTE_SUCCES            - ok -
+  UTE_NULL_PARAM        - response and/or size is a null pointer
   UTE_INDEX_OUTOFRANGE  - response not found
   UTE_BUFFER_TOO_SHORT  - space in name buffer indicated by maxSize insufficient, realloc
   based on size returned.
-  UTE_OUT_OF_MEMORY		- possible in wide char overload
+  UTE_OUT_OF_MEMORY     - possible in wide char overload
 **************************************************/
-int	CUT_FTPClient::GetLastResponse(LPSTR response, size_t maxSize, size_t *size) {
+int CUT_FTPClient::GetLastResponse(LPSTR response, size_t maxSize, size_t *size) {
 
-	int retval = UTE_SUCCESS;
+    int retval = UTE_SUCCESS;
 
-	if(response == NULL || size == NULL) {
-		retval = UTE_NULL_PARAM;
-	}
-	else {
+    if(response == NULL || size == NULL) {
+        retval = UTE_NULL_PARAM;
+    }
+    else {
 
-		LPCSTR str = GetLastResponse();
+        LPCSTR str = GetLastResponse();
 
-		if(str == NULL) {
-			retval = UTE_INDEX_OUTOFRANGE;
-		}
-		else {
-			*size = strlen(str);
-			if(*size >= maxSize) {
-				++(*size);
-				retval = UTE_BUFFER_TOO_SHORT;
-			}
-			else {
-				strcpy(response, str);
-			}
-		}
-	}
-	return retval;
+        if(str == NULL) {
+            retval = UTE_INDEX_OUTOFRANGE;
+        }
+        else {
+            *size = strlen(str);
+            if(*size >= maxSize) {
+                ++(*size);
+                retval = UTE_BUFFER_TOO_SHORT;
+            }
+            else {
+                strcpy(response, str);
+            }
+        }
+    }
+    return retval;
 }
 #if defined _UNICODE
-int	CUT_FTPClient::GetLastResponse(LPWSTR response, size_t maxSize, size_t *size) {
+int CUT_FTPClient::GetLastResponse(LPWSTR response, size_t maxSize, size_t *size) {
 
-	int retval;
+    int retval;
 
-	if(maxSize > 0) {
-		char * responseA = new char [maxSize];
+    if(maxSize > 0) {
+        char * responseA = new char [maxSize];
 
-		if(responseA != NULL) {
-			retval = GetLastResponse( responseA, maxSize, size);
+        if(responseA != NULL) {
+            retval = GetLastResponse( responseA, maxSize, size);
 
-			if(retval == UTE_SUCCESS) {
-				CUT_Str::cvtcpy(response, maxSize, responseA);
-			}
-			delete [] responseA;
-		}
-		else {
-			retval = UTE_OUT_OF_MEMORY;
-		}
-	}
-	else {
-		if(size == NULL) (retval = UTE_NULL_PARAM);
-		else {
-			LPCSTR lpStr = GetLastResponse();
-			if(lpStr != NULL) {
-				*size = strlen(lpStr)+1;
-				retval = UTE_BUFFER_TOO_SHORT;
-			}
-			else {
-				retval = UTE_INDEX_OUTOFRANGE;
-			}
-		}
-	}
-	return retval;
+            if(retval == UTE_SUCCESS) {
+                CUT_Str::cvtcpy(response, maxSize, responseA);
+            }
+            delete [] responseA;
+        }
+        else {
+            retval = UTE_OUT_OF_MEMORY;
+        }
+    }
+    else {
+        if(size == NULL) (retval = UTE_NULL_PARAM);
+        else {
+            LPCSTR lpStr = GetLastResponse();
+            if(lpStr != NULL) {
+                *size = strlen(lpStr)+1;
+                retval = UTE_BUFFER_TOO_SHORT;
+            }
+            else {
+                retval = UTE_INDEX_OUTOFRANGE;
+            }
+        }
+    }
+    return retval;
 
 }
 #endif
@@ -2859,11 +2859,11 @@ void CUT_FTPClient::GetInfoInDOSFormat( CUT_DIRINFOA * di){
         di->hour = (int)value;
         //get the minute portion of the file date
         CUT_StrMethods::ParseString(buf,":",1,dateBuf,sizeof(dateBuf));
-    	if (dateBuf[2] =='P')	//AM or PM Digit
-			di->hour +=12;
+        if (dateBuf[2] =='P')   //AM or PM Digit
+            di->hour +=12;
 
-		//strncpy(dateBuf,&dateBuf[3],2);
-	    dateBuf[2] = '\0';
+        //strncpy(dateBuf,&dateBuf[3],2);
+        dateBuf[2] = '\0';
         di->minute = atoi(dateBuf);
 }
 /***********************************************
@@ -2886,28 +2886,28 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     time_t      timer;
     struct tm   *tblock;
     long        value;
-	int			linksIncluded = 0;
+    int         linksIncluded = 0;
     di->fileName[0] = '\0';
 
     // Get the file name
     int nSpaces = 0;
     loop = 0;
 
-	// check if the links or blocks attribute is included in the server answer
-	if (CUT_StrMethods::GetParseStringPieces (m_szBuf," ") > 8)
-		linksIncluded = 0 ;
-	else
-		linksIncluded = -1;
+    // check if the links or blocks attribute is included in the server answer
+    if (CUT_StrMethods::GetParseStringPieces (m_szBuf," ") > 8)
+        linksIncluded = 0 ;
+    else
+        linksIncluded = -1;
 
-	while(m_szBuf[loop] != 0) {
+    while(m_szBuf[loop] != 0) {
         if(m_szBuf[loop] == ' ') {
             ++ nSpaces;
-			int spaceCounter = 0;
+            int spaceCounter = 0;
             while(m_szBuf[loop] == ' ')
-			{
-				spaceCounter++;
-				++ loop;
-			}
+            {
+                spaceCounter++;
+                ++ loop;
+            }
 
             }
         else if(nSpaces == 8 +linksIncluded) {
@@ -2923,7 +2923,7 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')
         di->isDir = TRUE;
     else if (m_szBuf[0]=='l' || m_szBuf[0] =='L')
-		di->isDir = 2;	//WARNING: HACK!
+        di->isDir = 2;  //WARNING: HACK!
     else
         di->isDir = FALSE;
 
@@ -2963,11 +2963,11 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
         //get the hour
         CUT_StrMethods::ParseString(buf,":",0,&value);
         di->hour = (int)value;
-		// So all of the time shown is
+        // So all of the time shown is
         //get the minute
         CUT_StrMethods::ParseString(buf,":",1,&value);
         di->minute = (int)value;
-		// So all of the time shown is
+        // So all of the time shown is
         }
     else
         di->year = atoi(buf);
@@ -3010,74 +3010,74 @@ index    - index response
 size     - [out] length of response
 
   RETURN
-  UTE_SUCCES			- ok -
-  UTE_NULL_PARAM		- response and/or size is a null pointer
+  UTE_SUCCES            - ok -
+  UTE_NULL_PARAM        - response and/or size is a null pointer
   UTE_INDEX_OUTOFRANGE  - response not found
   UTE_BUFFER_TOO_SHORT  - space in name buffer indicated by maxSize insufficient, realloc
   based on size returned.
-  UTE_OUT_OF_MEMORY		- possible in wide char overload
+  UTE_OUT_OF_MEMORY     - possible in wide char overload
 **************************************************/
-int	CUT_FTPClient::GetMultiLineResponse(LPSTR response, size_t maxSize, int index, size_t *size) {
+int CUT_FTPClient::GetMultiLineResponse(LPSTR response, size_t maxSize, int index, size_t *size) {
 
-	int retval = UTE_SUCCESS;
+    int retval = UTE_SUCCESS;
 
-	if(response == NULL || size == NULL) {
-		retval = UTE_NULL_PARAM;
-	}
-	else {
+    if(response == NULL || size == NULL) {
+        retval = UTE_NULL_PARAM;
+    }
+    else {
 
-		LPCSTR str = GetMultiLineResponse(index);
+        LPCSTR str = GetMultiLineResponse(index);
 
-		if(str == NULL) {
-			retval = UTE_INDEX_OUTOFRANGE;
-		}
-		else {
-			*size = strlen(str);
-			if(*size >= maxSize) {
-				++(*size);
-				retval = UTE_BUFFER_TOO_SHORT;
-			}
-			else {
-				strcpy(response, str);
-			}
-		}
-	}
-	return retval;
+        if(str == NULL) {
+            retval = UTE_INDEX_OUTOFRANGE;
+        }
+        else {
+            *size = strlen(str);
+            if(*size >= maxSize) {
+                ++(*size);
+                retval = UTE_BUFFER_TOO_SHORT;
+            }
+            else {
+                strcpy(response, str);
+            }
+        }
+    }
+    return retval;
 }
 #if defined _UNICODE
-int	CUT_FTPClient::GetMultiLineResponse(LPWSTR response, size_t maxSize, int index, size_t *size) {
+int CUT_FTPClient::GetMultiLineResponse(LPWSTR response, size_t maxSize, int index, size_t *size) {
 
-	int retval;
+    int retval;
 
-	if(maxSize > 0) {
-		char * responseA = new char [maxSize];
+    if(maxSize > 0) {
+        char * responseA = new char [maxSize];
 
-		if(responseA != NULL) {
-			retval = GetMultiLineResponse( responseA, maxSize, index, size);
+        if(responseA != NULL) {
+            retval = GetMultiLineResponse( responseA, maxSize, index, size);
 
-			if(retval == UTE_SUCCESS) {
-				CUT_Str::cvtcpy(response, maxSize, responseA);
-			}
-			delete [] responseA;
-		}
-		else {
-			retval = UTE_OUT_OF_MEMORY;
-		}
-	}
-	else {
-		if(size == NULL) (retval = UTE_NULL_PARAM);
-		else {
-			LPCSTR lpStr = GetMultiLineResponse(index);
-			if(lpStr != NULL) {
-				*size = strlen(lpStr)+1;
-				retval = UTE_BUFFER_TOO_SHORT;
-			}
-			else {
-				retval = UTE_INDEX_OUTOFRANGE;
-			}
-		}
-	}
-	return retval;
+            if(retval == UTE_SUCCESS) {
+                CUT_Str::cvtcpy(response, maxSize, responseA);
+            }
+            delete [] responseA;
+        }
+        else {
+            retval = UTE_OUT_OF_MEMORY;
+        }
+    }
+    else {
+        if(size == NULL) (retval = UTE_NULL_PARAM);
+        else {
+            LPCSTR lpStr = GetMultiLineResponse(index);
+            if(lpStr != NULL) {
+                *size = strlen(lpStr)+1;
+                retval = UTE_BUFFER_TOO_SHORT;
+            }
+            else {
+                retval = UTE_INDEX_OUTOFRANGE;
+            }
+        }
+    }
+    return retval;
 }
 #endif
 
@@ -3156,7 +3156,7 @@ Return
 ****************************************/
 #if defined _UNICODE
 int CUT_FTPClient::Quote(LPCWSTR command) {
-	return Quote(AC(command));}
+    return Quote(AC(command));}
 #endif
 int CUT_FTPClient::Quote(LPCSTR command) {
 
@@ -3179,136 +3179,136 @@ int CUT_FTPClient::Quote(LPCSTR command) {
 /**************************************************************
 SocketOnConnected(SOCKET s, const char *lpszName)
 
-		If the security is enabled then perform te SSL neogotiation
-		otherwise just return a success and let the plain text FTP handles
-		the comunication
+        If the security is enabled then perform te SSL neogotiation
+        otherwise just return a success and let the plain text FTP handles
+        the comunication
 
-		To let the server know that we are looking for SSL or TLS we need to
-		send the following command
-		FEAT
-		The Feature negotiation mechanism for the File Transfer Protocol
+        To let the server know that we are looking for SSL or TLS we need to
+        send the following command
+        FEAT
+        The Feature negotiation mechanism for the File Transfer Protocol
 
-		To ask the server for SSL or TLS negotiation
-		we will send the AUTH command.
+        To ask the server for SSL or TLS negotiation
+        we will send the AUTH command.
 
-		A parameter for the AUTH command to indicate that TLS is
-		required.  It is recommended that 'TLS', 'TLS-C', 'SSL' and 'TLS-P'
-		are acceptable, and mean the following :-
+        A parameter for the AUTH command to indicate that TLS is
+        required.  It is recommended that 'TLS', 'TLS-C', 'SSL' and 'TLS-P'
+        are acceptable, and mean the following :-
 
-		 'TLS' or 'TLS-C' - the TLS protocol or the SSL protocol will be
-			negotiated on the control connection.  The default protection
-			setting for the Data connection is 'Clear'.
+         'TLS' or 'TLS-C' - the TLS protocol or the SSL protocol will be
+            negotiated on the control connection.  The default protection
+            setting for the Data connection is 'Clear'.
 
-			'SSL' or 'TLS-P' - the TLS protocol or the SSL protocol will be
-			negotiated on the control connection.  The default protection
-			setting for the Data connection is 'Private'.  This is primarily
-			for backward compatibility.
+            'SSL' or 'TLS-P' - the TLS protocol or the SSL protocol will be
+            negotiated on the control connection.  The default protection
+            setting for the Data connection is 'Private'.  This is primarily
+            for backward compatibility.
 
-	Notice that we will first send a TLS P to select The highest implementation.
-	the server might response with the response
-	503 unknown security mechanism
+    Notice that we will first send a TLS P to select The highest implementation.
+    the server might response with the response
+    503 unknown security mechanism
 
-	if this happened we will issue an Auth SSL command.
+    if this happened we will issue an Auth SSL command.
 
 Param:
-	SOCKET s		- The newly created socket
-	lpszName		- apointer to the host name we are attempting to connect to
+    SOCKET s        - The newly created socket
+    lpszName        - apointer to the host name we are attempting to connect to
 
 
 Return:
-	UTE_NO_RESPONSE - Server did not response to our command
-	UTE_CONNECT_FAIL_NO_SSL_SUPPORT - Server does not support SSL.
-	UTE_CONNECT_FAILED	-	 The connection have failed
-	security  errors   - This function may fail with other error
-			UTE_LOAD_SECURITY_LIBRARIES_FAILED
-			UTE_OUT_OF_MEMORY
-			UTE_FAILED_TO_GET_SECURITY_STREAM_SIZE
-			UTE_OUT_OF_MEMORY
-			UTE_FAILED_TO_QUERY_CERTIFICATE
-			UTE_NULL_PARAM
-			UTE_PARAMETER_INVALID_VALUE
-			UTE_FAILED_TO_GET_CERTIFICATE_CHAIN
-			UTE_FAILED_TO_VERIFY_CERTIFICATE_CHAIN
-			UTE_FAILED_TO_VERIFY_CERTIFICATE_TRUST
+    UTE_NO_RESPONSE - Server did not response to our command
+    UTE_CONNECT_FAIL_NO_SSL_SUPPORT - Server does not support SSL.
+    UTE_CONNECT_FAILED  -    The connection have failed
+    security  errors   - This function may fail with other error
+            UTE_LOAD_SECURITY_LIBRARIES_FAILED
+            UTE_OUT_OF_MEMORY
+            UTE_FAILED_TO_GET_SECURITY_STREAM_SIZE
+            UTE_OUT_OF_MEMORY
+            UTE_FAILED_TO_QUERY_CERTIFICATE
+            UTE_NULL_PARAM
+            UTE_PARAMETER_INVALID_VALUE
+            UTE_FAILED_TO_GET_CERTIFICATE_CHAIN
+            UTE_FAILED_TO_VERIFY_CERTIFICATE_CHAIN
+            UTE_FAILED_TO_VERIFY_CERTIFICATE_TRUST
 
 **************************************************************/
 int CUT_FTPClient::SocketOnConnected(SOCKET /*s*/, const char * /*lpszName*/){
 
-	int rt = UTE_SUCCESS;
+    int rt = UTE_SUCCESS;
 
-	bool performAuth = (m_sMode == FTPES);
-	bool performProt = (m_sMode != FTP);
+    bool performAuth = (m_sMode == FTPES);
+    bool performProt = (m_sMode != FTP);
 
-	m_dataSecLevel = performProt?1:0;	//do not call the function yet, let FTPConnecth andle that after authentication
+    m_dataSecLevel = performProt?1:0;   //do not call the function yet, let FTPConnecth andle that after authentication
 
-	if (m_sMode == FTPS) {	//just connect ssl
-		rt = ConnectSSL();
-		if (rt != UTE_SUCCESS)
-			return OnError(rt);
-	}
+    if (m_sMode == FTPS) {  //just connect ssl
+        rt = ConnectSSL();
+        if (rt != UTE_SUCCESS)
+            return OnError(rt);
+    }
 
-	{
-		// if the security is enabled then
-		// Attempt to send the auth command
-		rt = GetResponseCode(this);
+    {
+        // if the security is enabled then
+        // Attempt to send the auth command
+        rt = GetResponseCode(this);
 
-		if(rt == 0)
-			return OnError(UTE_NO_RESPONSE);     //no response
+        if(rt == 0)
+            return OnError(UTE_NO_RESPONSE);     //no response
 
-		if(rt < 200 || rt > 399)
-			return OnError(UTE_CONNECT_FAILED);      //negative response
+        if(rt < 200 || rt > 399)
+            return OnError(UTE_CONNECT_FAILED);      //negative response
 
 
-		/*
-		// Check for abortion flag
-		if(IsAborted())
-		{
-			return OnError(UTE_ABORTED);
-		}
-		*/
-	}
+        /*
+        // Check for abortion flag
+        if(IsAborted())
+        {
+            return OnError(UTE_ABORTED);
+        }
+        */
+    }
 
-	if (performAuth)
-	{
-		Send("AUTH TLS\r\n");									// Send the TLS negotiation command
+    if (performAuth)
+    {
+        Send("AUTH TLS\r\n");                                   // Send the TLS negotiation command
 
-		rt = GetResponseCode(this);
+        rt = GetResponseCode(this);
 
-		if(rt == 0)
-			return OnError(UTE_NO_RESPONSE);					//no response
+        if(rt == 0)
+            return OnError(UTE_NO_RESPONSE);                    //no response
 
-		// check the response
-		if(rt < 200 || rt > 399)
-		{
-			Send("AUTH SSL\r\n");								// Send the TLS negotiation command
+        // check the response
+        if(rt < 200 || rt > 399)
+        {
+            Send("AUTH SSL\r\n");                               // Send the TLS negotiation command
 
-			rt = GetResponseCode(this);
+            rt = GetResponseCode(this);
 
-			if(rt == 0)
-				return OnError(UTE_NO_RESPONSE);        //no response
+            if(rt == 0)
+                return OnError(UTE_NO_RESPONSE);        //no response
 
-			if(rt < 200 || rt > 399)
-			{
-				return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
-			}
-			else																// If the SSL succeded then set the protocol to SSL
-			{
-				SetSecurityMode(CUT_WSClient::SSLv3);
-				m_wsData.SetSecurityMode(CUT_WSClient::SSLv3);
-				rt = ConnectSSL();
-			}
-		}
-		else
-		{
-			//SSLv23 is the default starting with TLS 1.2 -> SSLV3
-			SetSecurityMode(CUT_WSClient::SSLv23);
-			m_wsData.SetSecurityMode(CUT_WSClient::SSLv23);
-			rt = ConnectSSL();
-		}
+            if(rt < 200 || rt > 399)
+            {
+                return OnError(UTE_CONNECT_FAIL_NO_SSL_SUPPORT);        //negative response
+            }
+            else                                                                // If the SSL succeded then set the protocol to SSL
+            {
+                SetSecurityMode(CUT_WSClient::SSLv3);
+                m_wsData.SetSecurityMode(CUT_WSClient::SSLv3);
+                rt = ConnectSSL();
+            }
+        }
+        else
+        {
+            //SSLv23 is the default starting with TLS 1.2 -> SSLV3
+            SetSecurityMode(CUT_WSClient::SSLv23);
+            m_wsData.SetSecurityMode(CUT_WSClient::SSLv23);
+            rt = ConnectSSL();
+        }
 
-		if (rt != UTE_SUCCESS)
-			return OnError(rt);
-	}
+        if (rt != UTE_SUCCESS)
+            return OnError(rt);
+    }
 
-	return OnError(UTE_SUCCESS);
+    return OnError(UTE_SUCCESS);
 }

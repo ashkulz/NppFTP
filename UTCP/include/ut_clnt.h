@@ -62,75 +62,75 @@ Add OpenSSL secure functionality
 class CUT_Socket
 {
 public:
-	CUT_Socket() {}
-	virtual ~CUT_Socket() {}
+    CUT_Socket() {}
+    virtual ~CUT_Socket() {}
 
-	virtual int SocketOnConnected(SOCKET s, const char * lpszName)
-	{
-		UNREFERENCED_PARAMETER(s);
-		UNREFERENCED_PARAMETER(lpszName);
-		return UTE_SUCCESS;
-	}
+    virtual int SocketOnConnected(SOCKET s, const char * lpszName)
+    {
+        UNREFERENCED_PARAMETER(s);
+        UNREFERENCED_PARAMETER(lpszName);
+        return UTE_SUCCESS;
+    }
 
-	virtual int SocketClose(SOCKET s)
-	{ return closesocket(s); }
+    virtual int SocketClose(SOCKET s)
+    { return closesocket(s); }
 
-	virtual int SocketShutDown(SOCKET s, int how)
-	{ return shutdown(s, how); }
+    virtual int SocketShutDown(SOCKET s, int how)
+    { return shutdown(s, how); }
 
-	virtual int SocketRecv(SOCKET s, char FAR* buf, int len, int flags)
-	{ return  recv(s, buf, len, flags);	}
+    virtual int SocketRecv(SOCKET s, char FAR* buf, int len, int flags)
+    { return  recv(s, buf, len, flags); }
 
-	virtual int SocketSend(SOCKET s, char FAR* buf, int len, int flags)
-	{ return send(s, buf, len, flags); }
+    virtual int SocketSend(SOCKET s, char FAR* buf, int len, int flags)
+    { return send(s, buf, len, flags); }
 
-	virtual BOOL SocketIsDataWaiting(SOCKET s) const
-	{
-		unsigned long val;
-		if (ioctlsocket(s, FIONREAD, &val) != 0)
-			return FALSE;
-		return (val > 0) ? TRUE : FALSE;
-	}
+    virtual BOOL SocketIsDataWaiting(SOCKET s) const
+    {
+        unsigned long val;
+        if (ioctlsocket(s, FIONREAD, &val) != 0)
+            return FALSE;
+        return (val > 0) ? TRUE : FALSE;
+    }
 
-	virtual int SocketWaitForReceive(SOCKET s, long secs, long uSecs)
-	{
-		fd_set readSet;
-		FD_ZERO(&readSet);
+    virtual int SocketWaitForReceive(SOCKET s, long secs, long uSecs)
+    {
+        fd_set readSet;
+        FD_ZERO(&readSet);
 
-		FD_SET(s, &readSet);
+        FD_SET(s, &readSet);
 
-		struct timeval tv;
-		tv.tv_sec = secs;
-		tv.tv_usec = uSecs;
+        struct timeval tv;
+        tv.tv_sec = secs;
+        tv.tv_usec = uSecs;
 
-		// Wait up to the specified time to see if data is avail
-		if( select(-1,&readSet,NULL,NULL,&tv)!= 1)
-			return UTE_ERROR;
+        // Wait up to the specified time to see if data is avail
+        if( select(-1,&readSet,NULL,NULL,&tv)!= 1)
+            return UTE_ERROR;
 
-		return UTE_SUCCESS;
-	}
+        return UTE_SUCCESS;
+    }
 
 };
 
 // Define base class for the client
 #ifndef CUT_CLIENT_BASE_CLASS
-	#define CUT_CLIENT_BASE_CLASS	CUT_Socket
+    #define CUT_CLIENT_BASE_CLASS   CUT_Socket
 #endif
 
 class CUT_WSClient : public CUT_CLIENT_BASE_CLASS
 {
 public:
-	enum SSLMode {NONE, TLS, SSLv2, SSLv3, SSLv23};
-	virtual int EnableSSL(bool enable);
+    enum SSLMode {NONE, TLS, SSLv2, SSLv3, SSLv23};
+    virtual int EnableSSL(bool enable);
 
-	virtual int SetSecurityMode(SSLMode mode);
+    virtual int SetSecurityMode(SSLMode mode);
 
-	virtual int ConnectSSL();
-	virtual int DisconnectSSL();
-	virtual int ResetSSL();
+    virtual int ConnectSSL();
+    virtual int DisconnectSSL();
+    virtual int ResetSSL();
 protected:
-	virtual int OnLoadCertificates(SSL_CTX * ctx);
-	virtual int OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult);	//return UTE_ERROR if certificate not accepted, UTE_SUCCESS if accepted. certificate can be NULL
+    virtual int OnLoadCertificates(SSL_CTX * ctx);
+    virtual int OnSSLCertificate(const SSL * ssl, const X509* certificate, int verifyResult);   //return UTE_ERROR if certificate not accepted, UTE_SUCCESS if accepted. certificate can be NULL
 protected:
     ////////////////////////////////////////////////////////////////////////////
     //
@@ -164,24 +164,24 @@ protected:
 
     BYTE m_hostent[MAXGETHOSTSTRUCT];
 
-	////////////////////////////////////////////////////////////////////////////
-	//
-	// SSL specific
-	//
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // SSL specific
+    //
 
-	bool			m_isSSL;
-	bool			m_SSLconnected;
-	SSLMode			m_sslMode;
+    bool            m_isSSL;
+    bool            m_SSLconnected;
+    SSLMode         m_sslMode;
 
-	const SSL_METHOD *	m_meth;
-	SSL_CTX *		m_ctx;
-	SSL *			m_ssl;
-	SSL_SESSION *	m_reuseSession;
+    const SSL_METHOD *  m_meth;
+    SSL_CTX *       m_ctx;
+    SSL *           m_ssl;
+    SSL_SESSION *   m_reuseSession;
 
-	virtual int SSLSend(LPCSTR data, int len);
-	virtual int SSLReceive(LPSTR buffer, int maxSize, bool peek = false);
-	virtual SSL_SESSION * SSLGetCurrentSession();
-	virtual int SSLSetReuseSession(SSL_SESSION * reuseSession);	//use NULL to disable
+    virtual int SSLSend(LPCSTR data, int len);
+    virtual int SSLReceive(LPSTR buffer, int maxSize, bool peek = false);
+    virtual SSL_SESSION * SSLGetCurrentSession();
+    virtual int SSLSetReuseSession(SSL_SESSION * reuseSession); //use NULL to disable
 
     // This function is used to process async winsock
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -274,10 +274,10 @@ public:
     int IsIPAddress(LPCWSTR szAddress) const;
 #endif
 
-		// added for v4.2 - winsock equivalent takes only char
-		static unsigned long Inet_Addr(LPCSTR string);
+        // added for v4.2 - winsock equivalent takes only char
+        static unsigned long Inet_Addr(LPCSTR string);
 #if defined _UNICODE
-		static unsigned long Inet_Addr(LPCWSTR string);
+        static unsigned long Inet_Addr(LPCWSTR string);
 #endif // _UNICODE
 
     // Checks to see if a connection is still alive
@@ -390,10 +390,10 @@ public:
     //  it will return CUT_SUCCESS
     virtual int WaitForSend(long secs, long uSecs);
 
-	// Receive functions
+    // Receive functions
     virtual int Receive(LPSTR data, int maxLen, int timeOut = 0);
 
-	// Receive entire blob of data
+    // Receive entire blob of data
     virtual int ReceiveBlob(LPBYTE data, int dataLen, int timeOut = 0);
 
     // Receive from the receive buffer of the connected socket to a data source

@@ -162,18 +162,18 @@ public:
     LPCTSTR  GetTimeStampFormat() const;
 
     //operations
-	int     ClearHistory();
+    int     ClearHistory();
 
     int     AddLine(LPCTSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AddStampedLine(LPCTSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AddStampedLineT(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog, time_t time = 0);
     int     AppendToLine(LPCTSTR string,BOOLEAN addToLog = TRUE);
 
-    int		CopyToClipboard();
+    int     CopyToClipboard();
 
 #if defined _UNICODE
-	// some char based protocol classes will send server responses etc. as LPSTRs in a _UNICODE build. These
-	// overloads can convert params and call the wide char versions.
+    // some char based protocol classes will send server responses etc. as LPSTRs in a _UNICODE build. These
+    // overloads can convert params and call the wide char versions.
     int     AddLine(LPCSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AddStampedLine(LPCSTR string, COLORREF TextColor = 0xFFFFFFFF, COLORREF BackColor = 0xFFFFFFFF, BOOLEAN addToLog = TRUE);
     int     AppendToLine(LPCSTR string,BOOLEAN addToLog = TRUE);
@@ -204,7 +204,7 @@ static LPCTSTR S(LPCTSTR lpszFormat, ...)
     va_start( marker, lpszFormat);
 
     // Write formatted output using a pointer to a list of arguments
-	CUT_Str::sntprintf(szSBuffer,sizeof(szSBuffer)-1, sizeof(szSBuffer)-1, lpszFormat, marker);
+    CUT_Str::sntprintf(szSBuffer,sizeof(szSBuffer)-1, sizeof(szSBuffer)-1, lpszFormat, marker);
     // Reset variable arguments
     va_end( marker );
 

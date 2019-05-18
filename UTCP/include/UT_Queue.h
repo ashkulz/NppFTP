@@ -4,8 +4,8 @@
 //
 //  Purpose:
 //
-//		CUT_Queue		- Queue abstract class
-//		CUT_FIFO_Queue	- FIFO queue
+//      CUT_Queue       - Queue abstract class
+//      CUT_FIFO_Queue  - FIFO queue
 //
 // =================================================================
 // Ultimate TCP/IP v4.2
@@ -27,76 +27,76 @@ Remove pragma statements
 #define IncludeCUT_Queue
 
 // =================================================================
-//	CUT_Queue abstract class
+//  CUT_Queue abstract class
 //
-//	Base queue class
+//  Base queue class
 // =================================================================
 class CUT_Queue {
 
-	public:
+    public:
 
-		CUT_Queue() {}
-		virtual ~CUT_Queue() {}
+        CUT_Queue() {}
+        virtual ~CUT_Queue() {}
 
-		public:
+        public:
 
-		// Return the amount of data in the queue
-		virtual int GetDataSize() = 0;
+        // Return the amount of data in the queue
+        virtual int GetDataSize() = 0;
 
-		// Return the amount of free space in the queue
-		virtual int GetFreeSize() = 0;
+        // Return the amount of free space in the queue
+        virtual int GetFreeSize() = 0;
 
-		// Read data from the queue
-		virtual int Read(LPBYTE buffer, unsigned int count) = 0;
+        // Read data from the queue
+        virtual int Read(LPBYTE buffer, unsigned int count) = 0;
 
-		// Read data from the queue without moving the read pointer
-		virtual int Peek(LPBYTE buffer, unsigned int count) = 0;
+        // Read data from the queue without moving the read pointer
+        virtual int Peek(LPBYTE buffer, unsigned int count) = 0;
 
-		// Write data to the queue
-		virtual int Write(LPBYTE buffer, unsigned int count) = 0;
+        // Write data to the queue
+        virtual int Write(LPBYTE buffer, unsigned int count) = 0;
 } ;
 
 
 // =================================================================
-//	CUT_FIFO_Queue class
+//  CUT_FIFO_Queue class
 //
-//	FIFO queue class based on first-in-first-out set with separate
+//  FIFO queue class based on first-in-first-out set with separate
 //  read and write pointers.
 // =================================================================
 class CUT_FIFO_Queue : public CUT_Queue {
 
-	protected:
+    protected:
 
-		int m_cbBuffer;
-		int m_cbGrow;
-		LPBYTE m_pbBuffer;
-		int m_iReadPointer;
-		int m_iWritePointer;
+        int m_cbBuffer;
+        int m_cbGrow;
+        LPBYTE m_pbBuffer;
+        int m_iReadPointer;
+        int m_iWritePointer;
 
-	public:
+    public:
 
-		CUT_FIFO_Queue(unsigned int size, unsigned int growSize = 0) ;
-		virtual ~CUT_FIFO_Queue() ;
+        CUT_FIFO_Queue(unsigned int size, unsigned int growSize = 0) ;
+        virtual ~CUT_FIFO_Queue() ;
 
-		public:
+        public:
 
-		// Return the amount of data in the queue
-		virtual int GetDataSize();
+        // Return the amount of data in the queue
+        virtual int GetDataSize();
 
-		// Return the amount of free space in the queue
-		virtual int GetFreeSize();
+        // Return the amount of free space in the queue
+        virtual int GetFreeSize();
 
-		// Grow the queue (increase free space in the queue)
-		virtual bool Grow() ;
+        // Grow the queue (increase free space in the queue)
+        virtual bool Grow() ;
 
-		// Read data from the queue
-		virtual int Read(LPBYTE pbBuffer, unsigned int count);
+        // Read data from the queue
+        virtual int Read(LPBYTE pbBuffer, unsigned int count);
 
-		// Read data from the queue without moving the read pointer
-		virtual int Peek(LPBYTE buffer, unsigned int count);
+        // Read data from the queue without moving the read pointer
+        virtual int Peek(LPBYTE buffer, unsigned int count);
 
-		// Write data to the queue
-		virtual int Write(LPBYTE pbBuffer, unsigned int count);
+        // Write data to the queue
+        virtual int Write(LPBYTE pbBuffer, unsigned int count);
 } ;
 
 #endif

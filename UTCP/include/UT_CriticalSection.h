@@ -4,7 +4,7 @@
 //  
 //  Purpose:
 //
-//	  Critical section helper classes
+//    Critical section helper classes
 //       
 // ===================================================================
 // Ultimate TCP/IP v4.2
@@ -25,24 +25,24 @@
 class CUT_InitCriticalSection
 {
 public:
-	CUT_InitCriticalSection()
-	{
-		InitializeCriticalSection(&m_CriticalSection);
-	}
-	
-	~CUT_InitCriticalSection()
-	{
-		DeleteCriticalSection(&m_CriticalSection);
-	}
+    CUT_InitCriticalSection()
+    {
+        InitializeCriticalSection(&m_CriticalSection);
+    }
+    
+    ~CUT_InitCriticalSection()
+    {
+        DeleteCriticalSection(&m_CriticalSection);
+    }
 
-	operator LPCRITICAL_SECTION()
-	{
-		return &m_CriticalSection;
-	}
+    operator LPCRITICAL_SECTION()
+    {
+        return &m_CriticalSection;
+    }
 
 private:
 
-	CRITICAL_SECTION m_CriticalSection;
+    CRITICAL_SECTION m_CriticalSection;
 };
 
 
@@ -52,28 +52,28 @@ private:
 class CUT_CriticalSection
 {
 public:
-	CUT_CriticalSection(LPCRITICAL_SECTION lpCriticalSection) : m_lpCriticalSection(lpCriticalSection) 
-	{
-		EnterCriticalSection(lpCriticalSection);
-	}
-	
-	~CUT_CriticalSection()
-	{
-		Leave();
-	}
+    CUT_CriticalSection(LPCRITICAL_SECTION lpCriticalSection) : m_lpCriticalSection(lpCriticalSection) 
+    {
+        EnterCriticalSection(lpCriticalSection);
+    }
+    
+    ~CUT_CriticalSection()
+    {
+        Leave();
+    }
 
-	void Leave()
-	{
-		if(m_lpCriticalSection != NULL)
-		{
-			LeaveCriticalSection(m_lpCriticalSection);
-			m_lpCriticalSection = NULL;
-		}
-	}
+    void Leave()
+    {
+        if(m_lpCriticalSection != NULL)
+        {
+            LeaveCriticalSection(m_lpCriticalSection);
+            m_lpCriticalSection = NULL;
+        }
+    }
 
 private:
 
-	LPCRITICAL_SECTION m_lpCriticalSection;
+    LPCRITICAL_SECTION m_lpCriticalSection;
 
 };
 

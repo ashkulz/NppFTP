@@ -60,7 +60,7 @@ CUH_Control::CUH_Control(){
     m_margin        = 2;
 
     //setup the font
-	m_font = NULL;
+    m_font = NULL;
     SetFont(NULL);
 
     //history list variables
@@ -263,10 +263,10 @@ LRESULT CALLBACK CUH_Control::WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARA
     //call the functions that match in incoming message
     if(_this != NULL){
         switch(message){
-			case WM_KEYDOWN:
-				if(_this->OnKeyDown((int)wParam) == TRUE)
-					return 0;
-				break;
+            case WM_KEYDOWN:
+                if(_this->OnKeyDown((int)wParam) == TRUE)
+                    return 0;
+                break;
             case WM_PAINT:
                 _this->OnPaint();
                 return 0;
@@ -321,7 +321,7 @@ void CUH_Control::OnPaint(){
     RECT rect,rect2;
     GetClientRect(m_hWnd,&rect);
     CopyRect(&rect2,&rect);
-	UINT	nFormat;
+    UINT    nFormat;
 
     //get hte device context
     PAINTSTRUCT ps;
@@ -333,10 +333,10 @@ void CUH_Control::OnPaint(){
 
     if(m_historyList != NULL){
 
-		// Enter into a critical section
-		#ifdef UH_THREADSAFE
-		EnterCriticalSection(&m_criticalSection);
-		#endif
+        // Enter into a critical section
+        #ifdef UH_THREADSAFE
+        EnterCriticalSection(&m_criticalSection);
+        #endif
 
         //if the scrollbar range is zero then draw from the top
         if(m_vScrollRange ==0){
@@ -347,25 +347,25 @@ void CUH_Control::OnPaint(){
             for(int t = m_HLEndPos; t >= 0  && next != NULL; t--){
                 rect2.bottom += m_fontHeight;
 
-				::SetTextColor(dc, (next->m_textColor == 0xFFFFFFFF) ? m_textColor : next->m_textColor);
+                ::SetTextColor(dc, (next->m_textColor == 0xFFFFFFFF) ? m_textColor : next->m_textColor);
                 SetBkColor(dc, (next->m_backColor == 0xFFFFFFFF) ? m_backColor : next->m_backColor);
 
-				ExtTextOut(dc,0,0,ETO_CLIPPED|ETO_OPAQUE, &rect2, NULL, 0,NULL);
-				RECT	rect3;
-				CopyRect(&rect3, &rect2);
+                ExtTextOut(dc,0,0,ETO_CLIPPED|ETO_OPAQUE, &rect2, NULL, 0,NULL);
+                RECT    rect3;
+                CopyRect(&rect3, &rect2);
 
-				if(m_alignment == TA_CENTER) {
-					rect3.left += margin/2;
-					nFormat = DT_CENTER;
-					}
-				else if(m_alignment == TA_RIGHT) {
-					rect3.right -= margin;
-					nFormat = DT_RIGHT;
-					}
-				else {
-					rect3.left += margin;
-					nFormat = DT_LEFT;
-					}
+                if(m_alignment == TA_CENTER) {
+                    rect3.left += margin/2;
+                    nFormat = DT_CENTER;
+                    }
+                else if(m_alignment == TA_RIGHT) {
+                    rect3.right -= margin;
+                    nFormat = DT_RIGHT;
+                    }
+                else {
+                    rect3.left += margin;
+                    nFormat = DT_LEFT;
+                    }
 
                 DrawText(dc, next->m_string, next->m_len, &rect3, DT_EXPANDTABS | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | nFormat);
 
@@ -389,26 +389,26 @@ void CUH_Control::OnPaint(){
             for(int t = pos ;t <= m_HLEndPos && next != NULL; t++) {
                 rect2.top -= m_fontHeight;
 
-				::SetTextColor(dc, (next->m_textColor == 0xFFFFFFFF) ? m_textColor : next->m_textColor);
+                ::SetTextColor(dc, (next->m_textColor == 0xFFFFFFFF) ? m_textColor : next->m_textColor);
                 SetBkColor(dc, (next->m_backColor == 0xFFFFFFFF) ? m_backColor : next->m_backColor);
 
-				ExtTextOut(dc,0,0,ETO_CLIPPED|ETO_OPAQUE, &rect2, NULL, 0,NULL);
-				RECT	rect3;
-				CopyRect(&rect3, &rect2);
+                ExtTextOut(dc,0,0,ETO_CLIPPED|ETO_OPAQUE, &rect2, NULL, 0,NULL);
+                RECT    rect3;
+                CopyRect(&rect3, &rect2);
 
-				if(m_alignment == TA_CENTER) {
-					rect3.left += margin/2;
-					rect3.right -= margin/2;
-					nFormat = DT_CENTER;
-					}
-				else if(m_alignment == TA_RIGHT) {
-					rect3.right -= margin;
-					nFormat = DT_RIGHT;
-					}
-				else {
-					rect3.left += margin;
-					nFormat = DT_LEFT;
-					}
+                if(m_alignment == TA_CENTER) {
+                    rect3.left += margin/2;
+                    rect3.right -= margin/2;
+                    nFormat = DT_CENTER;
+                    }
+                else if(m_alignment == TA_RIGHT) {
+                    rect3.right -= margin;
+                    nFormat = DT_RIGHT;
+                    }
+                else {
+                    rect3.left += margin;
+                    nFormat = DT_LEFT;
+                    }
 
                 DrawText(dc, next->m_string, next->m_len, &rect3, DT_EXPANDTABS | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | nFormat);
 
@@ -423,7 +423,7 @@ void CUH_Control::OnPaint(){
             ExtTextOut(dc,rect2.left,rect2.top,ETO_OPAQUE,&rect2,_T(""),0,NULL);
         }
 
-	//exit the critical section
+    //exit the critical section
     #ifdef UH_THREADSAFE
     LeaveCriticalSection(&m_criticalSection);
     #endif
@@ -470,36 +470,36 @@ void CUH_Control::OnSize(){
 OnKeyDown
     Process scrolling through keyboard
 Params
-    nKeyCode	- key scan code
+    nKeyCode    - key scan code
 Return
-    TRUE		- if we process this key
+    TRUE        - if we process this key
 ***********************************/
 BOOL CUH_Control::OnKeyDown(int nKeyCode) {
 
-	switch(nKeyCode) {
-		case(VK_DOWN):
-			OnVScroll(SB_LINEDOWN, 0);
-			break;
-		case(VK_UP):
-			OnVScroll(SB_LINEUP, 0);
-			break;
-		case(VK_NEXT):
-			OnVScroll(SB_PAGEDOWN, 0);
-			break;
-		case(VK_PRIOR):
-			OnVScroll(SB_PAGEUP, 0);
-			break;
-		case(VK_LEFT):
-			OnHScroll(SB_LINEUP, 0);
-			break;
-		case(VK_RIGHT):
-			OnHScroll(SB_LINEDOWN, 0);
-			break;
-		default:
-			return FALSE;
-		}
+    switch(nKeyCode) {
+        case(VK_DOWN):
+            OnVScroll(SB_LINEDOWN, 0);
+            break;
+        case(VK_UP):
+            OnVScroll(SB_LINEUP, 0);
+            break;
+        case(VK_NEXT):
+            OnVScroll(SB_PAGEDOWN, 0);
+            break;
+        case(VK_PRIOR):
+            OnVScroll(SB_PAGEUP, 0);
+            break;
+        case(VK_LEFT):
+            OnHScroll(SB_LINEUP, 0);
+            break;
+        case(VK_RIGHT):
+            OnHScroll(SB_LINEDOWN, 0);
+            break;
+        default:
+            return FALSE;
+        }
 
-	return TRUE;
+    return TRUE;
 }
 
 /**********************************
@@ -653,7 +653,7 @@ int CUH_Control::SetFont(HFONT font){
     SIZE size;
     HFONT   oldFont = NULL;
 
-	if(m_font != NULL && font != NULL)
+    if(m_font != NULL && font != NULL)
         DeleteObject(m_font);
 
     m_font = font;
@@ -733,7 +733,7 @@ Return
 ***********************************/
 int CUH_Control::GetHistoryLength() const
 {
-	return m_historyListMaxLen;
+    return m_historyListMaxLen;
 }
 /**********************************
 SetHistoryLength
@@ -813,7 +813,7 @@ GetAligment
 Params
     none
 Return
-	alignment
+    alignment
 ***********************************/
 int CUH_Control::GetAlignment() const
 {
@@ -956,7 +956,7 @@ SetLogName
     then date stamp will be instered just
     be for the extenion in the filename
 Params
-	none
+    none
 Return
     log file name
 ***********************************/
@@ -995,7 +995,7 @@ IsLogEnabled
 Params
     none
 Return
-	TRUE/FALSE
+    TRUE/FALSE
 ***********************************/
 BOOL CUH_Control::IsLogEnabled() const
 {
@@ -1029,9 +1029,9 @@ int CUH_Control::EnableTimeStampedLog(BOOLEAN yesNo){
 }
 /**********************************
 EnableTimeStampedLog
-	Return time stamp enabled flag
+    Return time stamp enabled flag
 Params
-	none
+    none
 Return
     Log time stamp enabled flag
 ***********************************/
@@ -1066,7 +1066,7 @@ int CUH_Control::AddLine(LPCTSTR string, COLORREF TextColor, COLORREF BackColor,
         WriteToLog(string,TRUE);
 
     //check to see if a window exists
-	int updateScrollFlag = FALSE;
+    int updateScrollFlag = FALSE;
     if(m_hWnd != NULL){
         UH_HistoryList *old = m_historyList;
 
@@ -1086,9 +1086,9 @@ int CUH_Control::AddLine(LPCTSTR string, COLORREF TextColor, COLORREF BackColor,
             m_historyList->m_len =0;
         }
         else{
-			m_historyList->m_string = new _TCHAR[len+1];
+            m_historyList->m_string = new _TCHAR[len+1];
             _tcscpy(m_historyList->m_string,string);
-// TD TODO			CUT_StrMethods::RemoveCRLF(m_historyList->m_string);
+// TD TODO          CUT_StrMethods::RemoveCRLF(m_historyList->m_string);
             m_historyList->m_len = (int)_tcslen(m_historyList->m_string);
         }
 
@@ -1146,14 +1146,14 @@ int CUH_Control::AddLine(LPCTSTR string, COLORREF TextColor, COLORREF BackColor,
     LeaveCriticalSection(&m_criticalSection);
     #endif
 
-	if(m_hWnd != NULL) {
+    if(m_hWnd != NULL) {
         //update the scrollbar
         if(updateScrollFlag)
             UpdateScrollRange();
 
         //redraw the screen
         InvalidateRect(m_hWnd,NULL,TRUE);
-		}
+        }
 
     return UH_SUCCESS;
 }
@@ -1175,7 +1175,7 @@ Return
     1 - (UH_ERROR)
 ***********************************/
 int CUH_Control::AddStampedLine(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog){
-	return AddStampedLineT(string, TextColor, BackColor, addToLog, 0);
+    return AddStampedLineT(string, TextColor, BackColor, addToLog, 0);
 }
 
 int CUH_Control::AddStampedLineT(LPCTSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog, time_t time){
@@ -1331,37 +1331,37 @@ Return
     1 - (UH_ERROR) No memory or clipboard failure
 ***********************************/
 int CUH_Control::CopyToClipboard(){
-	long size = 0;
+    long size = 0;
 
-	UH_HistoryList *current = m_historyList;
-	UH_HistoryList *last = m_historyList;
+    UH_HistoryList *current = m_historyList;
+    UH_HistoryList *last = m_historyList;
     while(current != NULL){
         if(current->m_string != NULL)
-        	size += lstrlen(current->m_string) + 2;	//+newline
-		last = current;
+            size += lstrlen(current->m_string) + 2; //+newline
+        last = current;
         current = current->m_next;
     }
     size += 1;
 
     BOOL result = OpenClipboard(m_hWnd);
-	if (result == FALSE) {
-		return UH_ERROR;
-	}
-	result = EmptyClipboard();
-	if (result == FALSE) {
-		return UH_ERROR;
-	}
+    if (result == FALSE) {
+        return UH_ERROR;
+    }
+    result = EmptyClipboard();
+    if (result == FALSE) {
+        return UH_ERROR;
+    }
 
     long totalBytesNeeded = size*sizeof(TCHAR);
-	HGLOBAL hTXTBuffer = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, totalBytesNeeded);
-	TCHAR * clipString = (TCHAR*)GlobalLock(hTXTBuffer);
-	clipString[0] = 0;
+    HGLOBAL hTXTBuffer = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, totalBytesNeeded);
+    TCHAR * clipString = (TCHAR*)GlobalLock(hTXTBuffer);
+    clipString[0] = 0;
 
-	current = last;
+    current = last;
     while(current != NULL){
         if(current->m_string != NULL) {
-        	lstrcat(clipString, current->m_string);
-        	lstrcat(clipString, TEXT("\r\n"));
+            lstrcat(clipString, current->m_string);
+            lstrcat(clipString, TEXT("\r\n"));
         }
         current = current->m_prev;
     }
@@ -1369,22 +1369,22 @@ int CUH_Control::CopyToClipboard(){
     GlobalUnlock(hTXTBuffer);
 
 #if defined _UNICODE
-	HANDLE clipHandle = SetClipboardData(CF_UNICODETEXT, hTXTBuffer);
+    HANDLE clipHandle = SetClipboardData(CF_UNICODETEXT, hTXTBuffer);
 #else
-	HANDLE clipHandle = SetClipboardData(CF_TEXT, hTXTBuffer);
+    HANDLE clipHandle = SetClipboardData(CF_TEXT, hTXTBuffer);
 #endif
-	if (!clipHandle) {
-		GlobalFree(hTXTBuffer);
-		return UH_ERROR;
-	}
+    if (!clipHandle) {
+        GlobalFree(hTXTBuffer);
+        return UH_ERROR;
+    }
 
     result = CloseClipboard();
     if (result == FALSE) {
-    	//what to do?
-		return UH_ERROR;
-	}
+        //what to do?
+        return UH_ERROR;
+    }
 
-	return UH_SUCCESS;
+    return UH_SUCCESS;
 }
 
 /**********************************************
@@ -1555,27 +1555,27 @@ void CUH_Control::WriteToLog(LPCTSTR string,int newline){
     if(newline)
         fwrite("\n",sizeof(char),1,m_fileHandle);
 #if defined _UNICODE
-	size_t size = _tcslen(string);
-	char * buffA = (char*) alloca(size+1);
-	*buffA = '\0';
-	CUT_Str::cvtcpy(buffA, size, string);	// convert to ANSI
-	fwrite(buffA,sizeof(char),_tcslen(string),m_fileHandle);
+    size_t size = _tcslen(string);
+    char * buffA = (char*) alloca(size+1);
+    *buffA = '\0';
+    CUT_Str::cvtcpy(buffA, size, string);   // convert to ANSI
+    fwrite(buffA,sizeof(char),_tcslen(string),m_fileHandle);
 #else
-	fwrite(string,sizeof(char),_tcslen(string),m_fileHandle);
+    fwrite(string,sizeof(char),_tcslen(string),m_fileHandle);
 #endif //_UNICODE
 }
 
 #if defined _UNICODE
 int CUH_Control::AddLine(LPCSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog)
 {
-	return AddLine(WC(string), TextColor, BackColor, addToLog);
+    return AddLine(WC(string), TextColor, BackColor, addToLog);
 }
 int CUH_Control::AddStampedLine(LPCSTR string, COLORREF TextColor, COLORREF BackColor, BOOLEAN addToLog)
 {
-	return AddStampedLine(WC(string), TextColor, BackColor, addToLog);
+    return AddStampedLine(WC(string), TextColor, BackColor, addToLog);
 }
 int CUH_Control::AppendToLine(LPCSTR string, BOOLEAN addToLog)
 {
-	return AppendToLine(WC(string), addToLog);
+    return AppendToLine(WC(string), addToLog);
 }
 #endif

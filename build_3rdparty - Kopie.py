@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2s.tar.gz',
-        'sha1'  : 'cf43d57a21e4baf420b3628677ebf1723ed53bc1',
+        'url'   : 'https://www.openssl.org/source/openssl-1.0.2p.tar.gz',
+        'sha1'  : 'f34b5322e92415755c7d58bf5d0d5cf37666382c',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -36,7 +36,7 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'https://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
+        'url'   : 'http://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
         'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
         'target': {
             'mingw-w64': {
@@ -73,15 +73,14 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://www.libssh.org/files/0.9/libssh-0.9.0.tar.xz',
-        'sha1'  : '570bffef68af6c1211673bc9a8036c9265935b2b',
+        'url'   : 'https://www.libssh.org/files/0.8/libssh-0.8.3.tar.xz',
+        'sha1'  : '9d7975eb2b15a414fa0320bc85e553452b8a2a48',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
-                        "-DCMAKE_C_FLAGS=-std=c99 -lwinpthreads" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
@@ -103,8 +102,8 @@ DEPENDENT_LIBS = {
             'msvc_x64': {
                 'result':   ['include/libssh/libssh.h', 'lib/ssh.lib'],
                 'commands': [
-                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
-                        "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
+                    'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Debug \
+                        "-DCMAKE_C_FLAGS_DEBUG=/MP /MTd /O0 /Ob0 /D DEBUG" "-DCMAKE_CXX_FLAGS_DEBUG=/MP /MTd /O0 /Ob0 /D DEBUG" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',

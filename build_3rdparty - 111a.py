@@ -5,30 +5,30 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2s.tar.gz',
-        'sha1'  : 'cf43d57a21e4baf420b3628677ebf1723ed53bc1',
+        'url'   : 'https://www.openssl.org/source/openssl-1.1.0j.tar.gz',
+        'sha1'  : 'dcad1efbacd9a4ed67d4514470af12bbe2a1d60a',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-shared no-asm mingw64',
-                    'make depend', 'make', 'make install_sw'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-shared no-asm mingw64',
+                    'make', 'make install_sw'
                 ]
             },
             'msvc': {
-                'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
+               'result':   ['include/openssl/ssl.h', 'lib/libssl.lib', 'lib/libcrypto.lib'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s no-shared no-asm VC-WIN32 -wd4005',
-                    'ms\\do_ms.bat',
-                    'nmake /f ms\\nt.mak install'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s no-shared no-asm no-capieng VC-WIN32 -wd4005',
+                    'nmake',
+                    'nmake install_sw'
                 ]
             },
             'msvc_x64': {
-                'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
+                'result':   ['include/openssl/ssl.h', 'lib/libssl.lib', 'lib/libcrypto.lib'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s no-shared no-asm VC-WIN64A',
-                    'ms\\do_win64a.bat',
-                    'nmake /f ms\\nt.mak install'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s no-shared no-asm no-capieng VC-WIN64A',
+                    'nmake',
+                    'nmake install_sw'
                 ]
             }
         }
@@ -36,7 +36,7 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'https://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
+        'url'   : 'http://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
         'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
         'target': {
             'mingw-w64': {
@@ -73,15 +73,14 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://www.libssh.org/files/0.9/libssh-0.9.0.tar.xz',
-        'sha1'  : '570bffef68af6c1211673bc9a8036c9265935b2b',
+        'url'   : 'https://www.libssh.org/files/0.8/libssh-0.8.6.tar.xz',
+        'sha1'  : '2cb2775dcf2780520421a669eebfe5862ba51d29',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
-                        "-DCMAKE_C_FLAGS=-std=c99 -lwinpthreads" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
@@ -93,7 +92,7 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
                         "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
-                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libcrypto.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',
@@ -105,7 +104,7 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
                         "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
-                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libcrypto.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',

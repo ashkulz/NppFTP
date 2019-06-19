@@ -44,6 +44,9 @@ public:
 private:
 	int						LoadSettings();		//-1 error, 0 success, 1 unable to load
 	int						SaveSettings();
+	void					AttemptToAutoConnect(TCHAR* username, TCHAR* hostname);
+	bool					GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername, TCHAR* returnHostname);
+	void					DisconnectOnInfoMismatch(TCHAR* username, TCHAR* hostname);
 
 	FTPSettings*			m_ftpSettings;
 	FTPSession*				m_ftpSession;

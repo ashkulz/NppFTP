@@ -164,6 +164,21 @@ int NppFTP::OnSave(const TCHAR* path) {
 	if (!path || !m_ftpSession)
 		return -1;
 
+	TCHAR username[FILENAME_MAX];	// assume username+path is smaller than largest allowed filename
+	TCHAR hostname[FILENAME_MAX];
+	// username and hostname are SET inside this function
+	bool filenameHasHost = GetUserAndHostFromFilename(path, username, hostname);	
+
+	if (filenameHasHost && m_ftpSession->IsConnected())	// see if we're connected to the correct server for our file
+	{
+		DisconnectOnInfoMismatch(username, hostname);	// if our info doesnt match current profile, we'll disconnect here
+	}
+
+	if (!m_ftpSession->IsConnected())	// if we don't have a connection....
+	{
+		AttemptToAutoConnect(username, hostname);	// we'll try to connect to a matching profile
+	}
+
 	if (m_ftpSession->IsConnected()) {
 		m_ftpSession->UploadFileCache(path);
 	}
@@ -292,4 +307,87 @@ int NppFTP::SaveSettings() {
 	delete certificatesDoc;
 
 	return 0;
+}
+
+bool NppFTP::GetUserAndHostFromFilename(const TCHAR* path, TCHAR* returnUsername, TCHAR* returnHostname)
+{
+	memset(returnUsername, '\0', FILENAME_MAX * sizeof(TCHAR));
+	memset(returnHostname, '\0', FILENAME_MAX * sizeof(TCHAR));
+
+	// we're going to parse the current username from the file path, let's find important chars around the @ symbol so we can substring afterward
+	TCHAR* charScanner = const_cast<TCHAR*>(path);
+	int charCounter = 0;
+	int atSymbolIndex = 0;
+	int previousBackslashIndex = 0;
+	int nextBackslashIndex = 0;
+	while (charScanner[charCounter] != '\0')
+	{
+		if (charScanner[charCounter] == (TCHAR)'@')
+			atSymbolIndex = charCounter;
+		if (atSymbolIndex > 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
+		{
+			nextBackslashIndex = charCounter;
+			break;	// prevents resetting of the previousBackslashIndex (below) index by breaking out here
+		}
+		if (atSymbolIndex == 0 && (charScanner[charCounter] == (TCHAR)'\\' || charScanner[charCounter] == (TCHAR)'/'))
+			previousBackslashIndex = charCounter + 1;
+		charCounter++;
+	}
+
+	// we store that parsed username into the variable username below if we found all the appropriate things in appropriate places
+	if (previousBackslashIndex > 0 && atSymbolIndex > previousBackslashIndex && nextBackslashIndex > atSymbolIndex)
+	{
+		int nameLength = (atSymbolIndex - previousBackslashIndex);
+		int hostnameLength = (nextBackslashIndex - atSymbolIndex - 1);
+		memcpy(returnUsername, &path[previousBackslashIndex], nameLength * sizeof(TCHAR));	// TCHAR is usually 2 bytes so we have to multiply to be correct in byte-space
+		memcpy(returnHostname, &path[atSymbolIndex + 1], hostnameLength * sizeof(TCHAR));
+		return true;
+	}
+	else
+	{
+		// if we didn't find anything, return nullptrs and false
+		returnUsername = returnHostname = 0;	//nullptr
+		return false;
+	}
+}
+
+void NppFTP::AttemptToAutoConnect(TCHAR* username, TCHAR* hostname)
+{
+	FTPProfile* profile = 0;	// make nullptr
+	{
+		// now we try to find a reasonable given all of our available saved ftp account names
+		for (u_int i = 0; i < m_profiles.size() && !profile; i++)
+		{
+			const TCHAR* profileUserName = SU::Utf8ToTChar(m_profiles.at(i)->GetUsername());
+			if (_tcscmp(profileUserName, username) == 0)
+			{
+				const TCHAR* profileHostName = SU::Utf8ToTChar(m_profiles.at(i)->GetHostname());
+				if (_tcscmp(profileHostName, hostname) == 0)
+				{
+					profile = m_profiles.at(i);	// we found our match!
+				}
+			}
+		}
+
+		if (profile)	// if we found our match, let's connect to it eh
+		{
+			int ret = m_ftpSession->StartSession(profile);
+			if (ret == -1) {
+				OutErr("[NppFTP] Cannot start FTP session");
+			}
+			m_ftpSession->Connect();
+		}
+	}
+}
+
+void NppFTP::DisconnectOnInfoMismatch(TCHAR* username, TCHAR* hostname)
+{
+	if (_tcscmp(SU::Utf8ToTChar(m_ftpSession->GetCurrentProfile()->GetUsername()), username) == 0)
+	{
+		if (_tcscmp(SU::Utf8ToTChar(m_ftpSession->GetCurrentProfile()->GetHostname()), hostname) == 0)
+		{
+			return;	// we have the correct session, no need to disconnect
+		}
+	}
+	m_ftpSession->TerminateSession();
 }

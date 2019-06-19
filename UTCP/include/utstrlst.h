@@ -7,9 +7,9 @@
 //  Internal string manipulation for use with Ultimate TCP/IP  
 //  classes.
 //
-//	declares:	CUT_StrMethods
-//				CUT_StringList
-//				CUT_TStringList
+//  declares:   CUT_StrMethods
+//              CUT_StringList
+//              CUT_TStringList
 //
 // =================================================================
 // Ultimate TCP/IP v4.2
@@ -29,41 +29,41 @@
 
 
 // =================================================================
-//	CUT_StrMethods class
+//  CUT_StrMethods class
 //
-//	Helper class with several static string manupulation functions
+//  Helper class with several static string manupulation functions
 // =================================================================
 
 class CUT_StrMethods {
 
 // Private ctor & dtor
 private:
-		CUT_StrMethods() {};
-		~CUT_StrMethods() {};
+        CUT_StrMethods() {};
+        ~CUT_StrMethods() {};
 
 public:
         // String functions
-        static void	RemoveCRLF(LPSTR buf);
-        static void	RemoveCRLF(LPWSTR buf);
+        static void RemoveCRLF(LPSTR buf);
+        static void RemoveCRLF(LPWSTR buf);
 
         // Does the buffer end with carriage return 
-        static BOOL	IsWithCRLF(LPCSTR buf);
-        static BOOL	IsWithCRLF(LPCWSTR buf);
+        static BOOL IsWithCRLF(LPCSTR buf);
+        static BOOL IsWithCRLF(LPCWSTR buf);
 
         // Parses the given string into its components based on the 
         // separation character(s)
-        static int	ParseString(LPCSTR string, LPCSTR sepChars, int index, LPSTR buf, int buflen, char chStringQualifier = 0);
-        static int	ParseString(LPCWSTR string, LPCWSTR sepChars, int index, LPWSTR buf, int buflen, WCHAR chStringQualifier = 0);
+        static int  ParseString(LPCSTR string, LPCSTR sepChars, int index, LPSTR buf, int buflen, char chStringQualifier = 0);
+        static int  ParseString(LPCWSTR string, LPCWSTR sepChars, int index, LPWSTR buf, int buflen, WCHAR chStringQualifier = 0);
         
         // Extracts a component from the given string at the given index
         // based on the separation character(s) 
-        static int	ParseString(LPCSTR string, LPCSTR sepChars, int index, long *value);
-        static int	ParseString(LPCWSTR string, LPCWSTR sepChars, int index, long *value);
+        static int  ParseString(LPCSTR string, LPCSTR sepChars, int index, long *value);
+        static int  ParseString(LPCWSTR string, LPCWSTR sepChars, int index, long *value);
 
         // Returns the number of components found in the given 
         // string when using the given list of separation characters
-        static int	GetParseStringPieces(LPCSTR string, LPCSTR sepChars);
-        static int	GetParseStringPieces(LPCWSTR string, LPCWSTR sepChars);
+        static int  GetParseStringPieces(LPCSTR string, LPCSTR sepChars);
+        static int  GetParseStringPieces(LPCWSTR string, LPCWSTR sepChars);
 
         // Removes spaces from the beginning and end of the string
         static void RemoveSpaces(LPSTR szString); 
@@ -73,16 +73,16 @@ public:
 
 
 // =================================================================
-//	CUT_StringList class
+//  CUT_StringList class
 //
-//	Double linked string list (Ascii)
+//  Double linked string list (Ascii)
 // =================================================================
 class CUT_StringList {
 
 private:
     
     typedef struct UT_StringListTag{
-        LPSTR			lpszString;
+        LPSTR           lpszString;
         UT_StringListTag *pNext;
         UT_StringListTag *pPrev;
     }UT_StringList;
@@ -91,11 +91,11 @@ private:
 
 public:
     CUT_StringList();
-	CUT_StringList(const CUT_StringList& strlist);
+    CUT_StringList(const CUT_StringList& strlist);
     virtual ~CUT_StringList();
 
-	// Assigment operator
-	CUT_StringList &operator=(const CUT_StringList strlist);
+    // Assigment operator
+    CUT_StringList &operator=(const CUT_StringList strlist);
     
     // add a new string to the doubly linked list of strings
     BOOL AddString(LPCSTR lpszString);
@@ -119,16 +119,16 @@ public:
 };
 
 // =================================================================
-//	CUT_TStringList class
+//  CUT_TStringList class
 //
-//	Double linked string list (TCHAR)
+//  Double linked string list (TCHAR)
 // =================================================================
 class CUT_TStringList {
 
 private:
     
     typedef struct UT_TStringListTag{
-        LPTSTR	     	lpszString;
+        LPTSTR          lpszString;
         UT_TStringListTag *pNext;
         UT_TStringListTag *pPrev;
     }UT_TStringList;
@@ -137,11 +137,11 @@ private:
 
 public:
     CUT_TStringList();
-	CUT_TStringList(const CUT_TStringList& strlist);
+    CUT_TStringList(const CUT_TStringList& strlist);
     virtual ~CUT_TStringList();
 
-	// Assigment operator
-	CUT_TStringList &operator=(const CUT_TStringList strlist);
+    // Assigment operator
+    CUT_TStringList &operator=(const CUT_TStringList strlist);
     
     // add a new string to the doubly linked list of strings
     BOOL AddString(LPCTSTR lpszString);

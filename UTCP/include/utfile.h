@@ -26,25 +26,25 @@ class CUT_File
 {
 public:
 // Constructors / Destructors
-	CUT_File();
-	CUT_File(LPCTSTR lpszFileName, UINT nOpenMode = GENERIC_WRITE, DWORD dwCreationDisposition = OPEN_EXISTING, BOOL bAppend = false);
-	virtual ~CUT_File();
+    CUT_File();
+    CUT_File(LPCTSTR lpszFileName, UINT nOpenMode = GENERIC_WRITE, DWORD dwCreationDisposition = OPEN_EXISTING, BOOL bAppend = false);
+    virtual ~CUT_File();
   
 // Operations
-	virtual int Open(LPCTSTR lpszFileName, UINT nOpenMode = GENERIC_WRITE, DWORD dwCreationDisposition = OPEN_EXISTING, BOOL bAppend = false);
-	virtual void Close();
-	virtual DWORD Read(LPVOID lpBuffer, DWORD dwNumberOfBytesToRead);
-	virtual DWORD Write(LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite);
-	virtual LONG Seek(LONG lDistanceToMove, DWORD dwMoveMethod);
-	virtual DWORD GetLength() const;
+    virtual int Open(LPCTSTR lpszFileName, UINT nOpenMode = GENERIC_WRITE, DWORD dwCreationDisposition = OPEN_EXISTING, BOOL bAppend = false);
+    virtual void Close();
+    virtual DWORD Read(LPVOID lpBuffer, DWORD dwNumberOfBytesToRead);
+    virtual DWORD Write(LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite);
+    virtual LONG Seek(LONG lDistanceToMove, DWORD dwMoveMethod);
+    virtual DWORD GetLength() const;
 
 private:
-	CUT_File(const CUT_File&);             // no implementation
-	CUT_File& operator=(const CUT_File&);  // no implementation
+    CUT_File(const CUT_File&);             // no implementation
+    CUT_File& operator=(const CUT_File&);  // no implementation
 
 private:
-	HANDLE m_hFile;
-	BOOL m_bOpenAppending;
+    HANDLE m_hFile;
+    BOOL m_bOpenAppending;
 };
 
 

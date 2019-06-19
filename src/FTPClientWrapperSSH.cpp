@@ -23,7 +23,7 @@
 #include "KBIntDialog.h"
 #include <fcntl.h>
 
-#ifdef strdup	//undefine strdup form libssh
+#ifdef strdup	//undefine strdup from libssh
 #undef strdup
 #endif //strdup
 
@@ -181,7 +181,7 @@ int FTPClientWrapperSSH::Pwd(char* buf, size_t size) {
 
 	size_t len = strlen(sftppath);
 	if (len > (size-1)) {
-		free(sftppath);
+		ssh_string_free_char(sftppath);
 		return OnReturn(-1);
 	}
 
@@ -189,7 +189,7 @@ int FTPClientWrapperSSH::Pwd(char* buf, size_t size) {
 	if (len > 1 && buf[len-1] == '/')
 		buf[len-1] = 0;
 
-	free(sftppath);
+	ssh_string_free_char(sftppath);
 
 	return OnReturn(0);
 }
@@ -358,7 +358,7 @@ bool FTPClientWrapperSSH::IsConnected() {
 		Disconnect();	//thought to be connected, but not anymore, disconnect
 		return false;
 	}
-	free(sftppath);
+	ssh_string_free_char(sftppath);
 
 	return true;
 }
@@ -399,7 +399,11 @@ int FTPClientWrapperSSH::SetAcceptedMethods(AuthenticationMethods acceptedMethod
 int FTPClientWrapperSSH::connect_ssh() {
 	ssh_session session;
 	int auth = 0;
-	int verbosity = 0;
+	int verbosity = SSH_LOG_NOLOG;
+
+	if(ssh_init() < 0) {
+		return -1;
+	}
 
 	session=ssh_new();
 	if (session == NULL) {
@@ -492,7 +496,7 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	char * banner = ssh_get_issue_banner(session);
 	if (banner) {
 		OutMsg("[SFTP] Banner: %s\n", banner);
-		free(banner);
+		ssh_string_free_char(banner);
 	}
 
 	methods = ssh_auth_list(session);
@@ -616,9 +620,9 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 	ssh_key srv_pubkey;
 	TCHAR errMessage[512];
 
-	state = ssh_is_server_known(session);
+	state = ssh_session_is_known_server(session);
 
-	rc = ssh_get_publickey(session, &srv_pubkey);
+	rc = ssh_get_server_publickey(session, &srv_pubkey);
 	if (rc < 0)
 		return -1;
 
@@ -663,7 +667,7 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 	if (askSavekey) {
 		int res = ::MessageBox(_MainOutputWindow, errMessage, TEXT("SFTP authentication"), MB_YESNO|MB_DEFBUTTON2);
 		if (res == IDYES) {
-			if (ssh_write_knownhost(session) < 0) {
+			if (ssh_session_update_known_hosts(session) < 0) {
 				OutErr("[SFTP] Writing known hosts file failed: %s", strerror(errno));
 				OutErr("[SFTP] The session will continue but the key will not be stored");
 				result = 0;	//return 0 even if an error occured
@@ -677,8 +681,8 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 		}
 	}
 
-	free(hash);
-	free(hashHex);
+	ssh_clean_pubkey_hash(&hash);
+	ssh_string_free_char(hashHex);
 
 	return result;
 }
@@ -690,6 +694,8 @@ int FTPClientWrapperSSH::disconnect() {
 
 	m_sftpsession = NULL;
 	m_sshsession = NULL;
+
+	ssh_finalize();
 
 	return 0;
 }

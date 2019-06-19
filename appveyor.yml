@@ -1,9 +1,10 @@
-version: 0.27.4.{build}
-image: Visual Studio 2015
+version: 0.28.4.{build}
+image: Visual Studio 2017
 
 
 environment:
   matrix:
+    - PlatformToolset: v141_xp
     - PlatformToolset: v140_xp
     #- PlatformToolset: v120_xp
 
@@ -17,7 +18,12 @@ configuration:
 
 install:
     - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="x64" set platform_input=x64
+
     - if "%platform%"=="Win32" set archi=x86
+    - if "%platform%"=="Win32" set platform_input=Win32
+
+    - if "%PlatformToolset%"=="v141_xp" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v140_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v120_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %archi%
 
@@ -27,13 +33,14 @@ build:
 before_build:
 - ps: |
     Write-Output "Configuration: $env:CONFIGURATION"
-    Write-Output "Platform: $env:PLATFORM"
+    Write-Output "Platform: $env:PLATFORM_INPUT"
     $generator = switch ($env:PLATFORMTOOLSET)
     {
+        "v141_xp" {"Visual Studio 15 2017"}
         "v140_xp" {"Visual Studio 14 2015"}
         "v120_xp" {"Visual Studio 12 2013"}
     }
-    if ($env:PLATFORM -eq "x64")
+    if ($env:PLATFORM_INPUT -eq "x64")
     {
         $generator = "$generator Win64"
     }
@@ -41,7 +48,7 @@ before_build:
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     # Python 3 needed for python build_3rdparty.py
-    - set PATH=C:\Python34-x64;C:\Python34-x64\Scripts;%PATH%
+    - set PATH=C:\Python37-x64;C:\Python37-x64\Scripts;%PATH%
     - mkdir _build
     - cd _build
 

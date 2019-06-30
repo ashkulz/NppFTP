@@ -36,7 +36,7 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'http://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
+        'url'   : 'https://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
         'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
         'target': {
             'mingw-w64': {
@@ -73,14 +73,15 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://www.libssh.org/files/0.8/libssh-0.8.7.tar.xz',
-        'sha1'  : '29ed6d9517ce270fee993cccb0219bd16a595bcc',
+        'url'   : 'https://www.libssh.org/files/0.9/libssh-0.9.0.tar.xz',
+        'sha1'  : '570bffef68af6c1211673bc9a8036c9265935b2b',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
+                        "-DCMAKE_C_FLAGS=-std=c99" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',

@@ -43,6 +43,8 @@ public:
 	const TCHAR*			GetName() const;
 	int						SetName(const TCHAR * name);
 
+	const TCHAR*			GetParent() const;
+	int						SetParent(const TCHAR * parent);
 	const char*				GetHostname() const;
 	int						SetHostname(const char * hostname);
 	int						GetPort() const;
@@ -118,6 +120,8 @@ private:
 	static bool				CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2);
 
 	TCHAR*					m_name;
+	
+	TCHAR*					m_parent;
 
 	FTPCache*				m_cache;
 

@@ -42,7 +42,7 @@ ProfilesDialog::ProfilesDialog() :
 {
 }
 
-ProfilesDialog::~ProfilesDialog() {
+ProfilesDialog::~ProfilesDialog()  {
 }
 
 int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache) {
@@ -379,6 +379,14 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			}
 			break; }
 
+		case IDC_EDIT_PARENT: {
+			if (notifCode == EN_USERCHANGE) {
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetParent(TTextBuffer);
+				m_ftpWindow->OnProfileChange();
+			}
+			break; }
+
 		case IDC_EDIT_CACHELOCAL:
 		case IDC_EDIT_CACHEEXTERNAL: {
 			if (notifCode == EN_USERCHANGE) {
@@ -548,6 +556,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	::SetWindowLongPtr(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
+	::SetWindowLongPtr(::GetDlgItem(m_hPageFTP, IDC_EDIT_PARENT), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHELOCAL), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
 	::SetWindowLongPtr(::GetDlgItem(m_hPageCache, IDC_EDIT_CACHEEXTERNAL), GWLP_WNDPROC, (LONG_PTR)&Dialog::EditProc);
@@ -658,6 +667,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 		::EnableWindow(::GetDlgItem(m_hPageTransfer, IDC_EDIT_PORT_MAX), enableSettings);
 
 		::EnableWindow(::GetDlgItem(m_hPageFTP, IDC_EDIT_LISTPARAMS), enableSettings);
+		::EnableWindow(::GetDlgItem(m_hPageFTP, IDC_EDIT_PARENT), enableSettings);
 
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_LIST_CACHE), enableSettings);
 		::EnableWindow(::GetDlgItem(m_hPageCache, IDC_SPIN_CACHE), enableSettings);
@@ -716,6 +726,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MAX, max, FALSE);
 
 	::SetDlgItemTextA(m_hPageFTP, IDC_EDIT_LISTPARAMS, m_currentProfile->GetListParams());
+	::SetDlgItemText(m_hPageFTP, IDC_EDIT_PARENT, m_currentProfile->GetParent());
 
 	LoadFiletypes();
 	LoadCacheMaps();

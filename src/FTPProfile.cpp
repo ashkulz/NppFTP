@@ -27,6 +27,7 @@ const char * FTPProfile::ProfilesElement = "Profiles";
 
 FTPProfile::FTPProfile() :
 	m_name(NULL),
+	m_parent(NULL),
 	m_cache(NULL),
 	m_hostname(NULL),
 	m_port(0),
@@ -50,6 +51,7 @@ FTPProfile::FTPProfile() :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name) :
+	m_parent(NULL),
 	m_port(21),
 	m_askPassword(false),
 	m_askPassphrase(false),
@@ -79,6 +81,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
+	m_parent(other->m_parent),
 	m_port(other->m_port),
 	m_askPassword(other->m_askPassword),
 	m_askPassphrase(other->m_askPassphrase),
@@ -119,6 +122,10 @@ FTPProfile::~FTPProfile() {
 	if (m_name) {
 		SU::FreeTChar(m_name);
 		m_name = NULL;
+	}
+	if (m_parent) {
+		SU::FreeTChar(m_parent);
+		m_parent = NULL;
 	}
 	if (m_hostname) {
 		SU::free(m_hostname);
@@ -236,8 +243,19 @@ int FTPProfile::SetName(const TCHAR * name) {
 	return 0;
 }
 
+const TCHAR* FTPProfile::GetParent() const {
+	return m_parent;
+}
+
+
 const char* FTPProfile::GetHostname() const {
 	return m_hostname;
+}
+
+int FTPProfile::SetParent(const TCHAR * parent) {
+	SU::FreeTChar(m_parent);
+	m_parent = SU::DupString(parent);
+	return 0;
 }
 
 int FTPProfile::SetHostname(const char * hostname) {
@@ -597,6 +615,13 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			break;
 		profile->m_name = SU::Utf8ToTChar(attrstr);
 
+		attrstr = profileElem->Attribute("parent");
+		if (!attrstr)
+			profile->m_parent = SU::Utf8ToTChar("");
+		else
+			profile->m_parent = SU::Utf8ToTChar(attrstr);
+		
+		
 		attrstr = profileElem->Attribute("hostname");
 		if (!attrstr)
 			profile->m_hostname = SU::strdup("");
@@ -711,6 +736,12 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	char * utf8name = SU::TCharToUtf8(m_name);
 	profileElem->SetAttribute("name", utf8name);
 	SU::FreeChar(utf8name);
+	
+	char * utf8parent = SU::TCharToUtf8(m_parent);
+	profileElem->SetAttribute("parent", utf8parent);
+	SU::FreeChar(utf8parent);
+	
+	
 	profileElem->SetAttribute("hostname", m_hostname);
 	profileElem->SetAttribute("port", m_port);
 	profileElem->SetAttribute("username", m_username);

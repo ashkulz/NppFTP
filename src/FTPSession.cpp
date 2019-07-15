@@ -168,67 +168,67 @@ int FTPSession::GetDirectoryHierarchy(const char * inputDir) {
 	if (!m_running)
 		return -1;
 
-    char *pathEntry;
-    char* dir = SU::strdup(inputDir);
+	char *pathEntry;
+	char* dir = SU::strdup(inputDir);
 
-    // We will store the parent directory paths to be
-    // examined in the below vector.
-    std::vector<char*> parentDirs;
+	// We will store the parent directory paths to be
+	// examined in the below vector.
+	std::vector<char*> parentDirs;
 
-    int childCount;
-    char currentPath[MAX_PATH];
-    FileObject* currentFileObj = m_rootObject;
+	int childCount;
+	char currentPath[MAX_PATH];
+	FileObject* currentFileObj = m_rootObject;
 
-    strcpy( currentPath, "/" );
+	strcpy( currentPath, "/" );
 
-    // Split the entries based on '/' and append the
-    // previous directory name to get the full path.
-    pathEntry = strtok (dir,"/");
-    while(pathEntry != NULL) {
+	// Split the entries based on '/' and append the
+	// previous directory name to get the full path.
+	pathEntry = strtok (dir,"/");
+	while(pathEntry != NULL) {
 
-        if (currentFileObj) {
+		if (currentFileObj) {
 
-            childCount = currentFileObj->GetChildCount();
-            currentFileObj = currentFileObj->GetChildByName(pathEntry);
+			childCount = currentFileObj->GetChildCount();
+			currentFileObj = currentFileObj->GetChildByName(pathEntry);
 
-            if (currentFileObj) {
+			if (currentFileObj) {
 
-                HTREEITEM hti = (HTREEITEM)(currentFileObj->GetData());
-                if (hti) {
+				HTREEITEM hti = (HTREEITEM)(currentFileObj->GetData());
+				if (hti) {
 
-                    sprintf(currentPath,"%s%s/", currentPath, pathEntry);
-                    pathEntry = strtok (NULL,"/");
+					sprintf(currentPath,"%s%s/", currentPath, pathEntry);
+					pathEntry = strtok (NULL,"/");
 
-                    continue;
-                }
-            }
+					continue;
+				}
+			}
 
-            // Cannot find the child. Check if it is because I have no
-            // information about the child, or that I cannot find the child.
-            if (!currentFileObj) {
+			// Cannot find the child. Check if it is because I have no
+			// information about the child, or that I cannot find the child.
+			if (!currentFileObj) {
 
-                // If I have child data, but I cannot find the child, then
-                // I will stop here and will not queue the operation.
-                if (childCount)
-                    return 1;
-            }
-        }
+				// If I have child data, but I cannot find the child, then
+				// I will stop here and will not queue the operation.
+				if (childCount)
+					return 1;
+			}
+		}
 
-        if (!parentDirs.size()) {
-            parentDirs.push_back(SU::strdup(currentPath));
-        }
+		if (!parentDirs.size()) {
+			parentDirs.push_back(SU::strdup(currentPath));
+		}
 
-        sprintf(currentPath,"%s%s/", currentPath, pathEntry);
+		sprintf(currentPath,"%s%s/", currentPath, pathEntry);
 
-        parentDirs.push_back(SU::strdup(currentPath));
-        pathEntry = strtok (NULL,"/");
-    }
+		parentDirs.push_back(SU::strdup(currentPath));
+		pathEntry = strtok (NULL,"/");
+	}
 
-    // If there is some parent directories to be examined,
-    // remove the last directory because this is same as
-    // the input directory.
-    if (parentDirs.size())
-        parentDirs.pop_back();
+	// If there is some parent directories to be examined,
+	// remove the last directory because this is same as
+	// the input directory.
+	if (parentDirs.size())
+		parentDirs.pop_back();
 
 	QueueGetDir * dirop = new QueueGetDir(m_hNotify, inputDir, parentDirs);
 

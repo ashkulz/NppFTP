@@ -514,7 +514,7 @@ int CUT_FTPClient::ResumeReceiveFile(CUT_DataSource & dest, LPCSTR sourceFile)
 
     // if the file exist then we will send the REST command  with the size of the file we have
     // otherwise we just call retrieve as we do normally
-    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %d\r\n",dest.Seek (0,SEEK_END));
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %ld\r\n",dest.Seek (0,SEEK_END));
     dest.Close ();
     Send(m_szBuf);
     //check for a return of 100 or 200 code
@@ -695,7 +695,7 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
 
     // if the file exist then we will send the REST command  with the size of the file we have
     // otherwise we just call retrieve as we do normally
-    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %d\r\n",dest.Seek (0,SEEK_END));
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %ld\r\n",dest.Seek (0,SEEK_END));
     dest.Close ();
     Send(m_szBuf);
     //check for a return of 100 or 200 code

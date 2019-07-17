@@ -132,6 +132,9 @@ BEGIN
     LTEXT           "LIST parameters:", IDC_STATIC, 4, 4, 63, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_LISTPARAMS, 8, 12, 138, 14, ES_AUTOHSCROLL
     LTEXT           "Hint: try ""-al"" to show hidden files", IDC_STATIC, 8, 28, 140, 8, SS_LEFT
+    LTEXT           "Groupname:", IDC_STATIC, 4, 45, 63, 8, SS_LEFT
+    EDITTEXT        IDC_EDIT_PARENT, 8, 53, 138, 14, ES_AUTOHSCROLL
+    LTEXT           "Hint: show entry below this submenu", IDC_STATIC, 8, 67, 140, 8, SS_LEFT
 END
 
 IDD_DIALOG_PROFILESCACHE DIALOGEX 4, 20, 200, 192

@@ -207,11 +207,37 @@ int FTPWindow::OnSize(int newWidth, int newHeight) {
 int FTPWindow::OnProfileChange() {
 	if (!m_vProfiles)
 		return -1;
-
+	
+	std::vector<const TCHAR*> strSubmenus;
+	std::vector<HMENU> hSubmenus;
+	
 	::DestroyMenu(m_popupProfile);
 	m_popupProfile = ::CreatePopupMenu();
 	for(size_t i = 0; i < m_vProfiles->size(); i++) {
-		::AppendMenu(m_popupProfile, MF_STRING, IDM_POPUP_PROFILE_FIRST + i, m_vProfiles->at(i)->GetName());
+		if(m_vProfiles->at(i)->GetParent() != NULL && _tcscmp(m_vProfiles->at(i)->GetParent(), _T("")) != 0 )
+		{
+			HMENU hSubMenu = NULL;
+			
+			for(size_t k = 0;k < strSubmenus.size(); k++) {
+				if(_tcscmp(strSubmenus.at(k),m_vProfiles->at(i)->GetParent()) == 0 )
+				{
+					hSubMenu=hSubmenus.at(k);
+					break;
+				}
+			}
+			
+			if(hSubMenu == NULL)
+			{
+				hSubMenu = CreatePopupMenu();
+				strSubmenus.push_back(m_vProfiles->at(i)->GetParent());
+				hSubmenus.push_back(hSubMenu);
+				::AppendMenu(m_popupProfile, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenu, m_vProfiles->at(i)->GetParent());
+			}
+			
+			::AppendMenu(hSubMenu, MF_STRING, IDM_POPUP_PROFILE_FIRST + i, m_vProfiles->at(i)->GetName());
+		}
+		else
+			::AppendMenu(m_popupProfile, MF_STRING, IDM_POPUP_PROFILE_FIRST + i, m_vProfiles->at(i)->GetName());
 	}
 
 	m_toolbar.SetMenu(IDB_BUTTON_TOOLBAR_CONNECT, m_popupProfile);

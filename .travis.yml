@@ -1,27 +1,17 @@
 language: cpp
 dist:     xenial
-sudo:     false
+services:
+  - docker
 
 matrix:
   include:
   - os:  linux
     env: BITS=32
-    addons:
-      apt:
-        packages:
-        - g++-mingw-w64-i686
   - os:  linux
     env: BITS=64
-    addons:
-      apt:
-        packages:
-        - g++-mingw-w64-x86-64
+
 script:
-- sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-- sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
-- sudo update-alternatives --set i686-w64-mingw32-g++   /usr/bin/i686-w64-mingw32-g++-posix
-- sudo update-alternatives --set i686-w64-mingw32-gcc   /usr/bin/i686-w64-mingw32-gcc-posix
-- make -f Makefile.mingw BITS=$BITS
+- docker run -v$PWD:/src -w /src ubuntu:bionic /bin/sh -c "apt-get -qq update && apt-get -qq install -y mingw-w64 python3 perl cmake zip && (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do update-alternatives --set \$alt /usr/bin/\$alt-posix; done); make -f Makefile.mingw BITS=$BITS"
 
 deploy:
   provider:     releases

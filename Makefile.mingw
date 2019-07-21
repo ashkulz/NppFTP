@@ -76,6 +76,8 @@ $(OUTDIR)/obj:
 $(OUTDIR)/3rdparty:
 	@./build_3rdparty.py $(OUTDIR) $(PREFIX)
 
+.PHONY: $(OUTDIR)/3rdparty
+
 clean:
 	@rm -fr $(OUTDIR)
 

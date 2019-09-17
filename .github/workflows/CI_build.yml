@@ -1,0 +1,42 @@
+name: CI_build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-2016
+    strategy:
+      max-parallel: 1
+      matrix:
+        build_configuration: [Release, Debug]
+        build_platform: ["Visual Studio 15 2017 Win64", "Visual Studio 15 2017"]
+        
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: generate cmake
+      run: |
+           mkdir _build
+           cd _build
+           cmake -G "${{ matrix.build_platform }}" -T "v141_xp" ..
+
+    - name: build cmake
+      run: |
+           cd _build
+           cmake --build . --config ${{ matrix.build_configuration }}
+
+    - name: Archive artifacts for x64
+      if: matrix.build_platform == 'Visual Studio 15 2017 Win64' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v1
+      with:
+          name: plugin_dll_x64
+          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+
+    - name: Archive artifacts for Win32
+      if: matrix.build_platform == 'Visual Studio 15 2017' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v1
+      with:
+          name: plugin_dll_x86
+          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+

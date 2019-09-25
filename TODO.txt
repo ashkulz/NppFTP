@@ -1,6 +1,6 @@
 Timeout makes UI lock.   (?)
 
-printf, vprintf etc not really nicely used (no size checking/expanding buffers)
+printf, vprintf, etc not really nicely used (no size checking/expanding buffers)
 
 StringUtils: inefficient when using tchar+CP_ACP
 

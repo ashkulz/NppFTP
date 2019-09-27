@@ -5,30 +5,37 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2t.tar.gz',
-        'sha1'  : '8ac3fd379cf8c8ef570abb51ec52a88fd526f88a',
+        'url'   : 'https://www.openssl.org/source/openssl-1.1.1d.tar.gz',
+        'sha1'  : '056057782325134b76d1931c48f2c7e6595d7ef4',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-shared no-asm mingw64',
-                    'make depend', 'make', 'make install_sw'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-asm mingw',
+                    'make', 'make install_sw'
+                ]
+            },
+            'mingw-w64_x64': {
+                'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
+                'commands': [
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-asm mingw64',
+                    'make', 'make install_sw'
                 ]
             },
             'msvc': {
-                'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
+                'result':   ['include/openssl/ssl.h', 'lib/libssl.lib', 'lib/libcrypto.lib'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s no-shared no-asm VC-WIN32 -wd4005',
-                    'ms\\do_ms.bat',
-                    'nmake /f ms\\nt.mak install'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s no-shared no-asm no-capieng VC-WIN32 -wd4005',
+                    'nmake',
+                    'nmake install_sw'
                 ]
             },
             'msvc_x64': {
-                'result':   ['include/openssl/ssl.h', 'lib/libeay32.lib', 'lib/ssleay32.lib'],
+                'result':   ['include/openssl/ssl.h', 'lib/libssl.lib', 'lib/libcrypto.lib'],
                 'commands': [
-                    'perl Configure --openssldir=%(dest)s no-shared no-asm VC-WIN64A',
-                    'ms\\do_win64a.bat',
-                    'nmake /f ms\\nt.mak install'
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s no-shared no-asm no-capieng VC-WIN64A',
+                    'nmake',
+                    'nmake install_sw'
                 ]
             }
         }
@@ -40,6 +47,14 @@ DEPENDENT_LIBS = {
         'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
         'target': {
             'mingw-w64': {
+                'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],
+                'commands': [
+                    'make -f win32/Makefile.gcc PREFIX=%(prefix)s-',
+                    'cp zlib.h zconf.h %(dest)s/include',
+                    'cp libz.a %(dest)s/lib'
+                ]
+            },
+            'mingw-w64_x64': {
                 'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],
                 'commands': [
                     'make -f win32/Makefile.gcc PREFIX=%(prefix)s-',
@@ -81,7 +96,19 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
-                        "-DCMAKE_C_FLAGS=-std=c99" \
+                        "-DCMAKE_C_FLAGS=-std=c99 -lcrypt32" \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
+                        -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
+                    'make',
+                    'make install'
+                ]
+            },
+            'mingw-w64_x64': {
+                'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
+                'commands': [
+                    'cmake -DCMAKE_SYSTEM_NAME=Windows \
+                        -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
+                        "-DCMAKE_C_FLAGS=-std=c99 -lcrypt32" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
@@ -93,7 +120,7 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
                         "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
-                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libcrypto.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',
@@ -105,7 +132,7 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -G "NMake Makefiles" -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_BUILD_TYPE=Release \
                         "-DCMAKE_C_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" "-DCMAKE_CXX_FLAGS_RELEASE=/MP /MT /O2 /Ob2 /D NDEBUG" \
-                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libeay32.lib \
+                        -DOPENSSL_INCLUDE_DIRS=%(dest)s\\include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s\\lib\\libcrypto.lib \
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',
@@ -195,6 +222,8 @@ def main(outdir, prefix):
 
     if(prefix == 'msvc_x64'):
         target = 'msvc_x64'
+    elif (prefix == 'x86_64-w64-mingw32'):
+        target = 'mingw-w64_x64'
     else:
         target = platform.system() == 'Windows' and 'msvc' or 'mingw-w64'
     for library in sorted(DEPENDENT_LIBS, key=lambda x: DEPENDENT_LIBS[x]['order']):

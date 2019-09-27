@@ -120,7 +120,7 @@ private:
 	static bool				CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2);
 
 	TCHAR*					m_name;
-	
+
 	TCHAR*					m_parent;
 
 	FTPCache*				m_cache;

@@ -67,6 +67,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_cache = new FTPCache();
 
 	m_name = SU::DupString(name);
+	m_parent = SU::DupString(L"");
 	m_hostname = SU::strdup("");
 	m_username = SU::strdup("");
 	m_password = SU::strdup("");
@@ -620,8 +621,8 @@ FTPProfile* FTPProfile::LoadProfile(const TiXmlElement * profileElem) {
 			profile->m_parent = SU::Utf8ToTChar("");
 		else
 			profile->m_parent = SU::Utf8ToTChar(attrstr);
-		
-		
+
+
 		attrstr = profileElem->Attribute("hostname");
 		if (!attrstr)
 			profile->m_hostname = SU::strdup("");
@@ -736,12 +737,12 @@ TiXmlElement* FTPProfile::SaveProfile() const {
 	char * utf8name = SU::TCharToUtf8(m_name);
 	profileElem->SetAttribute("name", utf8name);
 	SU::FreeChar(utf8name);
-	
+
 	char * utf8parent = SU::TCharToUtf8(m_parent);
 	profileElem->SetAttribute("parent", utf8parent);
 	SU::FreeChar(utf8parent);
-	
-	
+
+
 	profileElem->SetAttribute("hostname", m_hostname);
 	profileElem->SetAttribute("port", m_port);
 	profileElem->SetAttribute("username", m_username);

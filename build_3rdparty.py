@@ -88,15 +88,15 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.9.0.tar.xz',
-        'sha1'  : '4e713745e1c8bbe39f8480669661101853446825',
+        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.9.1.tar.xz',
+        'sha1'  : '0c3629c04a69cc2be9312788d108f66dfa474343',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
-                        "-DCMAKE_C_FLAGS=-std=c99 -lcrypt32" \
+                        "-lcrypt32" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',
@@ -108,7 +108,7 @@ DEPENDENT_LIBS = {
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
-                        "-DCMAKE_C_FLAGS=-std=c99 -lcrypt32" \
+                        "-lcrypt32" \
                         -DOPENSSL_INCLUDE_DIRS=%(dest)s/include -DOPENSSL_CRYPTO_LIBRARY=%(dest)s/lib/libcrypto.a \
                         -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'make',

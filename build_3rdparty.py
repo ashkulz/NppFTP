@@ -88,8 +88,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.9.1.tar.xz',
-        'sha1'  : '0c3629c04a69cc2be9312788d108f66dfa474343',
+        'url'   : 'https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.9.2.tar.xz',
+        'sha1'  : '465ee98ce0dbd241f1c26ab4ef8616a6af6833ef',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
@@ -124,7 +124,7 @@ DEPENDENT_LIBS = {
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',
-                    'move %(dest)s\\lib\\static\\ssh.lib %(dest)s\\lib >nul'
+                    'move %(dest)s\\lib\\static\\ssh-static.lib %(dest)s\\lib >nul'
                 ]
             },
             'msvc_x64': {
@@ -136,7 +136,7 @@ DEPENDENT_LIBS = {
                         -DCMAKE_INSTALL_PREFIX=%(dest)s -DCMAKE_PREFIX_PATH=%(dest)s %(src)s',
                     'nmake install',
                     'del %(dest)s\\lib\\ssh.lib >nul',
-                    'move %(dest)s\\lib\\static\\ssh.lib %(dest)s\\lib >nul'
+                    'move %(dest)s\\lib\\static\\ssh-static.lib %(dest)s\\lib >nul'
                 ]
             }
         }

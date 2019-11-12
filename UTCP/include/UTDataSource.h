@@ -10,7 +10,7 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -26,6 +26,7 @@ Remove pragma statements
 #ifndef UTDATASOURCE_H
 #define UTDATASOURCE_H
 
+#include <string>
 #include <stdio.h>
 #include "utstrlst.h"
 #include "utfile.h"
@@ -134,9 +135,9 @@ protected:
     // v4.2 changed to size_t
     size_t          m_nSize;                    // Buffer or data size
     size_t          m_nDataSize;                // Buffer or data size
-    char            m_szName[MAX_PATH+1];       // Datasource name
+    std::string     m_szName;                   // Datasource name
     size_t          m_nCurPosition;             // Current reading/writing position
-    BOOL            m_bCleanUp;                 // TRUE if we need to cleen up the buffer ourselfs
+    BOOL            m_bCleanUp;                 // TRUE if we need to clean up the buffer ourselfs
 
 public:
     // v4.2 buffer sizes changed to size_t
@@ -178,7 +179,7 @@ public:
 class CUT_MapFileDataSource : public CUT_DataSource {
 protected:
     _TCHAR          m_szFileName[MAX_PATH + 1]; // File name
-    char            m_szName[MAX_PATH + 1];     // Datasource name
+    std::string     m_szName;                   // Datasource name
 
     HANDLE          m_hFile;                        // File handle
     HANDLE          m_hMapFile;                     // File map handle

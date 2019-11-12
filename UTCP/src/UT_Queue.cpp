@@ -10,7 +10,7 @@
 //=================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -137,7 +137,7 @@ RETURN:
 ************************************************/
 int CUT_FIFO_Queue::Read(LPBYTE pbBuffer, unsigned int count) {
 
-    int nNumToRead = min(GetDataSize(), (int)count);
+    int nNumToRead = (std::min)(GetDataSize(), (int)count);
     int nNumRead = 0;
 
     if(m_iReadPointer + nNumToRead > m_cbBuffer) {
@@ -172,7 +172,7 @@ RETURN:
 int CUT_FIFO_Queue::Peek(LPBYTE pbBuffer, unsigned int count) {
 
     int iReadPointer = m_iReadPointer;
-    int nNumToRead = min(GetDataSize(), (int)count);
+    int nNumToRead = (std::min)(GetDataSize(), (int)count);
     int nNumRead = 0;
 
     if(iReadPointer + nNumToRead > m_cbBuffer) {
@@ -205,7 +205,7 @@ RETURN:
 ************************************************/
 int CUT_FIFO_Queue::Write(LPBYTE pbBuffer, unsigned int count) {
 
-    int nNumToWrite = min(GetFreeSize(), (int)count);
+    int nNumToWrite = (std::min)(GetFreeSize(), (int)count);
     int nNumWritten = 0;
 
     if(m_iWritePointer + nNumToWrite > m_cbBuffer) {

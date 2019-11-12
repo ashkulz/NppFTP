@@ -11,7 +11,7 @@
 //=================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -432,9 +432,9 @@ CUT_BufferDataSource::CUT_BufferDataSource(LPSTR buffer, size_t size, LPCSTR nam
         m_lpszBuffer = buffer;
 
     // Remember the buffer name
-    m_szName[0] = 0;
-    if(name)
-        strncpy(m_szName, name, MAX_PATH);
+    if(name) {
+        m_szName = name;
+        }
 }
 
 /***********************************************
@@ -450,7 +450,7 @@ CUT_DataSource * CUT_BufferDataSource::clone()
     char *buffer = new char[m_nSize + 1];
     memcpy(buffer, m_lpszBuffer, m_nSize);
     *(buffer + m_nSize) = 0;
-    CUT_BufferDataSource *ptr = new CUT_BufferDataSource(buffer, m_nSize, m_szName);
+    CUT_BufferDataSource *ptr = new CUT_BufferDataSource(buffer, m_nSize, m_szName.c_str());
     ptr->m_bCleanUp = TRUE;
     ptr->m_nDataSize = m_nDataSize;
     return ptr;
@@ -559,7 +559,7 @@ int CUT_BufferDataSource::WriteLine(LPCSTR buffer) {
     // Write line to the buffer
     int         rt = 0;
     size_t      len = strlen(buffer);
-    size_t      nBytesNumber = min(len, (m_nSize - m_nCurPosition));
+    size_t      nBytesNumber = (std::min)(len, (m_nSize - m_nCurPosition));
 
     if(len > 0)
         if((rt = Write(buffer, (unsigned int)nBytesNumber)) == -1)
@@ -588,7 +588,7 @@ int CUT_BufferDataSource::Read(LPSTR buffer, size_t count) {
     if(buffer == NULL)      return -1;
 
     // Read data from the buffer
-    int nBytesNumber = (int)min( count, (m_nDataSize - m_nCurPosition));
+    int nBytesNumber = (int)(std::min)( count, (m_nDataSize - m_nCurPosition));
     memcpy(buffer, (m_lpszBuffer + m_nCurPosition), nBytesNumber);
     buffer[nBytesNumber] = 0;
     m_nCurPosition += nBytesNumber;
@@ -611,7 +611,7 @@ int CUT_BufferDataSource::Write(LPCSTR buffer, size_t count) {
     if(buffer == NULL)      return -1;
 
     // Write data to the buffer
-    unsigned int nBytesNumber = (unsigned int)min(count, (m_nSize - m_nCurPosition));
+    unsigned int nBytesNumber = (unsigned int)(std::min)(count, (m_nSize - m_nCurPosition));
     memcpy((m_lpszBuffer + m_nCurPosition), buffer, nBytesNumber);
     m_nCurPosition += nBytesNumber;
     m_lpszBuffer[m_nCurPosition] = 0;
@@ -695,10 +695,8 @@ CUT_MapFileDataSource::CUT_MapFileDataSource(DWORD SizeHigh, DWORD SizeLow, LPCS
     m_lnActualSize          = m_lnSize;
 
     // Initialize data source name
-    m_szName[0] = 0;
     if(name != NULL) {
-        strncpy(m_szName, name,MAX_PATH);
-        m_szName[MAX_PATH]  = 0;
+        m_szName = name;
         }
 
     // Initialize map file name
@@ -727,7 +725,7 @@ RETURN:
 CUT_DataSource * CUT_MapFileDataSource::clone()
 {
     // Create object
-    CUT_MapFileDataSource   *ptrNewDataSource = new CUT_MapFileDataSource(m_lnActualSize.HighPart, m_lnActualSize.LowPart, m_szName, (m_hFile == INVALID_HANDLE_VALUE) ? m_szFileName : NULL );
+    CUT_MapFileDataSource   *ptrNewDataSource = new CUT_MapFileDataSource(m_lnActualSize.HighPart, m_lnActualSize.LowPart, m_szName.c_str(), (m_hFile == INVALID_HANDLE_VALUE) ? m_szFileName : NULL );
 
     // Copy the data if nessesary
     if(m_hMapFile != NULL && m_lpMapAddress)
@@ -811,7 +809,7 @@ int CUT_MapFileDataSource::Open(OpenMsgType type)
         m_lnActualSize.QuadPart = m_lnSize.QuadPart;
 
     // Initialize increment value. Size divided by 8 ( or shifted by 3)
-    m_lnIncrement.QuadPart = max(Int64ShraMod32(m_lnSize.QuadPart, 3), LONGLONG(4096));
+    m_lnIncrement.QuadPart = (std::max)(Int64ShraMod32(m_lnSize.QuadPart, 3), LONGLONG(4096));
 
     // If file is opened in append mode - increase it size
     if(type == UTM_OM_APPEND || (type == UTM_OM_WRITING && m_lnSize.HighPart == 0 && m_lnSize.LowPart == 0 ))
@@ -981,7 +979,7 @@ int CUT_MapFileDataSource::Read(LPSTR buffer, size_t count)
 
     // Calculate number of bytes to read
     lnDiff.QuadPart         = m_lnActualSize.QuadPart - m_lnPosition.QuadPart;
-    lnBytesToRead.QuadPart  = min(lnBufferSize.QuadPart, lnDiff.QuadPart);
+    lnBytesToRead.QuadPart  = (std::min)(lnBufferSize.QuadPart, lnDiff.QuadPart);
 
     // Read data
     if(lnBytesToRead.QuadPart > 0) {
@@ -1029,7 +1027,7 @@ int CUT_MapFileDataSource::Write(LPCSTR buffer, size_t count) {
         m_bTempFileName = FALSE;
 
         // Increase buffer size
-        m_lnActualSize.QuadPart = m_lnSize.QuadPart + max(m_lnIncrement.QuadPart, lnDataSize.QuadPart+100);
+        m_lnActualSize.QuadPart = m_lnSize.QuadPart + (std::max)(m_lnIncrement.QuadPart, lnDataSize.QuadPart+100);
 
         // Reopen
         int rt = Open(m_OpenType);
@@ -1047,7 +1045,7 @@ int CUT_MapFileDataSource::Write(LPCSTR buffer, size_t count) {
     // Write data
     memcpy((m_lpMapAddress + m_lnPosition.QuadPart), buffer, count);
     m_lnPosition.QuadPart += count;
-    m_lnActualSize.QuadPart = max(m_lnActualSize.QuadPart, m_lnPosition.QuadPart);
+    m_lnActualSize.QuadPart = (std::max)(m_lnActualSize.QuadPart, m_lnPosition.QuadPart);
     *(m_lpMapAddress + m_lnPosition.QuadPart) = 0;
 
     return (int)count;

@@ -51,7 +51,7 @@ before_build:
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     # Python 3 needed for python build_3rdparty.py
-    - set PATH=C:\Python37-x64;C:\Python37-x64\Scripts;%PATH%
+    - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
     - mkdir _build
     - cd _build
 

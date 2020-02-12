@@ -246,8 +246,9 @@ int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 	ssize_t retcode = 0;
 	int res = TRUE;
 	sftp_file sfile = NULL;
-	const int bufsize = 4096;
-	char buf[bufsize];
+	const int bufsize = 128 * 1024;
+	std::vector<char> _buf(bufsize);
+	char * buf = &_buf[0];
 	DWORD len = 0;
 	long totalReceived = 0;
 	long totalSize = -1;
@@ -296,8 +297,9 @@ int FTPClientWrapperSSH::SendFile(HANDLE hFile, const char * ftpfile) {
 	ssize_t retcode = 0;
 	int res = TRUE;
 	sftp_file sfile = NULL;
-	const int bufsize = 4096;
-	char buf[bufsize];
+	const int bufsize = 128 * 1024;
+	std::vector<char> _buf(bufsize);
+	char * buf = &_buf[0];
 	DWORD len = 0;
 	long totalSent = 0;
 	long totalSize = -1;

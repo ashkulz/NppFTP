@@ -5,7 +5,7 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.0.2u.tar.gz',
+        'url'   : 'https://www.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz',
         'sha1'  : '740916d79ab0d209d2775277b1c6c3ec2f6502b2',
         'target': {
             'mingw-w64': {

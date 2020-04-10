@@ -1,9 +1,10 @@
-version: 0.30.5.{build}
+version: 0.30.6.{build}
 image: Visual Studio 2017
 
 
 environment:
   matrix:
+    #- PlatformToolset: v142
     - PlatformToolset: v141_xp
     #- PlatformToolset: v140_xp
     #- PlatformToolset: v120_xp

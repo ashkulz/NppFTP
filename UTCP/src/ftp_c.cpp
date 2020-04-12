@@ -19,7 +19,7 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -1911,6 +1911,10 @@ int CUT_FTPClient::SetDataPortRange(int min, int max) {
 
     if (m_nDataPortMax > 65001)
         m_nDataPortMax = 65001;
+
+    //avoid division by zero error
+    if(m_nDataPortMax == m_nDataPortMin)
+        m_nDataPortMax = m_nDataPortMin + 1;
 
     m_nDataPort = m_nDataPortMin + GetTickCount()%(m_nDataPortMax-m_nDataPortMin);
 

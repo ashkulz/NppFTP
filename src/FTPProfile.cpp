@@ -51,7 +51,7 @@ FTPProfile::FTPProfile() :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name) :
-	m_parent(TEXT("")),
+	m_parent(NULL),
 	m_port(21),
 	m_askPassword(false),
 	m_askPassphrase(false),
@@ -82,7 +82,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
-	m_parent(TEXT("")),
+	m_parent(NULL),
 	m_port(other->m_port),
 	m_askPassword(other->m_askPassword),
 	m_askPassphrase(other->m_askPassphrase),

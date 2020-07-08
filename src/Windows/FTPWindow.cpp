@@ -1050,7 +1050,7 @@ int FTPWindow::OnItemDrop(FileObject*& item, FileObject* parent, bool bIsMove)
 		TreeView_SelectItem(m_treeview.GetHWND(), hti);
 
 	}
-	item = NULL;
+	item = NULL;  
 	return TRUE;
 }
 

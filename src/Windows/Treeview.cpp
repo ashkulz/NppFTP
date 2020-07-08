@@ -34,7 +34,8 @@
 
 Treeview::Treeview() :
 	Window(NULL, WC_TREEVIEW),
-	m_treeImagelist(NULL)
+	m_treeImagelist(NULL),
+	m_isprofilestree(false)
 {
 	m_exStyle = WS_EX_CLIENTEDGE;
 	m_style = WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_HASLINES;
@@ -57,7 +58,7 @@ int Treeview::Create(HWND hParent) {
 
 	HRESULT hres = PF::SetWindowTheme(m_hwnd, L"explorer", NULL);
 	if (hres != E_NOTIMPL) {
-		::SetWindowLongPtr(m_hwnd, GWL_STYLE, WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_TRACKSELECT);
+		::SetWindowLongPtr(m_hwnd, GWL_STYLE, WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_TRACKSELECT| TVS_EDITLABELS);
 		SendMessage(m_hwnd, TVM_SETEXTENDEDSTYLE, 0, TVS_EX_FADEINOUTEXPANDOS|TVS_EX_DOUBLEBUFFER|TVS_EX_AUTOHSCROLL);
 	}
 
@@ -65,6 +66,9 @@ int Treeview::Create(HWND hParent) {
 }
 
 HTREEITEM Treeview::AddRoot(FileObject * rootDir) {
+	m_isprofilestree = (dynamic_cast<ProfileObject*>(rootDir) != nullptr);
+		
+
 	TV_INSERTSTRUCT tvinsert;
 	tvinsert.hParent = TVI_ROOT;
 	tvinsert.hInsertAfter = TVI_LAST;
@@ -283,7 +287,7 @@ int Treeview::UpdateDirectory(FileObject * dir) {
 	if (res == FALSE)
 		return -1;
 
-	bool expanded = (tvi.state != 0);
+	bool expanded = (tvi.state & TVIS_EXPANDED);
 	if (expanded) {
 		RemoveAllChildItems(hti);
 		FillTreeDirectory(dir);
@@ -292,11 +296,36 @@ int Treeview::UpdateDirectory(FileObject * dir) {
 	return 0;
 }
 
-int Treeview::ExpandDirectory(FileObject * dir) {
+int Treeview::CollapseDirectory(FileObject* dir)
+{
+	void* dat = dir->GetData();
+	if (!dat)
+		return -3;
+
+	HTREEITEM hti = (HTREEITEM)dat;
+
+	TV_ITEM tvi;
+	tvi.hItem = hti;
+	tvi.mask = TVIF_STATE;
+	tvi.stateMask = TVIS_EXPANDED;
+	BOOL res = TreeView_GetItem(m_hwnd, &tvi); 
+	if (res == FALSE) 
+		return -2;
+
+	bool expanded = (tvi.state & TVIS_EXPANDED);
+	if (expanded) {
+		TreeView_Expand(m_hwnd, hti, TVE_COLLAPSE);
+		return 0;
+	}
+	return -1;
+}
+
+int Treeview::ExpandDirectory(FileObject * dir, FileObject* selectSubItem) {
 	void* dat = dir->GetData();
 	if (!dat)
 		return 0;
 
+	
 	HTREEITEM hti = (HTREEITEM)dat;
 	RECT rc = {0,0,0,0};
 	RECT *rcPtr = &rc;
@@ -306,13 +335,21 @@ int Treeview::ExpandDirectory(FileObject * dir) {
 		TreeView_Expand(m_hwnd, hti, TVE_EXPAND);
 	}
 
+	if (selectSubItem != NULL && (dat = selectSubItem->GetData())) {
+		curSelectedItem = (HTREEITEM)dat;
+		TreeView_SelectItem(m_hwnd, NULL);
+		TreeView_SetItemState(m_hwnd, curSelectedItem, 0, TVIS_SELECTED);
+		TreeView_SelectItem(m_hwnd, curSelectedItem);
+		return 0;
+	}
+
 	if (curSelectedItem) {
 		TreeView_SelectItem(m_hwnd, NULL);
 		TreeView_SetItemState(m_hwnd, curSelectedItem, 0, TVIS_SELECTED);
 	}
 
 	TreeView_SelectItem(m_hwnd, hti);
-    curSelectedItem = hti;
+	curSelectedItem = hti;
 	return 0;
 }
 
@@ -333,7 +370,8 @@ int Treeview::EnsureObjectVisible(FileObject * fo) {
 	hti = (HTREEITEM)(fo->GetData());
 
 	TreeView_EnsureVisible(m_hwnd, hti);
-	return 0;
+
+	return 0; 
 }
 
 int Treeview::ClearAll() {

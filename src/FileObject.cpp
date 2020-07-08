@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+FileObject::FileObject() {}
+
 
 FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 	m_isDir(_isDir),

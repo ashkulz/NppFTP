@@ -42,13 +42,33 @@ ProfilesDialog::ProfilesDialog() :
 {
 }
 
+ProfilesDialog::ProfilesDialog(int dlgId) :
+	Dialog(dlgId),
+	m_profiles(NULL),
+	m_currentProfile(NULL),
+	m_globalCache(NULL),
+	m_ftpWindow(NULL),
+	m_pageConnection(IDD_DIALOG_PROFILESCONNECTION),
+	m_pageAuthentication(IDD_DIALOG_PROFILESAUTHENTICATION),
+	m_pageTransfer(IDD_DIALOG_PROFILESTRANSFERS),
+	m_pageFTP(IDD_DIALOG_PROFILESFTP),
+	m_pageCache(IDD_DIALOG_PROFILESCACHE),
+	m_hPageConnection(NULL),
+	m_hPageTransfer(NULL),
+	m_hPageFTP(NULL),
+	m_hPageCache(NULL)
+{
+}
+
 ProfilesDialog::~ProfilesDialog()  {
 }
 
-int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache) {
+int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache,FTPProfile* selProfile) {
 	m_ftpWindow = ftpWindow;
 	m_profiles = profileVect;
 	m_globalCache = globalCache;
+	m_preselectedProfile = selProfile;
+
 	return Dialog::Create(hParent, true, NULL);
 }
 
@@ -117,7 +137,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				m_ftpWindow->OnProfileChange();
 				LoadProfiles();
 			}
-			break; }
+			break; } 
 		case IDC_BUTTON_PROFILE_DELETE: {
 			for(size_t i = 0; i < m_profiles->size(); i++) {
 				if (m_profiles->at(i) == m_currentProfile) {
@@ -592,9 +612,16 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	}
 
 	if (m_profiles->size() > 0) {
+		size_t index = 0;
+		for (size_t i = 0; i < m_profiles->size(); i++) {
+			if (m_profiles->at(i) == m_preselectedProfile) { 
+				index = i;
+				break;
+			}
+		}
 		HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
-		ListBox_SetCurSel(hListProfile, 0);
-		OnSelectProfile(m_profiles->at(0));
+		ListBox_SetCurSel(hListProfile, index);
+		OnSelectProfile(m_preselectedProfile); 
 	} else {
 		OnSelectProfile(NULL);
 	}

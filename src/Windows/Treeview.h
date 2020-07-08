@@ -21,6 +21,7 @@
 
 #include "Window.h"
 #include <commctrl.h>
+#include "ProfileObject.h"
 
 #ifndef RBN_CHEVRONPUSHED
 #define RBN_CHEVRONPUSHED (RBN_FIRST - 10)
@@ -54,10 +55,12 @@ public:
 
 	virtual int				UpdateFileObject(FileObject * fo);
 	virtual int				UpdateDirectory(FileObject * dir);
-	virtual int				ExpandDirectory(FileObject * dir);
+	virtual int				ExpandDirectory(FileObject* dir, FileObject* selectItem = NULL);
+	virtual int			CollapseDirectory(FileObject* dir);
 	virtual int				EnsureObjectVisible(FileObject * fo);
 
 	virtual int				ClearAll();
+	bool					m_isprofilestree;
 protected:
 	virtual int				ClearObjectDataRecursive(FileObject * fo, bool includeTop);
 

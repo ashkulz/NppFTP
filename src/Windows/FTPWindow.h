@@ -23,6 +23,7 @@
 
 #include "Toolbar.h"
 #include "Treeview.h"
+#include "ProfileObject.h"
 #include "QueueWindow.h"
 #include "FTPProfile.h"
 #include "FTPSettings.h"
@@ -59,6 +60,7 @@ public:
 
 	virtual LRESULT			MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+	virtual int				OnItemDrop(FileObject*& item, FileObject* parent, bool bIsMove);
 	////////////////////////
 	//DropTargetWindow
 	virtual bool			AcceptType(LPDATAOBJECT pDataObj);
@@ -91,9 +93,13 @@ protected:
 	virtual int				DeleteDirectory(FileObject * dir);
 
 	virtual int				CreateFile(FileObject * parent);
-	virtual int				DeleteFile(FileObject * file);
+	virtual int				DeleteFile(FileObject* file);
 
-	virtual int				Rename(FileObject * fo);
+	virtual int				DeleteProfile(ProfileObject* profile);
+
+	virtual int				Rename(FileObject * fo, const TCHAR* newName=NULL);
+
+	virtual int				ShowProfiles();
 
 	//virtual int				UploadCurrentFile(FileObject * parent);
 	//virtual int				UploadOtherFile(FileObject * parent);
@@ -105,6 +111,7 @@ protected:
 	QueueWindow				m_queueWindow;
 	SettingsDialog			m_settingsDialog;
 	ProfilesDialog			m_profilesDialog;
+	ProfilesDialog			m_profilesDialogSingle; 
 	WindowSplitter			m_splitter;
 
 	OutputWindow			m_outputWindow;
@@ -113,9 +120,13 @@ protected:
 	HBRUSH					m_backgroundBrush;
 
 	FileObject*				m_currentSelection;
+	const char*				m_lastUsedProfile;
 	bool					m_localFileExists;
 
 	HMENU					m_popupProfile;
+	HMENU					m_popupTreeProfile;
+	HMENU					m_popupTreeProfileFolder;
+	HMENU					m_popupTreeProfileRootFolder;
 	HMENU					m_popupSettings;
 	HMENU					m_popupFile;
 	HMENU					m_popupDir;
@@ -133,8 +144,10 @@ protected:
 
 	DragDropWindow			m_dndWindow;
 	FileObject*				m_currentDropObject;
+	FileObject*				m_currentDragObject;
 
 	static const TCHAR * FTPWINDOWCLASS;
+
 };
 
 #endif //FTPWINDOW_H

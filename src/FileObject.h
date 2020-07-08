@@ -29,6 +29,7 @@ class FileObject {
 public:
 							FileObject(const char* path, bool isDir, bool isLink);
 							FileObject(FTPFile * ftpfile);
+							FileObject();
 	virtual					~FileObject();
 
 	virtual int				GetChildCount() const;

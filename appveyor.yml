@@ -11,11 +11,14 @@ environment:
 
 platform:
     - x64
-    - Win32
 
 configuration:
     - Release
     #- Debug
+    
+branches:
+  only:
+  - Profiles_in_treeview
 
 install:
     - if "%platform%"=="x64" set archi=amd64

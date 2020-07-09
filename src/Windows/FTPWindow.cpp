@@ -808,13 +808,13 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 							HWND hwndTV = nmh.hwndFrom;
 							LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lParam;
 							HIMAGELIST himl;    // handle to image list 
-							RECT rcItem;        // bounding rectangle of item 
+							//RECT rcItem;        // bounding rectangle of item 
 
 							m_currentSelection=m_treeview.GetItemFileObject(lpnmtv->itemNew.hItem);
 							if (((ProfileObject*)m_currentSelection)->isRoot()) break;
 							TreeView_SelectItem(hwndTV, lpnmtv->itemNew.hItem);
 							himl = TreeView_CreateDragImage(hwndTV, lpnmtv->itemNew.hItem);
-							TreeView_GetItemRect(hwndTV, lpnmtv->itemNew.hItem, &rcItem, TRUE);
+							//TreeView_GetItemRect(hwndTV, lpnmtv->itemNew.hItem, &rcItem, TRUE);
 							ImageList_BeginDrag(himl, 0, 0, 0);
 							ImageList_DragEnter(hwndTV, lpnmtv->ptDrag.x, lpnmtv->ptDrag.x);
 

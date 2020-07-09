@@ -76,7 +76,7 @@ ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FT
 	if (strcmp(path, "/") == 0) {
 		ProfileObject::treeMap.clear();
 		ProfileObject::treeMap.insert({ "",this });
-		m_path = "";
+		m_path = SU::strdup("");
 		m_isRoot = TRUE;
 	}
 	else {

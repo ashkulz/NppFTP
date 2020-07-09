@@ -36,9 +36,11 @@ FTPWindow::FTPWindow() :
 	DockableWindow(FTPWINDOWCLASS),
 	DropTargetWindow(),
 	m_treeimagelist(m_hInstance),
+	m_profilesDialogSingle(IDD_DIALOG_PROFILES_SINGLE),
 	m_splitter(this, &m_treeview, &m_queueWindow),
 	m_outputShown(false),
 	m_currentSelection(NULL),
+	m_lastUsedProfile(NULL),
 	m_localFileExists(false),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
@@ -47,8 +49,6 @@ FTPWindow::FTPWindow() :
 	m_busy(false),
 	m_cancelOperation(NULL),
 	m_dndWindow(this),
-	m_profilesDialogSingle(IDD_DIALOG_PROFILES_SINGLE),
-	m_lastUsedProfile(NULL),
 	m_currentDragObject(NULL),
 	m_currentDropObject(NULL)
 {

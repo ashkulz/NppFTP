@@ -49,8 +49,8 @@ FTPWindow::FTPWindow() :
 	m_busy(false),
 	m_cancelOperation(NULL),
 	m_dndWindow(this),
-	m_currentDragObject(NULL),
-	m_currentDropObject(NULL)
+	m_currentDropObject(NULL),
+	m_currentDragObject(NULL)
 {
 	m_exStyle = 0;
 	m_style = 0;

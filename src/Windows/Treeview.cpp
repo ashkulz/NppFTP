@@ -34,8 +34,8 @@
 
 Treeview::Treeview() :
 	Window(NULL, WC_TREEVIEW),
-	m_treeImagelist(NULL),
-	m_isprofilestree(false)
+	m_isprofilestree(false),
+	m_treeImagelist(NULL)
 {
 	m_exStyle = WS_EX_CLIENTEDGE;
 	m_style = WS_CHILD|/*WS_VISIBLE|*/WS_BORDER|TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_HASLINES;

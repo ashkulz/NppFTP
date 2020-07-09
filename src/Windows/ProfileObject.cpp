@@ -27,14 +27,14 @@ vProfile*  ProfileObject::m_vProfiles = NULL;
 bool ProfileObject::m_debug = FALSE;
 
 ProfileObject::ProfileObject(const char* path, bool _isDir, bool _isLink) :
+	m_profile(NULL),
 	m_isDir(_isDir),
-	m_isRoot(false),
 	m_isLink(_isLink),
+	m_isRoot(false),
 	m_childCount(0),
 	m_parent(NULL),
 	m_needRefresh(!_isDir),	//refresh only required for dirs
 	m_data(NULL),
-	m_profile(NULL),
 	m_size(-1)
 {
 	size_t len = strlen(path) + 1;
@@ -61,14 +61,14 @@ ProfileObject::ProfileObject(const char* path, bool _isDir, bool _isLink) :
 }
 
 ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FTPProfile* profile) :
+	m_profile(profile),
 	m_isDir(_isDir),
-	m_isRoot(false),
 	m_isLink(false),
+	m_isRoot(false),
 	m_childCount(0),
 	m_parent(NULL),
 	m_needRefresh(!_isDir),	//refresh only required for dirs
 	m_data(NULL),
-	m_profile(profile),
 	m_size(-1)
 {
 
@@ -98,9 +98,9 @@ ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FT
 }
 
 ProfileObject::ProfileObject(FTPFile* ftpfile) :
+	m_profile(NULL),
 	m_childCount(0),
 	m_parent(NULL),
-	m_profile(NULL),
 	m_data(NULL)
 {
 

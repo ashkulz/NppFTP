@@ -137,7 +137,7 @@ int FileObject::SetParent(FileObject * parent) {
 }
 
 FileObject* FileObject::GetParent() {
-	return m_parent;
+	return m_parent; 
 }
 
 int FileObject::SetDir(bool bisDir) {
@@ -158,6 +158,11 @@ bool FileObject::isLink() const {
 
 bool FileObject::isDir() const {
 	return m_isDir;
+}
+
+bool FileObject::isRoot() const
+{
+	return (strcmp(GetPath(), "/") == 0);
 }
 
 const char* FileObject::GetName() const {

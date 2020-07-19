@@ -346,6 +346,28 @@ int FTPSession::UploadFile(const TCHAR * sourcefile, const char * target, bool t
 	return 0;
 }
 
+int FTPSession::CopyFile(const char* sourcefile, const char* target, int code) {
+	if (!m_running)
+		return -1;
+
+	if (sourcefile == NULL || target == NULL)
+		return -1;
+
+	const TCHAR* sourcenamelocal = PU::FindLocalFilename(SU::Utf8ToTChar(sourcefile));
+
+	char* targetfile = new char[MAX_PATH];
+	PU::ConcatLocalToExternal(target, sourcenamelocal, targetfile, MAX_PATH);
+
+	Transfer_Mode tMode = m_currentProfile->GetFileTransferMode(sourcenamelocal);
+
+	QueueCopyFile* uldop = new QueueCopyFile(m_hNotify,sourcefile, targetfile, tMode, code);
+	m_transferQueue->AddQueueOp(uldop);
+
+	delete[] targetfile;
+
+	return 0;
+}
+
 int FTPSession::MkDir(const char * path) {
 	if (!m_running)
 		return -1;

@@ -35,12 +35,11 @@ const TCHAR * FTPWindow::FTPWINDOWCLASS = TEXT("NPPFTPMAIN");
 FTPWindow::FTPWindow() :
 	DockableWindow(FTPWINDOWCLASS),
 	DropTargetWindow(),
+	ProfilesWindow(this),
 	m_treeimagelist(m_hInstance),
-	m_profilesDialogSingle(IDD_DIALOG_PROFILES_SINGLE),
 	m_splitter(this, &m_treeview, &m_queueWindow),
 	m_outputShown(false),
 	m_currentSelection(NULL),
-	m_lastUsedProfile(NULL),
 	m_localFileExists(false),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
@@ -58,6 +57,7 @@ FTPWindow::FTPWindow() :
 	//Create background brush
 	//DWORD colorBkGnd = GetSysColor(COLOR_3DFACE);
 	m_backgroundBrush = GetSysColorBrush(COLOR_3DFACE);//CreateSolidBrush(colorBkGnd);
+
 }
 
 FTPWindow::~FTPWindow() {
@@ -145,6 +145,7 @@ int FTPWindow::Destroy() {
 	DestroyMenu(m_popupProfile);
 	DestroyMenu(m_popupFile);
 	DestroyMenu(m_popupTreeProfile);
+	DestroyMenu(m_popupTreeProfileRootFolder);
 	DestroyMenu(m_popupDir);
 	DestroyMenu(m_popupLink);
 
@@ -209,41 +210,6 @@ int FTPWindow::OnSize(int newWidth, int newHeight) {
 	return 0;
 }
 
-int FTPWindow::ShowProfiles()
-{
-	m_currentSelection = NULL;
-	m_treeview.ClearAll();
-
-
-	ProfileObject* tvRoot = new ProfileObject("/", "Profiles", true);
-	tvRoot->SetProfiles(m_vProfiles);
-	for (size_t i = 0; i < m_vProfiles->size(); i++) {
-		FTPProfile* profile = m_vProfiles->at(i);
-		tvRoot->AddChild(SU::TCharToUtf8(profile->GetParent()), SU::TCharToUtf8(profile->GetName()),profile);
-	}
-	m_treeview.AddRoot(tvRoot);
-
-	ProfileObject* lastProfile = NULL;
-	if (m_lastUsedProfile != NULL && (lastProfile=tvRoot->GetChildByPath(m_lastUsedProfile)) != NULL) {
-		m_treeview.EnsureObjectVisible(lastProfile->GetParent());
-		m_treeview.ExpandDirectory(lastProfile->GetParent(),lastProfile);
-	}
-	else {
-		ProfileObject* firstProfile = tvRoot->GetFirstProfile();
-		if (firstProfile != NULL)
-			m_treeview.EnsureObjectVisible(firstProfile);
-		else
-			m_treeview.ExpandDirectory(tvRoot);
-	}
-	
-	SetInfo(TEXT("Profiles"));
-
-	SetToolbarState();
-
-	return 0;
-
-}
-
 int FTPWindow::OnProfileChange() {
 	if (!m_vProfiles)
 		return -1;
@@ -282,9 +248,8 @@ int FTPWindow::OnProfileChange() {
 
 	m_toolbar.SetMenu(IDB_BUTTON_TOOLBAR_CONNECT, m_popupProfile);
 
+	InitProfilesTree();
 	SetToolbarState();
-
-	this->ShowProfiles();
 
 	return 0;
 }
@@ -363,11 +328,9 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			m_splitter.OnButtonDown();
 			break; }
 		case WM_LBUTTONUP: {
-			m_splitter.OnButtonUp();
-			m_ftpSettings->SetSplitRatio(m_splitter.GetRatio());
-
-			if (m_currentDragObject != NULL && m_treeview.m_isprofilestree)
-			{
+			if(m_splitter.OnButtonUp())
+				m_ftpSettings->SetSplitRatio(m_splitter.GetRatio());
+			else if (m_currentDragObject != NULL )	{
 				// Get destination item.
 				HTREEITEM htiDest = TreeView_GetDropHilight(m_treeview.GetHWND());
 				ImageList_EndDrag();
@@ -380,23 +343,34 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					FileObject* parent = m_treeview.GetItemFileObject(htiDest);
 					if (!parent->isDir()) parent = parent->GetParent();
 					bool bIsMove = ((GetKeyState(VK_CONTROL) & 0x8000) == 0);
-					OnItemDrop(m_currentDragObject, parent, bIsMove);
-				}
+					if(!OnProfileItemDrop(m_currentDragObject, parent, bIsMove))
+						OnFileItemDrop(m_currentDragObject, parent, bIsMove);
+					m_currentDragObject = NULL;
+
+				} 
 				m_currentDragObject = NULL;
 				result = TRUE;
 			}
-
 			break; }
 		case WM_MOUSEMOVE: {
-			if (wParam & MK_LBUTTON) {
-				m_splitter.OnMouseMove();
+			if ((wParam & MK_LBUTTON) && m_splitter.OnMouseMove()) break;
+			if((wParam & MK_LBUTTON) || (wParam & MK_RBUTTON)) {
 
 				HTREEITEM htiTarget;  // Handle to target item. 
 				TVHITTESTINFO tvht;   // Hit test information. 
 
-				if (m_currentDragObject != NULL && m_treeview.m_isprofilestree)
+				if (m_currentDragObject != NULL )
 				{
-					//OutMsg("DragItem %s", m_currentDragObject->GetPath());
+					if (m_currentDragObject->isDir() &&
+						dynamic_cast<ProfileObject*>(m_currentDragObject) == NULL &&
+						(GetKeyState(VK_CONTROL) & 0x8000) != 0) { // directories can't be copied
+						ImageList_EndDrag();
+						ReleaseCapture();
+						ShowCursor(TRUE);
+						result = FALSE;
+						m_currentDragObject = NULL;
+						break;
+					}
 					POINT point;
 					point.x = GET_X_LPARAM(lParam);
 					point.y = GET_Y_LPARAM(lParam);
@@ -405,21 +379,23 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					ImageList_DragMove(point.x, point.y);
 					// Turn off the dragged image so the background can be refreshed.
 					ImageList_DragShowNolock(FALSE);
-
 					tvht.pt.x = point.x;
 					tvht.pt.y = point.y;
 					if ((htiTarget = TreeView_HitTest(m_treeview.GetHWND(), &tvht)) != NULL)
 					{
 						TreeView_SelectDropTarget(m_treeview.GetHWND(), htiTarget);
 					}
+					VScrollTreeView(point.y);
 					ImageList_DragShowNolock(TRUE);
+
+
 					result = TRUE;
 				}
 			}
 			break; }
 		case WM_COMMAND: {
 			switch(LOWORD(wParam)) {
-				case IDM_POPUP_QUEUE_ABORT: {
+			case IDM_POPUP_QUEUE_ABORT: {
 					if (m_cancelOperation && m_cancelOperation->GetRunning()) {
 						m_ftpSession->AbortTransfer();
 					}
@@ -463,15 +439,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
 
 				case IDM_POPUP_PROFILE_CONNECT: {
-					if (!m_busy && ((ProfileObject*)(m_currentSelection))->GetProfile() != NULL ){
-						FTPProfile* profile = ((ProfileObject*)(m_currentSelection))->GetProfile();
-						int ret = m_ftpSession->StartSession(profile);
-						if (ret == -1) {
-							OutErr("[NppFTP] Cannot start FTP session");
-							result = TRUE;
-							break;
-						}
-						m_ftpSession->Connect();
+					if (!m_busy && ConnectRemote(m_currentSelection) ){
 						result = TRUE;
 					}
 					else {
@@ -576,68 +544,44 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					TreeView_EditLabel(m_treeview.GetHWND(), hti);
 					//this->Rename(m_currentSelection);
 					result = TRUE;
-					break; } 
+					break; }
 				case IDM_POPUP_SETTINGSGENERAL: {
 					m_settingsDialog.Create(m_hwnd, m_ftpSettings);
 					result = TRUE;
 					break; }
 				case IDM_POPUP_PROFILE_EDIT:
 				case IDM_POPUP_SETTINGSPROFILE: {
-					if(m_treeview.m_isprofilestree && !m_currentSelection->isDir())
-						m_profilesDialogSingle.Create(m_hwnd, this, m_vProfiles, m_ftpSettings->GetGlobalCache(),((ProfileObject*)(m_currentSelection))->GetProfile());
-					else
+					if(!EditProfile(m_currentSelection))
 						m_profilesDialog.Create(m_hwnd, this, m_vProfiles, m_ftpSettings->GetGlobalCache());
 					result = TRUE;
 					break; }
-				case IDM_POPUP_PROFILE_NEW: {
-					ProfileObject* parentFolder = (ProfileObject*)m_currentSelection;
-					FTPProfile* newProfile = new FTPProfile(TEXT("New profile"));
-					newProfile->SetCacheParent(m_ftpSettings->GetGlobalCache());
-					m_vProfiles->push_back(newProfile);
-					newProfile->AddRef();
-					newProfile->SetParent(SU::Utf8ToTChar(parentFolder->GetPath()));
-					m_treeview.ExpandDirectory(parentFolder);
-					ProfileObject* newProfileObject = parentFolder->AddChild("", "New profile", newProfile);
-					m_treeview.FillTreeDirectory(parentFolder);
-					m_treeview.ExpandDirectory(parentFolder);
-					m_treeview.Focus();
-					HTREEITEM htiNewProfile = (HTREEITEM)newProfileObject->GetData();
-					TreeView_SelectItem(m_treeview.GetHWND(), htiNewProfile);
-
-					m_profilesDialogSingle.Create(m_hwnd, this, m_vProfiles, m_ftpSettings->GetGlobalCache(), newProfile);
-
-					m_treeview.Focus();
-					TreeView_SelectItem(m_treeview.GetHWND(), htiNewProfile);
-					TreeView_EditLabel(m_treeview.GetHWND(), htiNewProfile);
+				case IDM_POPUP_PROFILE_CREATE: {
+					result= CreateProfile(m_currentSelection);
 					break;	}
 				case IDM_POPUP_PROFILE_DELETE: {
-					if ((result = DeleteProfile((ProfileObject*)m_currentSelection)) >= 0)
-						m_currentSelection = NULL;
+					result=DeleteProfile(m_currentSelection);
 					break;	}
-				case IDM_POPUP_PROFILE_CUT:
-				case IDM_POPUP_PROFILE_COPY: {
+				case IDM_POPUP_CUT:
+				case IDM_POPUP_COPY: {
 					m_currentDragObject = m_currentSelection;
-					((ProfileObject*)m_currentDragObject)->m_cutpaste = LOWORD(wParam);
+					m_currentDragObject->m_cutpaste = LOWORD(wParam);
+					if (m_currentDragObject->m_cutpaste == IDM_POPUP_CUT) {
+						HTREEITEM hti = (HTREEITEM)(m_currentSelection->GetData());
+						if (hti != NULL)
+							TreeView_SetItemState(m_treeview.GetHWND(), hti, TVIS_CUT, TVIS_CUT);
+					}
 					result = TRUE;
 					break;	}
-				case IDM_POPUP_PROFILE_PASTE: {
-					if (m_currentDragObject == NULL || dynamic_cast<ProfileObject*>(m_currentDragObject) == NULL) {
+				case IDM_POPUP_PASTE: {
+					if (m_currentDragObject == NULL ) {
 						result = FALSE;
 						break;
 					}
-					result=OnItemDrop(m_currentDragObject, m_currentSelection, (((ProfileObject*)m_currentDragObject)->m_cutpaste == IDM_POPUP_PROFILE_CUT));
+					if(!(result=OnProfileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT)))
+						result=OnFileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT);
 					break; 	}
-				case IDM_POPUP_PROFILE_FOLDERNEW: {
-					ProfileObject* parentFolder = (ProfileObject*)m_currentSelection;
-					ProfileObject* newFolder = parentFolder->AddChild("New Folder", "");
-					m_treeview.FillTreeDirectory(parentFolder);
-					m_treeview.ExpandDirectory(parentFolder);
-					m_treeview.Focus();
-					HTREEITEM htiNewFolder= (HTREEITEM)newFolder->GetData();
-					TreeView_SelectItem(m_treeview.GetHWND(), htiNewFolder);
-					TreeView_EditLabel(m_treeview.GetHWND(), htiNewFolder);
-					m_currentSelection = newFolder;
-					result = TRUE;
+				case IDM_POPUP_PROFILE_FOLDER_CREATE: {
+					result = CreateProfileFolder(m_currentSelection);
 					break;	}											 
 				default: {
 					unsigned int value = LOWORD(wParam);
@@ -669,7 +613,10 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 									m_ftpSession->TerminateSession();
 									return TBDDRET_DEFAULT;
 								}
-								result = m_toolbar.DoDropDown(IDB_BUTTON_TOOLBAR_CONNECT);
+								else {
+									if(!(result=ConnectRemote(m_currentSelection)))
+										result = m_toolbar.DoDropDown(IDB_BUTTON_TOOLBAR_CONNECT);
+								}
 								break; }
 							case IDB_BUTTON_TOOLBAR_SETTINGS: {
 								result = m_toolbar.DoDropDown(IDB_BUTTON_TOOLBAR_SETTINGS);
@@ -690,42 +637,53 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case TVN_KEYDOWN: {
 					LPNMTVKEYDOWN ptvkd = (LPNMTVKEYDOWN)lParam;
 					result = FALSE;
+					if ((GetKeyState(VK_ESCAPE) & 0x8000) != 0) {
+						if (m_currentDragObject != NULL) {
+							TreeView_SetItemState(nmh.hwndFrom, (HTREEITEM)m_currentDragObject->GetData(), ~TVIS_CUT, TVIS_CUT);
+							m_currentDragObject = NULL;
+							ImageList_EndDrag();
+							ReleaseCapture();
+							ShowCursor(TRUE);
+						}
+						break;
+					}
 					if (m_currentSelection == NULL) break;
-
 					if ((GetKeyState(VK_CONTROL) & 0x8000) != 0) {
-						if (!((ProfileObject*)m_currentSelection)->isRoot() &&
+						if ( !(m_currentSelection != NULL && m_currentSelection->isRoot())  &&
 							((GetKeyState(0x43) & 0x8000) != 0 || (GetKeyState(VK_INSERT) & 0x8000))) { //CTRL-C CTRL-INS
 							m_currentDragObject = m_currentSelection;
-							((ProfileObject*)m_currentDragObject)->m_cutpaste = IDM_POPUP_PROFILE_COPY;
+							m_currentDragObject->m_cutpaste = IDM_POPUP_COPY;
 							result = TRUE;
 							break;
 						}
-						else if (!((ProfileObject*)m_currentSelection)->isRoot() && (GetKeyState(0x58) & 0x8000) != 0) { //CTRL-X
+						else if (!(m_currentSelection != NULL && m_currentSelection->isRoot()) && (GetKeyState(0x58) & 0x8000) != 0) { //CTRL-X
 							m_currentDragObject = m_currentSelection;
-							((ProfileObject*)m_currentDragObject)->m_cutpaste = IDM_POPUP_PROFILE_CUT;
+							m_currentDragObject->m_cutpaste = IDM_POPUP_CUT;
 							result = TRUE;
 							break;
 						}
 						else if ((GetKeyState(0x56) & 0x8000) != 0) { //CTRL-V
-							if (m_currentDragObject != NULL && dynamic_cast<ProfileObject*>(m_currentDragObject) != NULL) {
-								OnItemDrop(m_currentDragObject, m_currentSelection, (((ProfileObject*)m_currentDragObject)->m_cutpaste == IDM_POPUP_PROFILE_CUT));
-								result = TRUE;
-								break;
-							}
+							if(!OnProfileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT))
+								OnFileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT);
+							m_currentDragObject = NULL;
+							result = TRUE;
+							break;
 						}
 					}
 					else if ((GetKeyState(VK_SHIFT) & 0x8000) != 0) {
 						if ( (GetKeyState(VK_INSERT) & 0x8000)) { //SHIFT-INS
-							if (m_currentDragObject != NULL && dynamic_cast<ProfileObject*>(m_currentDragObject) != NULL) {
-								OnItemDrop(m_currentDragObject, m_currentSelection, (((ProfileObject*)m_currentDragObject)->m_cutpaste == IDM_POPUP_PROFILE_CUT));
+							if (m_currentDragObject != NULL ) {
+								if(!OnProfileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT))
+									OnFileItemDrop(m_currentDragObject, m_currentSelection, m_currentDragObject->m_cutpaste == IDM_POPUP_CUT);
+								m_currentDragObject = NULL;
 								result = TRUE;
 								break;
 							}
 							break;
 						}
-						else if (!((ProfileObject*)m_currentSelection)->isRoot() &&  (GetKeyState(VK_DELETE) & 0x8000) != 0) { //SHIFT-DELETE
+						else if (!(m_currentSelection != NULL && m_currentSelection->isRoot()) &&  (GetKeyState(VK_DELETE) & 0x8000) != 0) { //SHIFT-DELETE
 							m_currentDragObject = m_currentSelection;
-							((ProfileObject*)m_currentDragObject)->m_cutpaste = IDM_POPUP_PROFILE_CUT;
+							m_currentDragObject->m_cutpaste = IDM_POPUP_CUT;
 							result = TRUE;
 							break;
 						}
@@ -733,33 +691,36 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					}
 
 					switch (ptvkd->wVKey) {
-					case VK_DELETE: {
-						if ((result = DeleteProfile((ProfileObject*)m_currentSelection)) >= 0) {
-								m_currentSelection = NULL;
-								result = TRUE;
-						}
-						break;	}
+						case VK_DELETE: {
+							if (!(result = DeleteProfile(m_currentSelection)))
+							{
+								if (m_currentSelection->isDir())
+									result=DeleteDirectory(m_currentSelection);
+								else
+									result = DeleteFile(m_currentSelection);
+							}
+							if (result >= 0) m_currentSelection = NULL;
+							break;	}
 					}
 					break;	} 
 					case TVN_ENDLABELEDIT: {
 						LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO)lParam;
 						TV_ITEM tvitem = (TV_ITEM)ptvdi->item;
-						ProfileObject* current = (ProfileObject*)m_treeview.GetItemFileObject(tvitem.hItem);
+						FileObject* current = m_treeview.GetItemFileObject(tvitem.hItem);
 						if (tvitem.pszText != NULL) {
-							Rename(current, tvitem.pszText);
+							if(!RenameProfileObject(current, tvitem.pszText))
+								Rename(current, tvitem.pszText);
 							result = TRUE;
 						}
 						else
 							result = FALSE;
-						break;
-					}
+						break;	}
 					case TVN_BEGINLABELEDIT: {
 						LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO)lParam;
 						TV_ITEM tvitem = (TV_ITEM)ptvdi->item;
-						ProfileObject* current=(ProfileObject*)m_treeview.GetItemFileObject(tvitem.hItem);
-						if (current->isRoot()) result = TRUE;
-						break;
-						}
+						FileObject* current = m_treeview.GetItemFileObject(tvitem.hItem);
+						if (!current || current->isRoot()) result = TRUE;
+						break;	}
 					case TVN_SELCHANGED: {
 						const NM_TREEVIEW & nmt = (NM_TREEVIEW) *(NM_TREEVIEW*)lParam;
 						m_currentSelection = m_treeview.GetItemFileObject(nmt.itemNew.hItem);
@@ -786,45 +747,50 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						HTREEITEM res = m_treeview.OnClick();
 						if (res) {
 							m_currentSelection = m_treeview.GetItemFileObject(res);
-							if (m_treeview.m_isprofilestree) {
-								m_lastUsedProfile = m_currentSelection->GetPath();
-							}
 							SetToolbarState();
 							if (nmh.code == (UINT)NM_DBLCLK) {
-								OnItemActivation();
+								if(!OnProfileitemActivation(m_currentSelection))
+									OnItemActivation();
 								result = TRUE;
 							}
 						}
 						break; }
+					case NM_RELEASEDCAPTURE: {
+						if (m_currentDragObject != NULL) {
+							TreeView_SetItemState(m_treeview.GetHWND(), (HTREEITEM)m_currentDragObject->GetData(), ~TVIS_CUT, TVIS_CUT);
+							m_currentDragObject = NULL;
+							ImageList_EndDrag();
+							ShowCursor(TRUE);
+						}
+						break; }
 					case NM_RETURN: {
-						OnItemActivation();
+						if (!OnProfileitemActivation(m_currentSelection))
+							OnItemActivation();
 						result = TRUE;	//handle message
 						break; }
 					case TVN_SELCHANGING: {
 						result = FALSE;
 						break; }
 					case TVN_BEGINDRAG: {
-						if (m_treeview.m_isprofilestree) {
-							HWND hwndTV = nmh.hwndFrom;
-							LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lParam;
-							HIMAGELIST himl;    // handle to image list 
-							//RECT rcItem;        // bounding rectangle of item 
+						HWND hwndTV = nmh.hwndFrom;
+						LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lParam;
+						HIMAGELIST himl;    // handle to image list 
 
-							m_currentSelection=m_treeview.GetItemFileObject(lpnmtv->itemNew.hItem);
-							if (((ProfileObject*)m_currentSelection)->isRoot()) break;
-							TreeView_SelectItem(hwndTV, lpnmtv->itemNew.hItem);
-							himl = TreeView_CreateDragImage(hwndTV, lpnmtv->itemNew.hItem);
-							//TreeView_GetItemRect(hwndTV, lpnmtv->itemNew.hItem, &rcItem, TRUE);
-							ImageList_BeginDrag(himl, 0, 0, 0);
-							ImageList_DragEnter(hwndTV, lpnmtv->ptDrag.x, lpnmtv->ptDrag.x);
+						m_currentSelection=m_treeview.GetItemFileObject(lpnmtv->itemNew.hItem);
+						if(m_currentDragObject != NULL && m_currentDragObject->isRoot()) break;
+						if (m_currentSelection->isRoot()) break;
+						TreeView_SelectItem(hwndTV, lpnmtv->itemNew.hItem);
+						himl = TreeView_CreateDragImage(hwndTV, lpnmtv->itemNew.hItem);
+						ImageList_BeginDrag(himl, 0, 0, 0);
+						ImageList_DragEnter(hwndTV, lpnmtv->ptDrag.x, lpnmtv->ptDrag.x);
 
-							ShowCursor(FALSE);
-							m_currentDragObject = m_currentSelection;
-							SetCapture(GetParent(hwndTV));
-							result = TRUE;
-							break;
-						}
-						result = FALSE;
+						ShowCursor(FALSE);
+						m_currentDragObject = m_currentSelection;
+						SetCapture(GetParent(hwndTV));
+						result = TRUE;
+
+						if((GetKeyState(VK_CONTROL) & 0x8000) == 0)
+							TreeView_SetItemState(nmh.hwndFrom, lpnmtv->itemNew.hItem, TVIS_CUT, TVIS_CUT);
 /*
 						if (m_currentDropObject != NULL) {	//currently only one queued DnD op is supported
 							result = FALSE;
@@ -908,21 +874,22 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				SHORT state = GetKeyState(VK_SHIFT);
 				if ((state & 0x8000) && m_currentSelection->isLink() && !fromKeyboard) {
 					hContext = m_popupLink;
-				} else if (m_currentSelection->isDir()) {
-					if (m_treeview.m_isprofilestree) {
-						if (!((ProfileObject*)m_currentSelection)->isRoot())
-							hContext = m_popupTreeProfileFolder;
-						else
-							hContext = m_popupTreeProfileRootFolder;
-					}
-					else
-						hContext = m_popupDir;
-				} else if(m_treeview.m_isprofilestree) {
-					hContext = m_popupTreeProfile;
 				}
 				else {
-					hContext = m_popupFile;
+
+					if ((hContext = SetProfilePopupMenu(m_currentSelection)) == NULL) {
+						if (m_currentSelection->isDir()) {
+							if(m_currentSelection->isRoot())
+								hContext = m_popupRootDir;
+							else
+								hContext = m_popupDir;
+						}
+						else {
+							hContext = m_popupFile;
+						}
+					}
 				}
+
 			} else if (hWinContext == m_queueWindow.GetHWND()) {
 				QueueOperation * op = m_queueWindow.GetSelectedQueueOperation();
 				if (!op) {
@@ -959,14 +926,12 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			result = TRUE;
 			break; }
 		case  WM_INITMENUPOPUP: {
-			if (m_treeview.m_isprofilestree) {
-				HMENU hMenu = (HMENU)wParam;
-				if ( m_currentDragObject != NULL) 
-					EnableMenuItem(hMenu, IDM_POPUP_PROFILE_PASTE, MF_BYCOMMAND| MF_ENABLED);
-				else
-					EnableMenuItem(hMenu, IDM_POPUP_PROFILE_PASTE, MF_BYCOMMAND | MF_GRAYED);
-				result = TRUE;
-			}
+			HMENU hMenu = (HMENU)wParam;
+			if ( m_currentDragObject != NULL) 
+				EnableMenuItem(hMenu, IDM_POPUP_PASTE, MF_BYCOMMAND| MF_ENABLED);
+			else
+				EnableMenuItem(hMenu, IDM_POPUP_PASTE, MF_BYCOMMAND | MF_GRAYED);
+			result = TRUE;
 			break;   }
 		case WM_OUTPUTSHOWN: {
 			if (wParam == TRUE) {
@@ -1018,40 +983,31 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return result;
 }
 
-int FTPWindow::OnItemDrop(FileObject*& item, FileObject* parent, bool bIsMove)
+int FTPWindow::OnFileItemDrop(FileObject* item, FileObject* parent, bool bIsMove)
 {
-	ProfileObject* dropObject = (ProfileObject*)item;
-	ProfileObject* parentFolder = (ProfileObject*)parent;
-	if (!bIsMove) {
-		bool* bSameName = new bool(FALSE);
+	if (item == NULL || parent == NULL) return false;
 
-		ProfileObject* newProfileObject = dropObject->CopyTo(parentFolder, m_ftpSettings, bSameName);
-		m_treeview.FillTreeDirectory(parentFolder);
-		m_treeview.ExpandDirectory(parentFolder);
-		HTREEITEM htiNewProfile = (HTREEITEM)newProfileObject->GetData();
-		TreeView_SelectItem(m_treeview.GetHWND(), htiNewProfile);
-		//if(parentFolder == dropObject->GetParent())
-		if(*bSameName)
-			TreeView_EditLabel(m_treeview.GetHWND(), htiNewProfile);
+	int ret = -1;
+	if (parent->GetChildByName(item->GetName()) != NULL) {
+		MessageDialog md;
 
-	}
-	else {
-		HTREEITEM hti = (HTREEITEM)(dropObject->GetData());
-		dropObject->MoveTo(parentFolder);
-		
-		TVITEMEX tvi;
-		tvi.hItem = hti;
-		tvi.mask = TVIF_HANDLE;
-		if (TreeView_GetItem(m_treeview.GetHWND(), &tvi)) //check if handle is valid
-			TreeView_DeleteItem(m_treeview.GetHWND(), hti);
-		m_treeview.FillTreeDirectory(parentFolder);
-		m_treeview.ExpandDirectory(parentFolder);
-		hti = (HTREEITEM)(dropObject->GetData());
-		TreeView_SelectItem(m_treeview.GetHWND(), hti);
+		int res = md.Create(m_hwnd, TEXT("Target item exists"), TEXT("Are you sure you want to overwrite existing item?"));
+		if (res != 1) {
+			TreeView_SetItemState(m_treeview.GetHWND(), (HTREEITEM)m_currentDragObject->GetData(), ~TVIS_CUT, TVIS_CUT);
+			m_currentDragObject = NULL;
+			return FALSE;
+		}
 
 	}
-	item = NULL;  
-	return TRUE;
+
+	if (bIsMove)
+		ret = Move(item, parent);
+	else
+		ret = Copy(item, parent);
+
+	if(ret) m_currentDragObject = NULL;
+	return ret;
+
 }
 
 bool FTPWindow::AcceptType(LPDATAOBJECT pDataObj) {
@@ -1190,47 +1146,11 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_RENAMEFILE,TEXT("&Rename File"));
 	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_DELETEFILE,TEXT("D&elete File"));
-	//AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupFile, MF_STRING, IDM_POPUP_COPY, TEXT("&Copy File"));
+	AppendMenu(m_popupFile, MF_STRING, IDM_POPUP_CUT, TEXT("&Cut File"));
 	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
 	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PROPSFILE,TEXT("&Properties"));
-
-	//Create context menu for Profile in Treeview
-	m_popupTreeProfile = CreatePopupMenu();
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_PROFILE_CONNECT, TEXT("&Connect"));
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_PROFILE_EDIT, TEXT("&Edit Profile"));
-	AppendMenu(m_popupTreeProfile, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_RENAMEFILE, TEXT("&Rename Profile"));
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_PROFILE_DELETE, TEXT("&Delete Profile"));
-	AppendMenu(m_popupTreeProfile, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_PROFILE_COPY, TEXT("&Copy Profile"));
-	AppendMenu(m_popupTreeProfile, MF_STRING, IDM_POPUP_PROFILE_CUT, TEXT("&Cut Profile"));
-
-	SetMenuDefaultItem(m_popupTreeProfile, IDM_POPUP_PROFILE_CONNECT, FALSE);
-
-	//Create context menu for Profile Folder in Treeview
-	m_popupTreeProfileFolder = CreatePopupMenu();
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_PROFILE_NEW, TEXT("&Create new Profile"));
-	AppendMenu(m_popupTreeProfileFolder, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_PROFILE_FOLDERNEW, TEXT("&Create new Folder"));
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_RENAMEFILE, TEXT("&Rename Folder"));
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_PROFILE_DELETE, TEXT("&Delete Folder"));
-	AppendMenu(m_popupTreeProfileFolder, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_PROFILE_COPY, TEXT("&Copy Folder"));
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING, IDM_POPUP_PROFILE_CUT, TEXT("&Cut Folder"));
-	AppendMenu(m_popupTreeProfileFolder, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfileFolder, MF_STRING| MF_GRAYED, IDM_POPUP_PROFILE_PASTE, TEXT("&Paste"));
-
-	SetMenuDefaultItem(m_popupTreeProfileFolder, IDM_POPUP_PROFILE_FOLDERNEW, FALSE);
-
-	//Create context menu for Profile Root Folder in Treeview
-	m_popupTreeProfileRootFolder = CreatePopupMenu();
-	AppendMenu(m_popupTreeProfileRootFolder, MF_STRING, IDM_POPUP_PROFILE_NEW, TEXT("&Create new Profile"));
-	AppendMenu(m_popupTreeProfileRootFolder, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfileRootFolder, MF_STRING, IDM_POPUP_PROFILE_FOLDERNEW, TEXT("&Create new Folder"));
-	AppendMenu(m_popupTreeProfileRootFolder, MF_SEPARATOR, 0, 0);
-	AppendMenu(m_popupTreeProfileRootFolder, MF_STRING | MF_GRAYED, IDM_POPUP_PROFILE_PASTE, TEXT("&Paste"));
-
-	SetMenuDefaultItem(m_popupTreeProfileRootFolder, IDM_POPUP_PROFILE_FOLDERNEW, FALSE);
 
 	
 	//Create context menu for directories in folder window
@@ -1245,9 +1165,24 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADOTHERFILE,TEXT("Upload &other file here..."));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_REFRESHDIR,TEXT("Re&fresh"));
-	//AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupDir, MF_STRING, IDM_POPUP_CUT, TEXT("&Cut Folder"));
+	AppendMenu(m_popupDir, MF_STRING | MF_GRAYED, IDM_POPUP_PASTE, TEXT("&Paste"));
 	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
 	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
+
+	//Create context menu for directories in folder window
+	m_popupRootDir = CreatePopupMenu();
+	AppendMenu(m_popupRootDir, MF_STRING, IDM_POPUP_NEWDIR, TEXT("Create new &directory"));
+	AppendMenu(m_popupRootDir, MF_STRING, IDM_POPUP_NEWFILE, TEXT("&Create new file"));
+	AppendMenu(m_popupRootDir, MF_SEPARATOR, 0, 0);
+	AppendMenu(m_popupRootDir, MF_STRING, IDM_POPUP_UPLOADFILE, TEXT("&Upload current file here"));
+	AppendMenu(m_popupRootDir, MF_STRING, IDM_POPUP_UPLOADOTHERFILE, TEXT("Upload &other file here..."));
+	AppendMenu(m_popupRootDir, MF_SEPARATOR, 0, 0);
+	AppendMenu(m_popupRootDir, MF_STRING, IDM_POPUP_REFRESHDIR, TEXT("Re&fresh"));
+	AppendMenu(m_popupRootDir, MF_SEPARATOR, 0, 0);
+	AppendMenu(m_popupRootDir, MF_STRING | MF_GRAYED, IDM_POPUP_PASTE, TEXT("&Paste"));
+
 
 	//Create special context menu for links
 	m_popupLink = CreatePopupMenu();
@@ -1263,6 +1198,8 @@ int FTPWindow::CreateMenus() {
 	//Create menu for queue items on hold
 	m_popupQueueHold = CreatePopupMenu();
 	AppendMenu(m_popupQueueHold,MF_STRING,IDM_POPUP_QUEUE_CANCEL,TEXT("&Remove operation from queue"));
+
+	ProfilesWindow::CreateMenus();
 
 	return 0;
 
@@ -1303,6 +1240,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 	switch(queueOp->GetType()) {
 		case QueueOperation::QueueTypeDownload:
 		case QueueOperation::QueueTypeDownloadHandle:
+		case QueueOperation::QueueTypeCopyFile:
 		case QueueOperation::QueueTypeUpload: {
 			m_busy = isStart;
 			break; }
@@ -1479,7 +1417,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			OutMsg("Renamed %s to %s", oprename->GetFilePath(), oprename->GetNewPath());
 			break; }
 		case QueueOperation::QueueTypeQuote: {
-			QueueQuote * opquote = (QueueQuote*)queueOp;
+			QueueQuote* opquote = (QueueQuote*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
@@ -1487,6 +1425,16 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 				break;	//failure
 			}
 			break; }
+		case QueueOperation::QueueTypeCopyFile: {
+			QueueCopyFile* opcopy = (QueueCopyFile*)queueOp;
+			if (isStart)
+				break;
+			if (queueResult == -1) {
+				OutErr("Unable to perform copy operation %s", opcopy->GetExternalPath());
+				break;	//failure
+			}
+			m_ftpSession->GetDirectory(opcopy->GetExternalNewParent());
+			break; } 
 		default: {
 			//Other operations do not require change in GUI atm (update tree for delete/rename/create later on)
 			break; }
@@ -1528,27 +1476,9 @@ int FTPWindow::OnItemActivation() {
 	if (!m_currentSelection)
 		return -1;
 
-	if (m_treeview.m_isprofilestree && !m_busy ) {
-		if (m_currentSelection->isDir()) {
-			if(m_treeview.CollapseDirectory(m_currentSelection) != 0)
-				m_treeview.ExpandDirectory(m_currentSelection);
-			return 0;
-		}
-		else {
-			FTPProfile* profile = (((ProfileObject*)(m_currentSelection))->GetProfile());
-			int ret = m_ftpSession->StartSession(profile);
-			if (ret == -1) {
-				OutErr("[NppFTP] Cannot start FTP session");
-			}
-			else
-				m_ftpSession->Connect();
-			return 0;
-		}
-	}
-
 	if (m_currentSelection->isDir()) {
 		if (m_treeview.CollapseDirectory(m_currentSelection) != 0)
-			m_ftpSession->GetDirectory(m_currentSelection->GetPath());
+			m_treeview.ExpandDirectory(m_currentSelection);
 	} else {
 		m_ftpSession->DownloadFileCache(m_currentSelection->GetPath());
 	}
@@ -1557,6 +1487,9 @@ int FTPWindow::OnItemActivation() {
 
 int FTPWindow::OnConnect(int code) {
 	m_currentSelection = NULL;
+	m_currentDragObject = NULL;
+	m_currentDropObject = NULL;
+
 	m_treeview.ClearAll();
 
 	if (code != 0)	//automated connect
@@ -1587,6 +1520,9 @@ int FTPWindow::OnConnect(int code) {
 
 int FTPWindow::OnDisconnect(int /*code*/) {
 	m_currentSelection = NULL;
+	m_currentDragObject = NULL;
+	m_currentDropObject = NULL;
+
 	m_treeview.ClearAll();
 
 	if (m_ftpSettings->GetClearCache()) {
@@ -1595,9 +1531,8 @@ int FTPWindow::OnDisconnect(int /*code*/) {
 
 	SetInfo(TEXT("Disconnected"));
 
+	InitProfilesTree();
 	SetToolbarState();
-
-	ShowProfiles();
 
 	return 0;
 }
@@ -1663,11 +1598,10 @@ int FTPWindow::CreateFile(FileObject * parent) {
                 return 0;
             }
             else {
-                break;
+                break; 
             }
         }
 	}
-
 
 	char path[MAX_PATH];
 	res = PU::ConcatLocalToExternal(parent->GetPath(), newName, path, MAX_PATH);
@@ -1699,56 +1633,11 @@ int FTPWindow::DeleteFile(FileObject * file) {
 	return 0;
 }
 
-int FTPWindow::DeleteProfile(ProfileObject* profile)
-{
-
-	MessageDialog md;
-
-	if (profile->isRoot()) return -1;
-
-	int	res = -1;
-	if (profile->isDir()) {
-		res = md.Create(m_hwnd, TEXT("Deleting Folder and all Profiles"), TEXT("Are you sure you want to delete this Folder and all subitems?"));
-	}
-	else {
-		res = md.Create(m_hwnd, TEXT("Deleting Profile"), TEXT("Are you sure you want to delete Profile?"));
-	}
-	if (res != 1)
-		return -1;
-
-	HTREEITEM hti = (HTREEITEM)(profile->GetData());
-	if (profile->GetParent()->RemoveChild(profile, true) >= 0)
-			TreeView_DeleteItem(m_treeview.GetHWND(), hti);
-
-	return 0;
-}
-
-int FTPWindow::Rename(FileObject * fo,const TCHAR* _newName) {
-	InputDialog id;
-
-	const TCHAR* newName = NULL;
-	if (_newName == NULL) {
-		int res = id.Create(m_hwnd, TEXT("Renaming"), TEXT("Please enter the new name:"), fo->GetLocalName());
-		if (res != 1)
-			return 0;
-
-		newName = id.GetValue();
-	}
-	else
-		newName = _newName;
-
-	if (m_treeview.m_isprofilestree) {
-		if (((ProfileObject*)fo)->SetName(SU::TCharToUtf8(newName)) < 0)
-			return -1;
-		m_lastUsedProfile = fo->GetPath(); 
-
-		return 0;
-
-	}
-
+int FTPWindow::Rename(FileObject* fo, const TCHAR* newName) {
 
 	char path[MAX_PATH];
-	int res = PU::ConcatLocalToExternal(fo->GetParent()->GetPath(), newName, path, MAX_PATH);
+	int	res = PU::ConcatLocalToExternal(fo->GetParent()->GetPath(), newName, path, MAX_PATH);
+
 	if (res == -1)
 		return -1;
 
@@ -1757,6 +1646,73 @@ int FTPWindow::Rename(FileObject * fo,const TCHAR* _newName) {
 		return -1;
 
 	m_ftpSession->GetDirectory(fo->GetParent()->GetPath());
+
+	return 0;
+}
+
+int FTPWindow::Move(FileObject* fo, FileObject* _newParent) {
+
+	if (fo->isRoot()) {
+		OutErr("Can't move root");
+		return -1;
+	}
+
+
+	char path[MAX_PATH];
+	FileObject* currentParent = fo->GetParent();
+
+	int	res = PU::ConcatLocalToExternal(_newParent->GetPath(), SU::Utf8ToTChar(fo->GetName()), path, MAX_PATH);
+	if (res == -1)
+		return -1;
+
+	res = m_ftpSession->Rename(fo->GetPath(), path);
+	if (res == -1)
+		return -1;
+
+	m_ftpSession->GetDirectory(currentParent->GetPath());
+	m_ftpSession->GetDirectory(_newParent->GetPath());
+
+	return 0;
+}
+
+int FTPWindow::Copy(FileObject* fo, FileObject* _newParent) {
+	if (fo->isDir()) {
+		OutErr("Can't copy directories");
+		return -1;
+	}
+
+	int	res = m_ftpSession->CopyFile(fo->GetPath(),_newParent->GetPath());
+
+	if (res == -1)
+		return -1;
+
+	return 0;
+
+}
+
+int FTPWindow::VScrollTreeView(LONG yPos)
+{
+	static LONG scrollregion = TreeView_GetItemHeight(m_treeview.GetHWND()) * 4;
+
+	SCROLLINFO si;
+	si.cbSize = sizeof(SCROLLINFO);
+	si.fMask = SIF_POS | SIF_RANGE;
+	GetScrollInfo(m_treeview.GetHWND(), SB_VERT, &si);
+	if (si.nPos == 0 && si.nMax == 0 && si.nMin == 0) return -1;
+
+
+	RECT rect;
+	if (GetWindowRect(m_treeview.GetHWND(), &rect))
+	{
+		int height = rect.bottom - rect.top;
+		if (height <= 2 * scrollregion) return -1;
+
+		if (height - yPos <= scrollregion && si.nPos < si.nMax) 
+				SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 1, 0);
+		else if(yPos <= scrollregion && si.nPos > si.nMin)
+			SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 0, 0);
+	}
+
 
 	return 0;
 }

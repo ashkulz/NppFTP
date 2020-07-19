@@ -46,6 +46,7 @@ public:
 
 	virtual bool			isLink() const;
 	virtual bool			isDir() const;
+	virtual bool			isRoot() const;
 
 	virtual const char*		GetName() const;
 	virtual const TCHAR*	GetLocalName() const;
@@ -66,6 +67,7 @@ public:
 	virtual int				Sort();
 
 	static int				SortVector(FOVector & foVect);
+	WORD					m_cutpaste;
 protected:
 	static bool				CompareFO(const FileObject* d1, const FileObject* d2);
 

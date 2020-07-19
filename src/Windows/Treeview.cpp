@@ -34,7 +34,6 @@
 
 Treeview::Treeview() :
 	Window(NULL, WC_TREEVIEW),
-	m_isprofilestree(false),
 	m_treeImagelist(NULL)
 {
 	m_exStyle = WS_EX_CLIENTEDGE;
@@ -66,10 +65,8 @@ int Treeview::Create(HWND hParent) {
 }
 
 HTREEITEM Treeview::AddRoot(FileObject * rootDir) {
-	m_isprofilestree = (dynamic_cast<ProfileObject*>(rootDir) != nullptr);
-		
-
 	TV_INSERTSTRUCT tvinsert;
+
 	tvinsert.hParent = TVI_ROOT;
 	tvinsert.hInsertAfter = TVI_LAST;
 	tvinsert.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM|TVIF_CHILDREN;

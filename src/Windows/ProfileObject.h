@@ -44,7 +44,7 @@ public:
 	virtual int				RemoveChild(ProfileObject* child, bool del = true);
 	virtual int				RemoveAllChildren(bool del = true);
 	virtual int				MoveTo(ProfileObject* newParent);
-	virtual ProfileObject*	CopyTo(ProfileObject* parent, FTPSettings* ftpSettings,bool* bSameName=NULL);
+	virtual ProfileObject*	CopyTo(ProfileObject* parent, FTPSettings* ftpSettings,bool& bSameName);
 
 	virtual int				SetParent(ProfileObject* parent);
 	virtual ProfileObject*	GetParent();
@@ -112,8 +112,8 @@ protected:
 
 	static vProfile*		m_vProfiles;
 private:
-	char*				mkpath(const char* first, const char* second) const;
-	static	std::unordered_map<std::string, ProfileObject*>	treeMap;
+	char*					MkPath(const char* first, const char* second) const;
+	static std::unordered_map<std::string, ProfileObject*>	treeMap;
 
 };
 

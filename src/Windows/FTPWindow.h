@@ -33,11 +33,13 @@
 #include "ProfilesDialog.h"
 #include "DragDropSupport.h"
 #include "DragDropWindow.h"
+#include "ProfilesWindow.h"
 
 class FTPSession;
 
-class FTPWindow : public DockableWindow, public DropTargetWindow, public DropDataWindow {
+class FTPWindow : public DockableWindow, public DropTargetWindow, public DropDataWindow, public ProfilesWindow {
 	friend class NppFTP;	//for output window/ratio
+	friend class ProfilesWindow;
 public:
 							FTPWindow();
 	virtual					~FTPWindow();
@@ -60,7 +62,7 @@ public:
 
 	virtual LRESULT			MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	virtual int				OnItemDrop(FileObject*& item, FileObject* parent, bool bIsMove);
+	virtual int				OnFileItemDrop(FileObject* item, FileObject* parent, bool bIsMove);
 	////////////////////////
 	//DropTargetWindow
 	virtual bool			AcceptType(LPDATAOBJECT pDataObj);
@@ -95,11 +97,11 @@ protected:
 	virtual int				CreateFile(FileObject * parent);
 	virtual int				DeleteFile(FileObject* file);
 
-	virtual int				DeleteProfile(ProfileObject* profile);
+	virtual int				Rename(FileObject* fo, const TCHAR* newName);
+	virtual int				Move(FileObject* fo, FileObject* newParent);
 
-	virtual int				Rename(FileObject * fo, const TCHAR* newName=NULL);
-
-	virtual int				ShowProfiles();
+	virtual int				Copy(FileObject* fo, FileObject* _newParent);
+	virtual int				VScrollTreeView(LONG pos);
 
 	//virtual int				UploadCurrentFile(FileObject * parent);
 	//virtual int				UploadOtherFile(FileObject * parent);
@@ -111,7 +113,6 @@ protected:
 	QueueWindow				m_queueWindow;
 	SettingsDialog			m_settingsDialog;
 	ProfilesDialog			m_profilesDialog;
-	ProfilesDialog			m_profilesDialogSingle; 
 	WindowSplitter			m_splitter;
 
 	OutputWindow			m_outputWindow;
@@ -120,16 +121,13 @@ protected:
 	HBRUSH					m_backgroundBrush;
 
 	FileObject*				m_currentSelection;
-	const char*				m_lastUsedProfile;
 	bool					m_localFileExists;
 
 	HMENU					m_popupProfile;
-	HMENU					m_popupTreeProfile;
-	HMENU					m_popupTreeProfileFolder;
-	HMENU					m_popupTreeProfileRootFolder;
 	HMENU					m_popupSettings;
 	HMENU					m_popupFile;
 	HMENU					m_popupDir;
+	HMENU					m_popupRootDir;
 	HMENU					m_popupLink;
 	HMENU					m_popupQueueActive;
 	HMENU					m_popupQueueHold;

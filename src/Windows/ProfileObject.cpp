@@ -32,6 +32,7 @@ ProfileObject::ProfileObject(const char* path, bool _isDir, bool _isLink) :
 	m_isLink(_isLink),
 	m_isRoot(false),
 	m_childCount(0),
+	m_children(),
 	m_parent(NULL),
 	m_needRefresh(!_isDir),	//refresh only required for dirs
 	m_data(NULL),
@@ -66,6 +67,7 @@ ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FT
 	m_isLink(false),
 	m_isRoot(false),
 	m_childCount(0),
+	m_children(),
 	m_parent(NULL),
 	m_needRefresh(!_isDir),	//refresh only required for dirs
 	m_data(NULL),
@@ -80,7 +82,7 @@ ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FT
 		m_isRoot = TRUE;
 	}
 	else {
-		m_path = (char *)mkpath(path, name);
+		m_path = (char *)MkPath(path, name);
 	}
 	m_name = SU::strdup(name);
 
@@ -100,6 +102,7 @@ ProfileObject::ProfileObject(const char* path, const char* name, bool _isDir, FT
 ProfileObject::ProfileObject(FTPFile* ftpfile) :
 	m_profile(NULL),
 	m_childCount(0),
+	m_children(),
 	m_parent(NULL),
 	m_data(NULL)
 {
@@ -177,7 +180,7 @@ ProfileObject* ProfileObject::CreateParentPath(std::vector<std::string>& parts)
 		return current->CreateParentPath(parts);
 }
 
-char* ProfileObject::mkpath(const char* first, const char* second) const
+char* ProfileObject::MkPath(const char* first, const char* second) const
 {
 	size_t lgFirst = strlen(first);
 	size_t lgSecond = strlen(second);
@@ -195,7 +198,7 @@ char* ProfileObject::mkpath(const char* first, const char* second) const
 
 ProfileObject* ProfileObject::AddChild(const char* path, const char* name, FTPProfile* profile) {
 
-	const char* absPath = mkpath(m_path, path);
+	const char* absPath = MkPath(m_path, path);
 
 	ProfileObject* parent = NULL;
 	if (path == NULL || strlen(path) == 0) {
@@ -302,33 +305,39 @@ int ProfileObject::MoveTo(ProfileObject* newParent)
 	return 0;
 }
 
-ProfileObject* ProfileObject::CopyTo(ProfileObject* parent, FTPSettings* ftpSettings,  bool* bSameName)
+ProfileObject* ProfileObject::CopyTo(ProfileObject* parent, FTPSettings* ftpSettings, bool& bSameName)
 {
 	POVector::iterator it;
 	ProfileObject* newProfileObject;
 
-	const TCHAR* newname = SU::Utf8ToTChar(m_name);	
-	while (parent->GetChildByName(SU::TCharToUtf8(newname)) != NULL) {
-		newname = SU::TSprintfNB(TEXT("Copy of %T"), newname);
-		if (bSameName != NULL) *bSameName = TRUE;
+	char* newname = SU::strdup(m_name);
+	bSameName = FALSE;
+	while (parent->GetChildByName(newname) != NULL) {
+		char* tempname = newname;
+		size_t lg = strlen(newname) + strlen("Copy of ") + 1;
+		newname = new char[lg];
+		sprintf(newname,"Copy of %s", tempname);
+		SU::FreeChar(tempname);
+		bSameName = TRUE;
 	}
 	if (isDir()) { 
-		newProfileObject = parent->AddChild(SU::TCharToUtf8(newname), "");
+		newProfileObject = parent->AddChild(newname, "");
 	}
 	else {
 		FTPProfile* newProfile = NULL;
 		if (GetProfile() != NULL) {
-			newProfile = new FTPProfile(newname, GetProfile());
+			newProfile = new FTPProfile(SU::Utf8ToTChar(newname), GetProfile());
 			newProfile->SetCacheParent(ftpSettings->GetGlobalCache());
 			newProfile->SetParent(SU::Utf8ToTChar(parent->GetPath()));
 			m_vProfiles->push_back(newProfile);
 			newProfile->AddRef();
 		}
-		newProfileObject = parent->AddChild("", SU::TCharToUtf8(newname), newProfile);
+		newProfileObject = parent->AddChild("", newname, newProfile);
 	}
 
+	bool bDummy = FALSE;
 	for (it = m_children.begin(); it < m_children.end(); ++it) {
-		(*it)->CopyTo(newProfileObject, ftpSettings);
+		(*it)->CopyTo(newProfileObject, ftpSettings,bDummy);
 	}
 
 
@@ -338,7 +347,7 @@ ProfileObject* ProfileObject::CopyTo(ProfileObject* parent, FTPSettings* ftpSett
 
 int ProfileObject::SetParent(ProfileObject* parent) {
 	m_parent = parent;
-	m_path = (char*)mkpath(parent->GetPath(), m_name);
+	m_path = (char*)MkPath(parent->GetPath(), m_name);
 	if (m_profile != NULL) {
 		m_profile->SetParent(SU::Utf8ToTChar(parent->GetPath()));
 	}
@@ -388,7 +397,7 @@ int ProfileObject::SetName(const char* newName)  {
 	if (strcmp(m_path, "") == 0) return -1; //Root cannot be renamed
 
 	m_name = SU::strdup(newName);
-	m_path = (char*)mkpath(GetParent()->GetPath(), m_name);
+	m_path = (char*)MkPath(GetParent()->GetPath(), m_name);
 	m_localName = SU::Utf8ToTChar(m_name);
 
 
@@ -426,7 +435,7 @@ const char* ProfileObject::GetPath() const {
 
 bool ProfileObject::UpdatePath()
 {
-	m_path = (char *)mkpath(GetParent()->GetPath(), m_name);
+	m_path = (char *)MkPath(GetParent()->GetPath(), m_name);
 
 	if (m_profile != NULL) {
 		if(isDir())

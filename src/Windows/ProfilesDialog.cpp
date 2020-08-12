@@ -23,6 +23,7 @@
 #include "FTPWindow.h"
 #include "resource.h"
 #include <windowsx.h>
+#include <algorithm>
 
 ProfilesDialog::ProfilesDialog() :
 	Dialog(IDD_DIALOG_PROFILES),

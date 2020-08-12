@@ -51,6 +51,7 @@ FTPProfile::FTPProfile() :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name) :
+	m_parent(NULL),
 	m_port(21),
 	m_askPassword(false),
 	m_askPassphrase(false),
@@ -66,7 +67,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_cache = new FTPCache();
 
 	m_name = SU::DupString(name);
-	m_parent = SU::DupString(TEXT(""));
+	m_parent = SU::DupString(L"");
 	m_hostname = SU::strdup("");
 	m_username = SU::strdup("");
 	m_password = SU::strdup("");
@@ -81,6 +82,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
+	m_parent(SU::DupString(other->m_parent)),
 	m_port(other->m_port),
 	m_askPassword(other->m_askPassword),
 	m_askPassphrase(other->m_askPassphrase),
@@ -100,7 +102,6 @@ FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_username = SU::strdup(other->m_username);
 	m_password = SU::strdup(other->m_password);
 	m_initialDir = SU::strdup(other->m_initialDir);
-	m_parent = SU::DupString(other->m_parent);
 
 	m_ftpListParams = SU::strdup(other->m_ftpListParams);
 

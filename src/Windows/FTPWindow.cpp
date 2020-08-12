@@ -1711,7 +1711,7 @@ int FTPWindow::VScrollTreeView(LONG yPos)
 				SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 1, 0);
 		else if(yPos <= scrollregion && si.nPos > si.nMin)
 			SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 0, 0);
-	}
+	} 
 
 
 	return 0;

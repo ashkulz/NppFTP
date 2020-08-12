@@ -137,7 +137,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 				m_ftpWindow->OnProfileChange();
 				LoadProfiles();
 			}
-			break; } 
+			break; }
 		case IDC_BUTTON_PROFILE_DELETE: {
 			for(size_t i = 0; i < m_profiles->size(); i++) {
 				if (m_profiles->at(i) == m_currentProfile) {
@@ -611,20 +611,16 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 		return FALSE;
 	}
 
+	FTPProfile* cur_selectedProfile = NULL;
 	if (m_profiles->size() > 0) {
-		size_t index = 0;
-		for (size_t i = 0; i < m_profiles->size(); i++) {
-			if (m_profiles->at(i) == m_preselectedProfile) { 
-				index = i;
-				break;
-			}
+		vProfile::iterator it = std::find(m_profiles->begin(), m_profiles->end(), m_preselectedProfile);
+		if (it != m_profiles->end()) {
+			HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
+			ListBox_SetCurSel(hListProfile, std::distance(m_profiles->begin(), it));
+			cur_selectedProfile = m_preselectedProfile;
 		}
-		HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
-		ListBox_SetCurSel(hListProfile, index);
-		OnSelectProfile(m_preselectedProfile); 
-	} else {
-		OnSelectProfile(NULL);
 	}
+	OnSelectProfile(cur_selectedProfile);
 
 	return FALSE;
 }

@@ -137,7 +137,7 @@ int FileObject::SetParent(FileObject * parent) {
 }
 
 FileObject* FileObject::GetParent() {
-	return m_parent; 
+	return m_parent;
 }
 
 int FileObject::SetDir(bool bisDir) {

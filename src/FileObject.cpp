@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+FileObject::FileObject() {}
+
 
 FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 	m_isDir(_isDir),
@@ -156,6 +158,11 @@ bool FileObject::isLink() const {
 
 bool FileObject::isDir() const {
 	return m_isDir;
+}
+
+bool FileObject::isRoot() const
+{
+	return (strcmp(GetPath(), "/") == 0);
 }
 
 const char* FileObject::GetName() const {

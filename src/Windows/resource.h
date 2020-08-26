@@ -50,6 +50,7 @@
 	#define IDB_BUTTON_NO				123
 	#define IDC_STATIC_MESSAGE			124
 
+#define IDD_DIALOG_PROFILES_SINGLE		196
 #define IDD_DIALOG_PROFILES				125
 	#define IDC_LIST_PROFILES			126
 	#define IDC_BUTTON_PROFILE_ADD		127
@@ -121,4 +122,4 @@
 	#define IDC_EDIT_PROMPTMAX			182
 	#define IDC_EDIT_ANSWERMAX			183
 	#define IDC_STATIC_MARKER			184
-//next id:								196
+//next id:								197

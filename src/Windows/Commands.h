@@ -57,7 +57,14 @@
 //settings popup menus
 #define IDM_POPUP_SETTINGSGENERAL	10022
 #define IDM_POPUP_SETTINGSPROFILE	10023
-
+//profile in treeview menus
+#define IDM_POPUP_PROFILE_CONNECT	10024
+#define IDM_POPUP_PROFILE_EDIT		10025
+#define IDM_POPUP_PROFILE_DELETE	10026
+#define IDM_POPUP_PROFILE_CREATE		10027
+#define IDM_POPUP_PROFILE_FOLDER_CREATE 10028
+#define IDM_POPUP_CUT				10030
+#define IDM_POPUP_PASTE				10031
 //Range for profile items in popupmenu. Go over 1000 profiles and the menu will not work anymore
 #define IDM_POPUP_PROFILE_FIRST		11000
 #define IDM_POPUP_PROFILE_MAX		12000

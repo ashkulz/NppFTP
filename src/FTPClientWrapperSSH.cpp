@@ -483,6 +483,8 @@ int FTPClientWrapperSSH::connect_ssh() {
 int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	int methods = 0;
 	int authres = 0;
+	int retries = 0;
+	const int maxRetries = 5;
 
 	authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_AGAIN)
@@ -542,7 +544,8 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 			OutMsg("[SFTP] Successfully authenticated");
 			return 0;
 		}
-	} while (authres == SSH_AUTH_PARTIAL);
+		retries++;
+	} while (authres == SSH_AUTH_PARTIAL && retries <= maxRetries);
 
 	OutErr("[SFTP] Unable to authenticate");
 

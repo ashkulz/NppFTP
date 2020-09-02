@@ -483,6 +483,8 @@ int FTPClientWrapperSSH::connect_ssh() {
 int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	int methods = 0;
 	int authres = 0;
+	int retries = 0;
+	const int maxRetries = 5;
 
 	authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_AGAIN)
@@ -501,46 +503,49 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		ssh_string_free_char(banner);
 	}
 
-	methods = ssh_auth_list(session);
-	if (methods == -1) {
-		OutErr("[SFTP] No authentication methods provided.");
-		return -1;
-	}
+	do {
+		methods = ssh_auth_list(session);
+		if (methods == -1) {
+			OutErr("[SFTP] No authentication methods provided.");
+			return -1;
+		}
 
-	if (methods == SSH_AUTH_METHOD_UNKNOWN) {
-		OutErr("[SFTP] Unknown authentication method.");
-		return -1;
-	}
+		if (methods == SSH_AUTH_METHOD_UNKNOWN) {
+			OutErr("[SFTP] Unknown authentication method.");
+			return -1;
+		}
 
-	//Filter out methods client does not wish to use
-	methods &= m_acceptedMethods;
+		//Filter out methods client does not wish to use
+		methods &= m_acceptedMethods;
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PUBLICKEY)) {
-		authres = authenticate_key(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PUBLICKEY)) {
+			authres = authenticate_key(session);
+		}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_INTERACTIVE)) {
-		authres = authenticate_kbinteractive(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_INTERACTIVE)) {
+			authres = authenticate_kbinteractive(session);
+		}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PASSWORD)) {
-		authres = authenticate_password(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PASSWORD)) {
+			authres = authenticate_password(session);
+		}
 
-	if (methods == 0) {
-		OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
-		return -1;
-	}
+		if (methods == 0) {
+			OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
+			return -1;
+		}
 
-	if (authres == SSH_AUTH_ERROR) {
-		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
-		return -1;
-	}
+		if (authres == SSH_AUTH_ERROR) {
+			OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
+			return -1;
+		}
 
-	if (authres == SSH_AUTH_SUCCESS) {
-		OutMsg("[SFTP] Successfully authenticated");
-		return 0;
-	}
+		if (authres == SSH_AUTH_SUCCESS) {
+			OutMsg("[SFTP] Successfully authenticated");
+			return 0;
+		}
+		retries++;
+	} while (authres == SSH_AUTH_PARTIAL && retries <= maxRetries);
 
 	OutErr("[SFTP] Unable to authenticate");
 

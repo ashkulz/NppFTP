@@ -17,6 +17,8 @@ jobs:
 
     - name: generate cmake
       run: |
+           # avoid issue for x64 build to find false openssl by libssh
+           Remove-Item -Recurse -Force 'C:\Program Files\OpenSSL'
            mkdir _build
            cd _build
            cmake -G "Visual Studio 17 2022" -A ${{ matrix.build_platform }} -T "v143" ..

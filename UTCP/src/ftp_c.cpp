@@ -2218,6 +2218,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     if ( port <= 0 || port > 65535 )
         return OnError(UTE_DATAPORT_FAILED);
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.

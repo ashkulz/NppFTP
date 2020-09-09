@@ -1,5 +1,5 @@
 language: cpp
-dist:     xenial
+dist:     focal
 services:
   - docker
 
@@ -11,7 +11,7 @@ matrix:
     env: BITS=64
 
 script:
-- docker run -v$PWD:/src -w /src ubuntu:bionic /bin/sh -c "apt-get -qq update && apt-get -qq install -y mingw-w64 python3 perl cmake zip && (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do update-alternatives --set \$alt /usr/bin/\$alt-posix; done); make -f Makefile.mingw BITS=$BITS"
+- docker run -v$PWD:/src -w /src ubuntu:focal /bin/sh -c "TZ=Europe/Berlin && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && apt-get -qq update && apt-get -qq install -y mingw-w64 python3 perl cmake zip && (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do update-alternatives --set \$alt /usr/bin/\$alt-posix; done); make -f Makefile.mingw BITS=$BITS"
 
 deploy:
   provider:     releases

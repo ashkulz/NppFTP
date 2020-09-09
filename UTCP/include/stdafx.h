@@ -9,8 +9,6 @@ inline bool isdigit(char c) {
     return (c >= '0' && c <= '9');
 }
 
-#ifndef _MSC_VER
 #include <algorithm>
-#define min(a,b) std::min(a,b)
-#define max(a,b) std::max(a,b)
-#endif
+//avoid issues with std::min and std::max and ms compilers
+//see https://stackoverflow.com/questions/5004858/why-is-stdmin-failing-when-windows-h-is-included

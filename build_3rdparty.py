@@ -93,7 +93,7 @@ DEPENDENT_LIBS = {
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
-                'replace':  [('src/CMakeLists.txt', '"-D_POSIX_SOURCE"', '"-D_POSIX_C_SOURCE=200809L"')],
+                'replace':  [('src/CMakeLists.txt', 'set_target_properties(ssh PROPERTIES COMPILE_FLAGS "-D_POSIX_SOURCE")', '')],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \
@@ -106,7 +106,7 @@ DEPENDENT_LIBS = {
             },
             'mingw-w64_x64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
-                'replace':  [('src/CMakeLists.txt', '"-D_POSIX_SOURCE")', '"-D_POSIX_C_SOURCE=200809L"')],
+                'replace':  [('src/CMakeLists.txt', 'set_target_properties(ssh PROPERTIES COMPILE_FLAGS "-D_POSIX_SOURCE")', '')],
                 'commands': [
                     'cmake -DCMAKE_SYSTEM_NAME=Windows \
                         -DCMAKE_C_COMPILER=%(prefix)s-gcc -DCMAKE_CXX_COMPILER=%(prefix)s-g++ \

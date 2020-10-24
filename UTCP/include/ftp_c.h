@@ -107,6 +107,7 @@ typedef struct CUT_DIRINFOATag{
     int  hour;                  // the hour digit of the file date
     int  minute;                // the minute digit of the file date
     int  isDir;                 // flag if the entry is directory or a file
+    int  permissions;           // file or directoy permissions
     CUT_DIRINFOATag * next;     // next available entry
 }CUT_DIRINFOA;
 
@@ -120,6 +121,7 @@ typedef struct CUT_DIRINFOTag{
     int  hour;                  // the hour digit of the file date
     int  minute;                // the minute digit of the file date
     int  isDir;                 // flag if the entry is directory or a file
+    int  permissions;           // file or directoy permissions
     CUT_DIRINFOTag * next;      // next available entry
 }CUT_DIRINFO;
 
@@ -243,6 +245,14 @@ public:
 #if defined _UNICODE
     virtual int     RenameFile(LPCWSTR sourceFile,LPCWSTR destFile);
 #endif
+
+    // Chmod
+    virtual int ChmodFile(LPCSTR sourceFile,LPCSTR permissions);
+#if defined _UNICODE
+    virtual int ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions);
+#endif
+
+
     // ask server to delete the file from it's directory
     virtual int     DeleteFile(LPCSTR file);
 #if defined _UNICODE

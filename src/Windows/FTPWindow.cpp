@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -213,17 +213,17 @@ int FTPWindow::OnSize(int newWidth, int newHeight) {
 int FTPWindow::OnProfileChange() {
 	if (!m_vProfiles)
 		return -1;
-	
+
 	std::vector<const TCHAR*> strSubmenus;
 	std::vector<HMENU> hSubmenus;
-	
+
 	::DestroyMenu(m_popupProfile);
 	m_popupProfile = ::CreatePopupMenu();
 	for(size_t i = 0; i < m_vProfiles->size(); i++) {
 		if(m_vProfiles->at(i)->GetParent() != NULL && _tcscmp(m_vProfiles->at(i)->GetParent(), _T("")) != 0 )
 		{
 			HMENU hSubMenu = NULL;
-			
+
 			for(size_t k = 0;k < strSubmenus.size(); k++) {
 				if(_tcscmp(strSubmenus.at(k),m_vProfiles->at(i)->GetParent()) == 0 )
 				{
@@ -231,7 +231,7 @@ int FTPWindow::OnProfileChange() {
 					break;
 				}
 			}
-			
+
 			if(hSubMenu == NULL)
 			{
 				hSubMenu = CreatePopupMenu();
@@ -239,7 +239,7 @@ int FTPWindow::OnProfileChange() {
 				hSubmenus.push_back(hSubMenu);
 				::AppendMenu(m_popupProfile, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenu, m_vProfiles->at(i)->GetParent());
 			}
-			
+
 			::AppendMenu(hSubMenu, MF_STRING, IDM_POPUP_PROFILE_FIRST + i, m_vProfiles->at(i)->GetName());
 		}
 		else
@@ -347,7 +347,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						OnFileItemDrop(m_currentDragObject, parent, bIsMove);
 					m_currentDragObject = NULL;
 
-				} 
+				}
 				m_currentDragObject = NULL;
 				result = TRUE;
 			}
@@ -356,8 +356,8 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			if ((wParam & MK_LBUTTON) && m_splitter.OnMouseMove()) break;
 			if((wParam & MK_LBUTTON) || (wParam & MK_RBUTTON)) {
 
-				HTREEITEM htiTarget;  // Handle to target item. 
-				TVHITTESTINFO tvht;   // Hit test information. 
+				HTREEITEM htiTarget;  // Handle to target item.
+				TVHITTESTINFO tvht;   // Hit test information.
 
 				if (m_currentDragObject != NULL )
 				{
@@ -421,22 +421,22 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					result = TRUE;
 					break;}
 
-                case IDB_BUTTON_TOOLBAR_OPENDIR: {
+				case IDB_BUTTON_TOOLBAR_OPENDIR: {
 
-                    // Show the dialog to get input directory name from the user.
-                    InputDialog id;
-                    int res = id.Create(m_hwnd, TEXT("Open Directory"), TEXT("Enter directory name:"), TEXT(""));
-                    if (res != 1) {
-                        return 0;
-                    }
+					// Show the dialog to get input directory name from the user.
+					InputDialog id;
+					int res = id.Create(m_hwnd, TEXT("Open Directory"), TEXT("Enter directory name:"), TEXT(""));
+					if (res != 1) {
+						return 0;
+					}
 
-                    // Read the input directory name.
-                    const TCHAR *dirName    = id.GetValue();
-                    char *dirNameCP         = SU::TCharToCP(dirName, CP_ACP);
+					// Read the input directory name.
+					const TCHAR *dirName    = id.GetValue();
+					char *dirNameCP         = SU::TCharToCP(dirName, CP_ACP);
 
-                    m_ftpSession->GetDirectoryHierarchy(dirNameCP);
-                    break;
-                }
+					m_ftpSession->GetDirectoryHierarchy(dirNameCP);
+					break;
+				}
 
 				case IDM_POPUP_PROFILE_CONNECT: {
 					if (!m_busy && ConnectRemote(m_currentSelection) ){
@@ -545,6 +545,11 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					//this->Rename(m_currentSelection);
 					result = TRUE;
 					break; }
+				case IDM_POPUP_PERMISSIONFILE:
+				case IDM_POPUP_PERMISSIONDIR: {
+					this->Chmod(m_currentSelection);
+					result = TRUE;
+					break; }
 				case IDM_POPUP_SETTINGSGENERAL: {
 					m_settingsDialog.Create(m_hwnd, m_ftpSettings);
 					result = TRUE;
@@ -582,7 +587,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					break; 	}
 				case IDM_POPUP_PROFILE_FOLDER_CREATE: {
 					result = CreateProfileFolder(m_currentSelection);
-					break;	}											 
+					break;	}
 				default: {
 					unsigned int value = LOWORD(wParam);
 					if (!m_busy && value >= IDM_POPUP_PROFILE_FIRST && value <= IDM_POPUP_PROFILE_MAX) {
@@ -702,7 +707,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 							if (result >= 0) m_currentSelection = NULL;
 							break;	}
 					}
-					break;	} 
+					break;	}
 					case TVN_ENDLABELEDIT: {
 						LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO)lParam;
 						TV_ITEM tvitem = (TV_ITEM)ptvdi->item;
@@ -774,7 +779,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					case TVN_BEGINDRAG: {
 						HWND hwndTV = nmh.hwndFrom;
 						LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lParam;
-						HIMAGELIST himl;    // handle to image list 
+						HIMAGELIST himl;    // handle to image list
 
 						m_currentSelection=m_treeview.GetItemFileObject(lpnmtv->itemNew.hItem);
 						if(m_currentDragObject != NULL && m_currentDragObject->isRoot()) break;
@@ -927,7 +932,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			break; }
 		case  WM_INITMENUPOPUP: {
 			HMENU hMenu = (HMENU)wParam;
-			if ( m_currentDragObject != NULL) 
+			if ( m_currentDragObject != NULL)
 				EnableMenuItem(hMenu, IDM_POPUP_PASTE, MF_BYCOMMAND| MF_ENABLED);
 			else
 				EnableMenuItem(hMenu, IDM_POPUP_PASTE, MF_BYCOMMAND | MF_GRAYED);
@@ -1149,10 +1154,11 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupFile, MF_STRING, IDM_POPUP_COPY, TEXT("&Copy File"));
 	AppendMenu(m_popupFile, MF_STRING, IDM_POPUP_CUT, TEXT("&Cut File"));
-	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
+	AppendMenu(m_popupFile,MF_SEPARATOR,0,0);
+	AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PERMISSIONFILE,TEXT("Permissions"));
 	//AppendMenu(m_popupFile,MF_STRING,IDM_POPUP_PROPSFILE,TEXT("&Properties"));
 
-	
+
 	//Create context menu for directories in folder window
 	m_popupDir = CreatePopupMenu();
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_NEWDIR,TEXT("Create new &directory"));
@@ -1161,14 +1167,14 @@ int FTPWindow::CreateMenus() {
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_RENAMEDIR,TEXT("&Rename Directory"));
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_DELETEDIR,TEXT("D&elete directory"));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
-    AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADFILE,TEXT("&Upload current file here"));
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADFILE,TEXT("&Upload current file here"));
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_UPLOADOTHERFILE,TEXT("Upload &other file here..."));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_REFRESHDIR,TEXT("Re&fresh"));
 	AppendMenu(m_popupDir,MF_SEPARATOR,0,0);
 	AppendMenu(m_popupDir, MF_STRING, IDM_POPUP_CUT, TEXT("&Cut Folder"));
 	AppendMenu(m_popupDir, MF_STRING | MF_GRAYED, IDM_POPUP_PASTE, TEXT("&Paste"));
-	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
+	AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PERMISSIONDIR,TEXT("Permissions"));
 	//AppendMenu(m_popupDir,MF_STRING,IDM_POPUP_PROPSDIR,TEXT("&Properties"));
 
 	//Create context menu for directories in folder window
@@ -1252,6 +1258,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 		case QueueOperation::QueueTypeFileCreate:
 		case QueueOperation::QueueTypeFileDelete:
 		case QueueOperation::QueueTypeFileRename:
+		case QueueOperation::QueueTypeFileChmod:
 		case QueueOperation::QueueTypeQuote:
 		default: {
 			//Other operations cannot be aborted
@@ -1292,17 +1299,17 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 				break;
 			}
 
-            std::vector<FTPDir*> parentDirObjs = dirop->GetParentDirObjs();
-            size_t i;
+			std::vector<FTPDir*> parentDirObjs = dirop->GetParentDirObjs();
+			size_t i;
 
-            for (i=0; i<parentDirObjs.size(); i++) {
-                FTPDir* curFTPDir = parentDirObjs[i];
+			for (i=0; i<parentDirObjs.size(); i++) {
+				FTPDir* curFTPDir = parentDirObjs[i];
 
-                FileObject* parent;
-                parent = m_ftpSession->FindPathObject(curFTPDir->dirPath);
-                if (parent)
-                    OnDirectoryRefresh(parent, curFTPDir->files, curFTPDir->count);
-            }
+				FileObject* parent;
+				parent = m_ftpSession->FindPathObject(curFTPDir->dirPath);
+				if (parent)
+					OnDirectoryRefresh(parent, curFTPDir->files, curFTPDir->count);
+			}
 
 			if (queueResult == -1) {
 				OutErr("Failure retrieving contents of directory %s", dirop->GetDirPath());
@@ -1416,6 +1423,16 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 			OutMsg("Renamed %s to %s", oprename->GetFilePath(), oprename->GetNewPath());
 			break; }
+		case QueueOperation::QueueTypeFileChmod: {
+			QueueChmodFile * opchmod = (QueueChmodFile*)queueOp;
+			if (isStart)
+				break;
+			if (queueResult == -1) {
+				OutErr("Unable to chmod file %s", opchmod->GetFilePath());
+				break;	//failure
+			}
+			OutMsg("Chmod %s to %s", opchmod->GetFilePath(), opchmod->GetNewMode());
+			break; }
 		case QueueOperation::QueueTypeQuote: {
 			QueueQuote* opquote = (QueueQuote*)queueOp;
 			if (isStart)
@@ -1434,7 +1451,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 				break;	//failure
 			}
 			m_ftpSession->GetDirectory(opcopy->GetExternalNewParent());
-			break; } 
+			break; }
 		default: {
 			//Other operations do not require change in GUI atm (update tree for delete/rename/create later on)
 			break; }
@@ -1582,25 +1599,25 @@ int FTPWindow::CreateFile(FileObject * parent) {
 	if (res != 1)
 		return 0;
 
-    const TCHAR * newName = id.GetValue();
+	const TCHAR * newName = id.GetValue();
 
-    // Check if there is already an existing file of the same name
-    int childcount = parent->GetChildCount();
-    char *newFileName_CP = SU::TCharToCP(newName, CP_ACP);
+	// Check if there is already an existing file of the same name
+	int childcount = parent->GetChildCount();
+	char *newFileName_CP = SU::TCharToCP(newName, CP_ACP);
 
 	for(int i = 0; i < childcount; i++) {
 
-	    const char *currentFileName = parent->GetChild(i)->GetName();
+		const char *currentFileName = parent->GetChild(i)->GetName();
 		if (!strcmp(currentFileName, newFileName_CP)) {
 
-            res = ::MessageBox(m_hwnd, TEXT("A file/directory by the same name already exists. Do you want to create a new blank file ?"), TEXT("Creating file"), MB_YESNO);
-            if (res == IDNO) {
-                return 0;
-            }
-            else {
-                break; 
-            }
-        }
+			res = ::MessageBox(m_hwnd, TEXT("A file/directory by the same name already exists. Do you want to create a new blank file ?"), TEXT("Creating file"), MB_YESNO);
+			if (res == IDNO) {
+				return 0;
+			}
+			else {
+				break;
+			}
+		}
 	}
 
 	char path[MAX_PATH];
@@ -1707,12 +1724,35 @@ int FTPWindow::VScrollTreeView(LONG yPos)
 		int height = rect.bottom - rect.top;
 		if (height <= 2 * scrollregion) return -1;
 
-		if (height - yPos <= scrollregion && si.nPos < si.nMax) 
+		if (height - yPos <= scrollregion && si.nPos < si.nMax)
 				SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 1, 0);
 		else if(yPos <= scrollregion && si.nPos > si.nMin)
 			SendMessage(m_treeview.GetHWND(), WM_VSCROLL, 0, 0);
-	} 
+	}
 
+
+	return 0;
+}
+
+int FTPWindow::Chmod(FileObject * fo) {
+	InputDialog id;
+
+	//int res = id.Create(m_hwnd, TEXT("Change Permissions"), TEXT("Please enter the number of permissions:"), fo->GetPermssion());
+	int res = id.Create(m_hwnd, TEXT("Change Permissions"), TEXT("Please enter the number of permissions:"), TEXT("Enter Number"));
+	if (res != 1)
+		return 0;
+
+	const TCHAR * newMode = id.GetValue();
+	const char *newMode_CP = SU::TCharToCP(newMode, CP_ACP);
+
+	if( newMode_CP[0] == 'E' )
+		return 0;
+
+	res = m_ftpSession->Chmod(fo->GetPath(), newMode_CP);
+	if (res == -1)
+		return -1;
+
+	m_ftpSession->GetDirectory(fo->GetParent()->GetPath());
 
 	return 0;
 }

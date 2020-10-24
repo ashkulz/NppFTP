@@ -1242,6 +1242,42 @@ int CUT_FTPClient::RenameFile(LPCSTR sourceFile,LPCSTR destFile){
     else
         return OnError(UTE_RNFR_NA);
 }
+
+
+/***************************************
+ChmodFile
+    Description: change file permissions
+Params
+    sourceFile - name of file on the FTP server
+    permissions - new file premissions
+Return
+    UTE_SUCCESS             - success
+    UTE_NO_RESPONSE         - no response
+    UTE_SVR_REQUEST_DENIED  - request denied by server
+****************************************/
+#if defined _UNICODE
+int CUT_FTPClient::ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions){
+    return ChmodFile(AC(sourceFile), AC(permissions));}
+#endif
+int CUT_FTPClient::ChmodFile(LPCSTR sourceFile,LPCSTR permissions){
+
+    int     rt;
+
+    // SITE CHMOD 644 transfer.png
+
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"SITE CHMOD %s %s\r\n",permissions,sourceFile);
+    Send(m_szBuf);
+
+    //check for a return of 2??
+    rt = GetResponseCode(this);
+    if(rt == 0)
+        return OnError(UTE_NO_RESPONSE);   //no response
+    else if(rt >=200 && rt <=299)
+        return OnError(UTE_SUCCESS);
+    return OnError(UTE_SVR_REQUEST_DENIED);
+}
+
+
 /***************************************
 GetCurDir
     Returns the name of the current

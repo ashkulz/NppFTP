@@ -3,15 +3,15 @@ name: CI_build
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_windows:
 
     runs-on: windows-2016
     strategy:
-      max-parallel: 1
+      max-parallel: 4
       matrix:
         build_configuration: [Release, Debug]
-        build_platform: ["Visual Studio 15 2017 Win64", "Visual Studio 15 2017"]
-        
+        build_platform: [x64, Win32]
+
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +19,7 @@ jobs:
       run: |
            mkdir _build
            cd _build
-           cmake -G "${{ matrix.build_platform }}" -T "v141_xp" ..
+           cmake -G "Visual Studio 15 2017" -A ${{ matrix.build_platform }} -T "v141" ..
 
     - name: build cmake
       run: |
@@ -27,16 +27,65 @@ jobs:
            cmake --build . --config ${{ matrix.build_configuration }}
 
     - name: Archive artifacts for x64
-      if: matrix.build_platform == 'Visual Studio 15 2017 Win64' && matrix.build_configuration == 'Release'
+      if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v1
       with:
           name: plugin_dll_x64
           path: _build\${{ matrix.build_configuration }}\NppFTP.dll
 
     - name: Archive artifacts for Win32
-      if: matrix.build_platform == 'Visual Studio 15 2017' && matrix.build_configuration == 'Release'
+      if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v1
       with:
           name: plugin_dll_x86
           path: _build\${{ matrix.build_configuration }}\NppFTP.dll
 
+  build_linux:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        build_platform: ["64", "32"]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install packages via apt
+      run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
+           (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
+
+    - name: build make mingw
+      run: make -f Makefile.mingw BITS=${{ matrix.build_platform }}
+
+
+  # build_linux_cmake:
+
+    # runs-on: ubuntu-latest
+    # strategy:
+      # max-parallel: 2
+      # matrix:
+        # build_configuration: [Release, Debug]
+        # build_platform: ["Unix Makefiles"]
+
+    # steps:
+    # - uses: actions/checkout@v2
+
+    # - name: Install packages via apt
+      # run: |
+           # sudo apt-get -qq update
+           # sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
+           # (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
+
+    # - name: generate cmake
+      # run: |
+           # mkdir _build
+           # cd _build
+           # cmake -G "${{ matrix.build_platform }}" ..
+
+    # - name: build cmake
+      # run: |
+           # cd _build
+           # cmake --build . --config ${{ matrix.build_configuration }}

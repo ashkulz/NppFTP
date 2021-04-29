@@ -3281,7 +3281,7 @@ int CUT_FTPClient::SocketOnConnected(SOCKET /*s*/, const char * /*lpszName*/){
     bool performAuth = (m_sMode == FTPES);
     bool performProt = (m_sMode != FTP);
 
-    m_dataSecLevel = performProt?1:0;   //do not call the function yet, let FTPConnecth andle that after authentication
+    m_dataSecLevel = performProt?1:0;   //do not call the function yet, let FTPConnect handle that after authentication
 
     if (m_sMode == FTPS) {  //just connect ssl
         rt = ConnectSSL();

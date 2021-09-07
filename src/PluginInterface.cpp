@@ -31,6 +31,7 @@ FuncItem	funcItems[nrFuncItem];
 NppData		nppData;
 NppFTP		nppFTP;
 HBITMAP		hFTPBitmap;
+toolbarIcons	tbiFtp;
 
 bool		show = false;
 bool		isStarted = false;
@@ -46,12 +47,14 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD  fdwReason, LPVOID /*lp
 	switch(fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
 			NppFTP::InitAll(hinstDLL);
-			hFTPBitmap = CreateMappedBitmap(hinstDLL, IDB_BITMAP_FOLDERS, 0, 0, 0);
+			tbiFtp.hToolbarBmp = CreateMappedBitmap(hinstDLL, IDB_BITMAP_FOLDERS, 0, 0, 0);
+			tbiFtp.hToolbarIcon = (HICON)::LoadImage(hinstDLL, MAKEINTRESOURCE(IDI_ICON_MAINFOLDERS), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
 
 			result = TRUE;
 			break; }
 		case DLL_PROCESS_DETACH: {
-			DeleteObject(hFTPBitmap);
+			DeleteObject(tbiFtp.hToolbarBmp);
+			DeleteObject(tbiFtp.hToolbarIcon);
 			break; }
 		case DLL_THREAD_ATTACH: {
 			break; }
@@ -94,9 +97,6 @@ FuncItem * getFuncsArray(int * arraysize) {
 void beNotified(SCNotification * scNotification) {
 	switch(scNotification->nmhdr.code) {
 		case NPPN_TBMODIFICATION: {
-			toolbarIcons tbiFtp;
-			tbiFtp.hToolbarBmp = hFTPBitmap;
-			tbiFtp.hToolbarIcon = NULL;
 			SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiFtp);
 			break; }
 		case NPPN_READY: {

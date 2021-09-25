@@ -25,7 +25,8 @@ const char * FTPCache::CacheElem = "Cache";
 const int PathCacheSize = MAX_PATH+10;	//paths generally do not exceed MAX_PATH, but if it happens often buffer reallocation may need some profiling (e.g. set ceiling instead of just allocating)
 
 FTPCache::FTPCache() :
-	m_cacheParent(NULL)
+	m_cacheParent(NULL),
+	m_activePort(0)
 {
 	m_activeHost = SU::DupString(TEXT(""));
 	m_activeUser = SU::DupString(TEXT(""));
@@ -42,12 +43,13 @@ int FTPCache::SetCacheParent(FTPCache * cacheParent) {
 	return 0;
 }
 
-int FTPCache::SetEnvironment(const char * host, const char * user) {
+int FTPCache::SetEnvironment(const char * host, const char * user, int port) {
 	SU::FreeTChar(m_activeHost);
 	SU::FreeTChar(m_activeUser);
 
 	m_activeHost = SU::Utf8ToTChar(host);
 	m_activeUser = SU::Utf8ToTChar(user);
+	m_activePort = port;
 
 	ExpandPaths();
 
@@ -331,6 +333,8 @@ TCHAR* FTPCache::ExpandPath(const TCHAR * path) {
 	}
 	replacestring = SU::ReplaceString(replacestring, TEXT("%USERNAME%"), m_activeUser);
 	replacestring = SU::ReplaceString(replacestring, TEXT("%HOSTNAME%"), m_activeHost);
+	tstring port = std::to_wstring(m_activePort);
+	replacestring = SU::ReplaceString(replacestring, TEXT("%PORT%"), port);
 
 	TCHAR * expanded = new TCHAR[MAX_PATH];
 	BOOL res = PathSearchAndQualify(replacestring.c_str(), expanded, MAX_PATH);

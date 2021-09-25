@@ -86,7 +86,7 @@ int FTPSession::StartSession(FTPProfile * sessionProfile) {
 	m_currentProfile = sessionProfile;
 	m_currentProfile->AddRef();
 
-	m_ftpSettings->GetGlobalCache()->SetEnvironment(m_currentProfile->GetHostname(), m_currentProfile->GetUsername());
+	m_ftpSettings->GetGlobalCache()->SetEnvironment(m_currentProfile->GetHostname(), m_currentProfile->GetUsername(), m_currentProfile->GetPort());
 
 	m_mainWrapper = m_currentProfile->CreateWrapper();
 	if (m_mainWrapper == NULL) {

@@ -48,7 +48,7 @@ const TCHAR* FTPSettings::GetGlobalCachePath() const {
 
 int FTPSettings::SetGlobalCachePath(const TCHAR * path) {
 	if (!path || lstrlen(path) < 4) {	//must at least have a drive designator or network name
-		path = TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%");
+		path = TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%\\%PORT%");
 	}
 
 	PathMap globalPathmap;

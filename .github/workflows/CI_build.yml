@@ -67,6 +67,21 @@ jobs:
     - name: build make mingw
       run: make -f Makefile.mingw BITS=${{ matrix.build_platform }}
 
+    - name: Release
+      if: matrix.build_platform == '32'
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+          files: NppFTP-x86.zip
+
+    - name: Release
+      if: matrix.build_platform == '64'
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+          files: NppFTP-x64.zip
+
+
 
   # build_linux_cmake:
 

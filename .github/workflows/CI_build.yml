@@ -1,0 +1,125 @@
+name: CI_build
+
+on: [push, pull_request]
+
+jobs:
+  build_windows:
+
+    runs-on: windows-2019
+    strategy:
+      max-parallel: 6
+      matrix:
+        build_configuration: [Release, Debug]
+        build_platform: [x64, ARM64, Win32]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: generate cmake
+      run: |
+           mkdir _build
+           cd _build
+           cmake -G "Visual Studio 16 2019" -A ${{ matrix.build_platform }} -T "v142" ..
+
+    - name: build cmake
+      run: |
+           cd _build
+           cmake --build . --config ${{ matrix.build_configuration }}
+
+    - name: Archive artifacts for x64
+      if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+          name: plugin_dll_x64
+          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+
+    - name: Archive artifacts for ARM64
+      if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+          name: plugin_dll_ARM64
+          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+
+    - name: Archive artifacts for Win32
+      if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+          name: plugin_dll_x86
+          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+
+  build_linux:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        build_platform: ["64", "32"]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install packages via apt
+      run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
+           (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
+
+    - name: build make mingw
+      run: make -f Makefile.mingw BITS=${{ matrix.build_platform }}
+
+    - name: Archive artifacts for x86
+      if: matrix.build_platform == '32'
+      uses: actions/upload-artifact@v2
+      with:
+          name: NppFTP-x86.zip
+          path: NppFTP-x86.zip
+
+    - name: Archive artifacts for x64
+      if: matrix.build_platform == '64'
+      uses: actions/upload-artifact@v2
+      with:
+          name: NppFTP-x64.zip
+          path: NppFTP-x64.zip
+
+    - name: Release for x86
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '32'
+      with:
+          files: NppFTP-x86.zip
+
+    - name: Release for x64
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '64'
+      with:
+          files: NppFTP-x64.zip
+
+
+
+  # build_linux_cmake:
+
+    # runs-on: ubuntu-latest
+    # strategy:
+      # max-parallel: 2
+      # matrix:
+        # build_configuration: [Release, Debug]
+        # build_platform: ["Unix Makefiles"]
+
+    # steps:
+    # - uses: actions/checkout@v2
+
+    # - name: Install packages via apt
+      # run: |
+           # sudo apt-get -qq update
+           # sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
+           # (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
+
+    # - name: generate cmake
+      # run: |
+           # mkdir _build
+           # cd _build
+           # cmake -G "${{ matrix.build_platform }}" ..
+
+    # - name: build cmake
+      # run: |
+           # cd _build
+           # cmake --build . --config ${{ matrix.build_configuration }}

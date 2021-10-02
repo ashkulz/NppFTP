@@ -89,7 +89,7 @@ jobs:
 
     - name: Release for x64
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '32'
+      if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '64'
       with:
           files: NppFTP-x64.zip
 

@@ -14,7 +14,7 @@
 // ===================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -146,7 +146,7 @@ int CUT_WSClient::Connect(unsigned int port, LPCSTR address, long timeout, int f
             return OnError(UTE_INVALID_ADDRESS);
         }
     else
-        strncpy(m_szAddress, address, sizeof(m_szAddress));
+        strncpy(m_szAddress, address, sizeof(m_szAddress)-1);
 
     m_nFamily    = family;
     m_nSockType  = sockType;
@@ -252,7 +252,7 @@ int CUT_WSClient::ConnectBound(unsigned int localPort,unsigned int remotePort,
         return OnError(UTE_SOCK_ALREADY_OPEN);
 
     //copy the params
-    strncpy(m_szAddress, remoteAddress, sizeof(m_szAddress));
+    strncpy(m_szAddress, remoteAddress, sizeof(m_szAddress)-1);
     m_nFamily    = family;
     m_nSockType  = sockType;
 
@@ -1553,7 +1553,7 @@ int CUT_WSClient::Receive(CUT_DataSource & dest, OpenMsgType type, int timeOut, 
             }
 
         if(lMaxToReceive > 0) {
-            nSize = min((long)sizeof(data), lMaxToReceive - bytesReceived);
+            nSize = (std::min)((long)sizeof(data), lMaxToReceive - bytesReceived);
             if(nSize == 0)
                 break;
             }
@@ -1624,7 +1624,7 @@ int CUT_WSClient::Receive(CUT_Queue & dest, int timeOut, long lMaxToReceive){
 
     //we cannot receive more than the free size of the queue
     if(lMaxToReceive > 0)
-        lMaxToReceive = min(lMaxToReceive, (long)dest.GetFreeSize());
+        lMaxToReceive = (std::min)(lMaxToReceive, (long)dest.GetFreeSize());
     else
         lMaxToReceive = dest.GetFreeSize();
 
@@ -1637,7 +1637,7 @@ int CUT_WSClient::Receive(CUT_Queue & dest, int timeOut, long lMaxToReceive){
                 }
             }
 
-        nSize = min((long)sizeof(data), lMaxToReceive - bytesReceived);
+        nSize = (std::min)((long)sizeof(data), lMaxToReceive - bytesReceived);
         if(nSize == 0)
             break;
 

@@ -2815,7 +2815,7 @@ void CUT_FTPClient::GetInfoInDOSFormat( CUT_DIRINFOA * di){
                     ++ loop;
                 }
             else if(nSpaces == 3) {
-                strncpy(di->fileName, &m_szBuf[loop], sizeof(di->fileName));
+                strncpy(di->fileName, &m_szBuf[loop], sizeof(di->fileName)-1);
                 break;
                 }
             else
@@ -2852,6 +2852,8 @@ void CUT_FTPClient::GetInfoInDOSFormat( CUT_DIRINFOA * di){
         CUT_StrMethods::ParseString(m_szBuf," ",0,dateBuf,sizeof(dateBuf));
 
         strncpy(dateBuf, &dateBuf[6],2);
+        dateBuf[2] = '\0';
+
         int temp = atoi(dateBuf);
         if( 70 > temp)
             temp+= 100;
@@ -2915,7 +2917,7 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
 
             }
         else if(nSpaces == 8 +linksIncluded) {
-            strncpy(di->fileName, &m_szBuf[loop], sizeof(di->fileName));
+            strncpy(di->fileName, &m_szBuf[loop], sizeof(di->fileName)-1);
             break;
             }
         else
@@ -3243,7 +3245,7 @@ int CUT_FTPClient::SocketOnConnected(SOCKET /*s*/, const char * /*lpszName*/){
     bool performAuth = (m_sMode == FTPES);
     bool performProt = (m_sMode != FTP);
 
-    m_dataSecLevel = performProt?1:0;   //do not call the function yet, let FTPConnecth andle that after authentication
+    m_dataSecLevel = performProt?1:0;   //do not call the function yet, let FTPConnect handle that after authentication
 
     if (m_sMode == FTPS) {  //just connect ssl
         rt = ConnectSSL();

@@ -608,7 +608,7 @@ int CUT_WSClient::EnableSSL(bool enable) {
         m_ctx = SSL_CTX_new(m_meth);
         if (!m_ctx) {
             int errval = ERR_get_error();
-            printf(ERR_error_string(errval, NULL));
+            printf("*** %s\n", ERR_error_string(errval, NULL));
         }
         SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
 

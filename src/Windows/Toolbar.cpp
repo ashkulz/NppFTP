@@ -331,7 +331,7 @@ int Rebar::Destroy() {
 	int ret = Window::Destroy();
 	m_usedIDs.clear();
 	return ret;
-};
+}
 
 int Rebar::AddBand(REBARBANDINFO * rBand, bool useID) {
 	if (rBand->fMask & RBBIM_STYLE)

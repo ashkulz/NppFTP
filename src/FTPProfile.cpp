@@ -67,7 +67,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_cache = new FTPCache();
 
 	m_name = SU::DupString(name);
-	m_parent = SU::DupString(TEXT(""));
+	m_parent = SU::DupString(L"");
 	m_hostname = SU::strdup("");
 	m_username = SU::strdup("");
 	m_password = SU::strdup("");
@@ -82,7 +82,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 }
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
-	m_parent(other->m_parent),
+	m_parent(SU::DupString(other->m_parent)),
 	m_port(other->m_port),
 	m_askPassword(other->m_askPassword),
 	m_askPassphrase(other->m_askPassphrase),
@@ -883,6 +883,11 @@ int FTPProfile::SortVector(vProfile & pVect) {
 	std::sort(pVect.begin(), pVect.end(), &FTPProfile::CompareProfile);
 
 	return 0;
+}
+
+bool FTPProfile::operator==(const FTPProfile& other) const
+{
+	return (lstrcmpi(this->GetName(), other.GetName()) == 0 && lstrcmpi(this->GetParent(), other.GetParent()) == 0);
 }
 
 bool FTPProfile::CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2) {

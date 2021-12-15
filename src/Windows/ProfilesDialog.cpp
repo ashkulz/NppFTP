@@ -23,6 +23,7 @@
 #include "FTPWindow.h"
 #include "resource.h"
 #include <windowsx.h>
+#include <algorithm>
 
 ProfilesDialog::ProfilesDialog() :
 	Dialog(IDD_DIALOG_PROFILES),
@@ -42,13 +43,33 @@ ProfilesDialog::ProfilesDialog() :
 {
 }
 
+ProfilesDialog::ProfilesDialog(int dlgId) :
+	Dialog(dlgId),
+	m_profiles(NULL),
+	m_currentProfile(NULL),
+	m_globalCache(NULL),
+	m_ftpWindow(NULL),
+	m_pageConnection(IDD_DIALOG_PROFILESCONNECTION),
+	m_pageAuthentication(IDD_DIALOG_PROFILESAUTHENTICATION),
+	m_pageTransfer(IDD_DIALOG_PROFILESTRANSFERS),
+	m_pageFTP(IDD_DIALOG_PROFILESFTP),
+	m_pageCache(IDD_DIALOG_PROFILESCACHE),
+	m_hPageConnection(NULL),
+	m_hPageTransfer(NULL),
+	m_hPageFTP(NULL),
+	m_hPageCache(NULL)
+{
+}
+
 ProfilesDialog::~ProfilesDialog()  {
 }
 
-int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache) {
+int ProfilesDialog::Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache,FTPProfile* selProfile) {
 	m_ftpWindow = ftpWindow;
 	m_profiles = profileVect;
 	m_globalCache = globalCache;
+	m_preselectedProfile = selProfile;
+
 	return Dialog::Create(hParent, true, NULL);
 }
 
@@ -591,13 +612,16 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 		return FALSE;
 	}
 
+	FTPProfile* cur_selectedProfile = NULL;
 	if (m_profiles->size() > 0) {
-		HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
-		ListBox_SetCurSel(hListProfile, 0);
-		OnSelectProfile(m_profiles->at(0));
-	} else {
-		OnSelectProfile(NULL);
+		vProfile::iterator it = std::find(m_profiles->begin(), m_profiles->end(), m_preselectedProfile);
+		if (it != m_profiles->end()) {
+			HWND hListProfile = ::GetDlgItem(m_hwnd, IDC_LIST_PROFILES);
+			ListBox_SetCurSel(hListProfile, std::distance(m_profiles->begin(), it));
+			cur_selectedProfile = m_preselectedProfile;
+		}
 	}
+	OnSelectProfile(cur_selectedProfile);
 
 	return FALSE;
 }

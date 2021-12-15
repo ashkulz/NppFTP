@@ -315,6 +315,90 @@ const char* QueueDownloadHandle::GetExternalPath() {
 
 //////////////////////////////////////
 
+QueueCopyFile::QueueCopyFile(HWND hNotify, const char* externalFile, const char* externalParent, Transfer_Mode tMode, int notifyCode, void* notifyData) :
+	QueueOperation(QueueTypeCopyFile, hNotify, notifyCode, notifyData),
+	m_tMode(tMode)
+
+{
+	m_externalFile = SU::strdup(externalFile);
+	m_target = SU::strdup(externalParent);
+	OutMsg("INIT PARENT: %s", externalParent);
+}
+
+QueueCopyFile::~QueueCopyFile() {
+	SU::free(m_externalFile);
+	SU::free(m_target);
+}
+
+int QueueCopyFile::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		m_result = m_client->Connect();
+		if (m_result == -1)
+			return m_result;
+		m_result = -1;
+	}
+
+	if (m_client->GetType() == Client_SSL) {
+		((FTPClientWrapperSSL*)m_client)->SetTransferMode(m_tMode);
+	}
+
+	TCHAR szTempFileName[MAX_PATH];
+	TCHAR lpTempPathBuffer[MAX_PATH];
+	GetTempPath(MAX_PATH, lpTempPathBuffer);
+	GetTempFileName(lpTempPathBuffer, _T("NppFtp"), 0, szTempFileName);
+
+	HANDLE hTempFile = ::CreateFile(szTempFileName, 
+		GENERIC_READ | GENERIC_WRITE,   
+		0,                     // do not share 
+		NULL,                  // default security 
+		CREATE_ALWAYS,         // existing file only 
+		FILE_ATTRIBUTE_NORMAL, // normal file 
+		NULL);                 // no template
+
+	if ((m_result = m_client->ReceiveFile(hTempFile, m_externalFile)) != 0)
+		return m_result;
+
+	m_result = m_client->SendFile(szTempFileName, m_target);
+
+	DeleteFile(szTempFileName);
+	
+	return m_result;
+}
+
+bool QueueCopyFile::Equals(const QueueOperation& other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueCopyFile& otherDld = (QueueCopyFile&)other;
+
+	return (!strcmp(otherDld.m_externalFile, m_externalFile) && !strcmp(otherDld.m_target, m_target) && !m_running && !otherDld.m_running);
+}
+
+const char* QueueCopyFile::GetExternalPath() {
+	return m_externalFile;
+}
+
+const char* QueueCopyFile::GetExternalOriginParent() {
+	char* basepath = SU::strdup(m_externalFile);
+	char * lastSlash=strrchr(basepath, '/');
+	lastSlash[0] = '\0';
+	if (strlen(basepath) == 0) //root
+		return "/";
+	else
+		return basepath;
+}
+
+const char* QueueCopyFile::GetExternalNewParent() {
+	char* basepath = SU::strdup(m_target);
+	char* lastSlash = strrchr(basepath, '/');
+	lastSlash[0] = '\0';
+	if (strlen(basepath) == 0) //root
+		return "/";
+	else
+		return basepath;
+}
+
+//////////////////////////////////////
+
 QueueUpload::QueueUpload(HWND hNotify, const char * externalFile, const TCHAR * localFile, Transfer_Mode tMode, int notifyCode, void * notifyData) :
 	QueueOperation(QueueTypeUpload, hNotify, notifyCode, notifyData),
 	m_tMode(tMode)

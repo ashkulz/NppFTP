@@ -54,7 +54,8 @@ public:
 
 	virtual int				UpdateFileObject(FileObject * fo);
 	virtual int				UpdateDirectory(FileObject * dir);
-	virtual int				ExpandDirectory(FileObject * dir);
+	virtual int				ExpandDirectory(FileObject* dir, FileObject* selectItem = NULL);
+	virtual int			CollapseDirectory(FileObject* dir);
 	virtual int				EnsureObjectVisible(FileObject * fo);
 
 	virtual int				ClearAll();

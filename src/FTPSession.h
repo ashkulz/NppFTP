@@ -54,6 +54,8 @@ public:
 	int						UploadFileCache(const TCHAR * sourcefile);	//return 0 on upload, -1 on error, 1 when no cache match was found
 	int						UploadFile(const TCHAR * sourcefile, const char * target, bool targetIsDir, int code = 1);
 
+	int						CopyFile(const char* sourcefile, const char* target,  int code=0);
+
 	int						MkDir(const char * path);
 	int						RmDir(const char * path);
 	int						MkFile(const char * path);

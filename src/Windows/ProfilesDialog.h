@@ -28,9 +28,10 @@ class FTPWindow;
 class ProfilesDialog : public Dialog {
 public:
 							ProfilesDialog();
+							ProfilesDialog(int dlgId);
 	virtual					~ProfilesDialog();
 
-	virtual int				Create(HWND hParent, FTPWindow * ftpWindow, vProfile * profileVect, FTPCache * globalCache);
+	virtual int				Create(HWND hParent, FTPWindow* ftpWindow, vProfile* profileVect, FTPCache* globalCache, FTPProfile* selProfile=NULL);
 protected:
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR			OnInitDialog();	//DialogProc filters this one out, therefore calback
@@ -50,6 +51,7 @@ protected:
 
 	vProfile*				m_profiles;
 	FTPProfile*				m_currentProfile;
+	FTPProfile*				m_preselectedProfile;
 	FTPCache*				m_globalCache;
 	FTPWindow*				m_ftpWindow;
 

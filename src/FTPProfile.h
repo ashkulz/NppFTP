@@ -109,6 +109,8 @@ public:
 	static TiXmlElement*	SaveProfiles(const vProfile profiles);
 
 	static int				SortVector(vProfile & pVect);
+	bool					operator==(const FTPProfile& other) const;
+
 private:
 	static FTPProfile*		LoadProfile(const TiXmlElement * profileElem);
 	TiXmlElement*			SaveProfile() const;	//return value only valid as long as profile object exists

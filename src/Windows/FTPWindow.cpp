@@ -1331,13 +1331,11 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 					//Download to cache: Open file
 					OutMsg("Download of %s succeeded, opening file.", opdld->GetExternalPath());
 					::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
-					::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
 				} else {
 					//Download to other location: Ask
 					int ret = ::MessageBox(m_hNpp, TEXT("The download is complete. Do you wish to open the file?"), TEXT("Download complete"), MB_YESNO);
 					if (ret == IDYES) {
 						::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
-						::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
 					}
 				}
 			} else {

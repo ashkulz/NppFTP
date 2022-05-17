@@ -111,7 +111,7 @@ FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 
 	for(int i = 0; i < other->m_cache->GetPathMapCount(); i++) {
-		PathMap map;
+		PathMap map{};
 		const PathMap & othermap = other->m_cache->GetPathMap(i);
 		map.localpath = SU::DupString(othermap.localpath);
 		map.externalpath = SU::strdup(othermap.externalpath);

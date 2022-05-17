@@ -89,7 +89,7 @@ int FTPClientWrapperSSH::Disconnect() {
 int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 	sftp_dir dir;
 	sftp_attributes sfile;
-	FTPFile file;
+	FTPFile file{};
 	std::vector<FTPFile> vFiles;
 	int count = 0;
 
@@ -747,7 +747,7 @@ HANDLE FTPClientWrapperSSH::OpenFile(const TCHAR* file, bool write) {
 }
 
 FILETIME FTPClientWrapperSSH::ConvertFiletime(uint32_t nTime, uint32_t /*nNanosecs*/) {
-	FILETIME ft;
+	FILETIME ft{};
 	// Note that LONGLONG is a 64-bit value
 	LONGLONG ll;
 

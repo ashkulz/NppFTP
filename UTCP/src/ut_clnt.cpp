@@ -185,7 +185,7 @@ int CUT_WSClient::Connect(unsigned int port, LPCSTR address, long timeout, int f
             m_nRemotePort = ntohs(m_sockAddr.sin_port);
 
             // save the local port
-            SOCKADDR_IN sa;
+            SOCKADDR_IN sa{};
             int len = sizeof(SOCKADDR_IN);
             getsockname(m_socket, (SOCKADDR*) &sa, &len);
             m_nLocalPort = ntohs(sa.sin_port);
@@ -286,7 +286,7 @@ int CUT_WSClient::ConnectBound(unsigned int localPort,unsigned int remotePort,
     m_nRemotePort = ntohs(m_sockAddr.sin_port);
 
     // save the local port
-    SOCKADDR_IN sa;
+    SOCKADDR_IN sa{};
     int len = sizeof(SOCKADDR_IN);
     getsockname(m_socket, (SOCKADDR*) &sa, &len);
     m_nLocalPort = ntohs(sa.sin_port);
@@ -426,7 +426,7 @@ int CUT_WSClient::WaitForConnect(unsigned short port,int queSize,short family,
     SetSendTimeOut(m_lSendTimeOut);
 
     // save the port number for GetAcceptPort
-    SOCKADDR_IN sa;
+    SOCKADDR_IN sa{};
     int len = sizeof(SOCKADDR_IN);
     getsockname(m_serverSocket, (SOCKADDR*) &sa, &len);
     m_nAcceptPort = ntohs(sa.sin_port);
@@ -475,7 +475,7 @@ int CUT_WSClient::AcceptConnection(){
     m_nRemotePort = ntohs(m_sockAddr.sin_port);
 
     // save the local port
-    SOCKADDR_IN sa;
+    SOCKADDR_IN sa{};
     int len = sizeof(SOCKADDR_IN);
     getsockname(m_socket, (SOCKADDR*) &sa, &len);
     m_nLocalPort = ntohs(sa.sin_port);
@@ -505,8 +505,8 @@ Return
 ****************************************************/
 int CUT_WSClient::WaitForAccept(long secs){
 
-    fd_set readSet;
-    struct timeval tv;
+    fd_set readSet{};
+    struct timeval tv{};
 
     tv.tv_sec = secs;
     tv.tv_usec = 0;
@@ -704,7 +704,7 @@ int CUT_WSClient::DisconnectSSL() {
 
     //wait for peer to disconnect
     if (rc == 0) {
-        char buf[256];
+        char buf[256]{};
         int read = SSL_read(m_ssl, &buf[0], 256);
         while (read > 0) {
             read = SSL_read(m_ssl, &buf[0], 256);
@@ -963,7 +963,7 @@ int CUT_WSClient::Send(CUT_DataSource & source)
     if(m_socket == INVALID_SOCKET)
         return OnError(UTE_SOCK_NOT_OPEN);
 
-    int         len;
+    int         len = 0;
     char        buf[WSC_BUFFER_SIZE];
     long        bytesSent = 0;
 
@@ -1017,8 +1017,8 @@ int CUT_WSClient::Send(CUT_Queue& queue)
     if(m_socket == INVALID_SOCKET)
         return OnError(UTE_SOCK_NOT_OPEN);
 
-    int         len;
-    char        buf[WSC_BUFFER_SIZE];
+    int         len = 0;
+    char        buf[WSC_BUFFER_SIZE]{};
     long        bytesSent = 0;
 
     int   error = UTE_SUCCESS;
@@ -1077,8 +1077,8 @@ Return
 ****************************************************/
 int CUT_WSClient::WaitForSend(long secs,long uSecs){
 
-    fd_set writeSet;
-    struct timeval tv;
+    fd_set writeSet{};
+    struct timeval tv{};
 
     tv.tv_sec = secs;
     tv.tv_usec =uSecs;
@@ -1519,7 +1519,7 @@ Return
 int CUT_WSClient::Receive(CUT_DataSource & dest, OpenMsgType type, int timeOut, long lMaxToReceive)
 {
     char        data[WSC_BUFFER_SIZE];
-    int         count, nSize = sizeof(data);
+    int         count = 0, nSize = sizeof(data);
     int         error = UTE_SUCCESS;
     long        bytesReceived = 0L;
 
@@ -1605,8 +1605,8 @@ Return
 *****************************************************/
 int CUT_WSClient::Receive(CUT_Queue & dest, int timeOut, long lMaxToReceive){
 
-    BYTE        data[WSC_BUFFER_SIZE];
-    int         count, nSize = sizeof(data);
+    BYTE        data[WSC_BUFFER_SIZE]{};
+    int         count = 0, nSize = sizeof(data);
     int         error = UTE_SUCCESS;
     long        bytesReceived = 0L;
 
@@ -1701,7 +1701,7 @@ Return
 ****************************************************/
 int CUT_WSClient::GetMaxSend() const
 {
-    int length;
+    int length = 0;
     int size = sizeof(int);
     if (getsockopt(m_socket, SOL_SOCKET, SO_SNDBUF,(char*) &length, &size) ==0)
         return length;
@@ -1721,7 +1721,7 @@ Return
 ****************************************************/
 int CUT_WSClient::GetMaxReceive() const
 {
-    int length;
+    int length = 0;
     int size = sizeof(int);
     if (getsockopt(m_socket, SOL_SOCKET, SO_RCVBUF,(char*) &length, &size) == 0)
         return length;
@@ -1835,7 +1835,7 @@ int CUT_WSClient::GetAddressFromName(LPCWSTR name,LPWSTR address,int maxLen){
 #endif
 int CUT_WSClient::GetAddressFromName(LPCSTR name,LPSTR address,int maxLen){
 
-    in_addr         addr;
+    in_addr         addr{};
     hostent FAR *   host;
     int             len;
     char *          pChar;
@@ -1916,8 +1916,8 @@ BOOL CUT_WSClient::IsConnected(){
 
     int rt1, rt2, error;
 
-    fd_set readSet;
-    struct timeval tv;
+    fd_set readSet{};
+    struct timeval tv{};
 
     tv.tv_sec = 0;      // do not block - for polling
     tv.tv_usec = 0;
@@ -2088,7 +2088,7 @@ int CUT_WSClient::GetHostAddress(LPSTR address, int maxLen, BOOL useCurrentConne
         }
     }
     if(m_socket != INVALID_SOCKET){
-        SOCKADDR_IN addr;
+        SOCKADDR_IN addr{};
         int len = sizeof(SOCKADDR_IN);
         getsockname(m_socket,(LPSOCKADDR)&addr,&len);
         maxLen --;
@@ -2196,14 +2196,14 @@ LRESULT CALLBACK CUT_WSClient::WndProc(HWND hwnd, UINT message, WPARAM wParam, L
 
         case WM_NCCREATE:
             {
-                SetWindowLong(hwnd,0,(LPARAM)NULL);
+                SetWindowLongPtr(hwnd,0,(LPARAM)NULL);
                 return 1;
             }
         case CUT_SET_THIS_PTR:
             {
                 //store the pointer to the calling class
                 // CUT_WSClient *_this = (CUT_WSClient*)lParam;
-                SetWindowLong(hwnd,0,(LONG)lParam);
+                SetWindowLongPtr(hwnd,0, lParam);
                 return 1;
             }
     }

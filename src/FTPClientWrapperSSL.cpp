@@ -145,7 +145,7 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		if (!lstrcmp(TEXT("."), di.fileName) || !lstrcmp(TEXT(".."), di.fileName))
 			continue;
 
-		FTPFile ftpfile;
+		FTPFile ftpfile{};
 
 		ftpfile.filePath[0] = 0;
 
@@ -425,7 +425,7 @@ int FTPClientWrapperSSL::Quote(const char * quote) {
 
 FILETIME FTPClientWrapperSSL::ConvertFiletime(int day, int month, int year, int hour, int minute) {
 	FILETIME ft;
-	SYSTEMTIME st;
+	SYSTEMTIME st{};
 	st.wYear = year;
 	st.wMonth = month;
 	st.wDayOfWeek = 0;	//ignored
@@ -636,8 +636,8 @@ BOOL FtpSSLWrapper::IsConnected() {
 
 	//also test if sending is possible
 
-	fd_set writeSet;
-	struct timeval tv;
+	fd_set writeSet{};
+	struct timeval tv{};
 
 	tv.tv_sec = 0;      // do not block - for polling
 	tv.tv_usec = 0;

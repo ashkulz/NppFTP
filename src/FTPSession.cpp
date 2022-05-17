@@ -244,7 +244,7 @@ int FTPSession::DownloadFileCache(const char * sourcefile) {
 	if (sourcefile == NULL)
 		return -1;
 
-	TCHAR target[MAX_PATH];
+	TCHAR target[MAX_PATH]{};
 	target[0] = 0;
 
 	int res = m_currentProfile->GetCacheLocal(sourcefile, target, MAX_PATH);
@@ -308,7 +308,7 @@ int FTPSession::UploadFileCache(const TCHAR * sourcefile) {
 	if (sourcefile == NULL)
 		return -1;
 
-	char target[MAX_PATH];
+	char target[MAX_PATH]{};
 	target[0] = 0;
 
 	int res = m_currentProfile->GetCacheExternal(sourcefile, target, MAX_PATH);

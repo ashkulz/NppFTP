@@ -2585,7 +2585,7 @@ int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) 
     char c;
     int  code;
     //int  once = TRUE;
-    char mlCode[5];
+    char mlCode[5]{};
 
     m_cachedResponse = true;
 

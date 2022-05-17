@@ -95,7 +95,7 @@ X509* SSLCertificates::ConvertDER(const DER & der) {
 
 DER SSLCertificates::ConvertX509(const X509 * x509) {
 	//Assuming openssl 0.9.7 or higher
-	DER der;
+	DER der{};
 	unsigned char * derBuffer = NULL;
 	int len = 0;
 
@@ -150,7 +150,7 @@ char * SSLCertificates::GetDERString(const DER & der) {
 }
 
 DER SSLCertificates::GetDER(const char * derString) {
-	DER der;
+	DER der{};
 	size_t len = strlen(derString)/2;
 	unsigned char * data = (unsigned char*)OPENSSL_malloc(len*sizeof(unsigned char));//new unsigned char[len];
 

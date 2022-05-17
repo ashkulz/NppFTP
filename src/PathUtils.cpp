@@ -235,7 +235,7 @@ int PU::GetOpenFilename(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (!hOwner)
 		hOwner = _MainOutputWindow;
 
-	OPENFILENAME ofn;
+	OPENFILENAME ofn{};
 	ofn.lStructSize = sizeof(ofn);	//not NT4.0 compatible
 	ofn.hwndOwner = hOwner;
 	ofn.lpstrFilter = NULL;	//accept everything
@@ -263,7 +263,7 @@ int PU::GetSaveFilename(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (!hOwner)
 		hOwner = _MainOutputWindow;
 
-	OPENFILENAME ofn;
+	OPENFILENAME ofn{};
 	ofn.lStructSize = sizeof(ofn);	//not NT4.0 compatible
 	ofn.hwndOwner = hOwner;
 	ofn.lpstrFilter = NULL;	//accept everything
@@ -291,7 +291,7 @@ int PU::BrowseDirectory(TCHAR * buffer, int bufSize, HWND hOwner) {
 	if (!hOwner)
 		hOwner = _MainOutputWindow;
 	//TODO: detect Vista+ and use IFileDialog
-	BROWSEINFO bi;
+	BROWSEINFO bi{};
 	bi.hwndOwner = hOwner;
 	bi.pidlRoot = NULL;	//desktop
 	bi.pszDisplayName = buffer;

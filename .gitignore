@@ -1,3 +1,6 @@
 x86/
 x64/
 *.zip
+*.ipch
+_build/
+.vs/

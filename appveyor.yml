@@ -1,4 +1,4 @@
-version: 0.30.12.{build}
+version: 0.30.13.{build}
 image: Visual Studio 2019
 
 

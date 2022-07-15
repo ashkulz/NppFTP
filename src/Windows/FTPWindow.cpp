@@ -119,7 +119,7 @@ int FTPWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 	m_treeview.Show(true);
 	m_queueWindow.Show(true);
 
-	TCHAR source[MAX_PATH];
+	TCHAR source[MAX_PATH]{};
 	res = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
 	if (res == TRUE) {
 		OnActivateLocalFile(source);
@@ -273,7 +273,7 @@ int FTPWindow::OnActivateLocalFile(const TCHAR* filename) {
 }
 
 int FTPWindow::RegisterClass() {
-	WNDCLASSEX FTPWindowClass;
+	WNDCLASSEX FTPWindowClass{};
 	FTPWindowClass.cbSize = sizeof(WNDCLASSEX);
 	FTPWindowClass.style = CS_DBLCLKS;//|CS_NOCLOSE;
 	FTPWindowClass.cbClsExtra = 0;
@@ -357,7 +357,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			if((wParam & MK_LBUTTON) || (wParam & MK_RBUTTON)) {
 
 				HTREEITEM htiTarget;  // Handle to target item.
-				TVHITTESTINFO tvht;   // Hit test information.
+				TVHITTESTINFO tvht{};   // Hit test information.
 
 				if (m_currentDragObject != NULL )
 				{
@@ -371,7 +371,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						m_currentDragObject = NULL;
 						break;
 					}
-					POINT point;
+					POINT point{};
 					point.x = GET_X_LPARAM(lParam);
 					point.y = GET_Y_LPARAM(lParam);
 					ClientToScreen(m_hwnd, &point);
@@ -471,7 +471,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case IDB_BUTTON_TOOLBAR_UPLOAD: {
 					//upload(TRUE, TRUE);		//upload to cached folder is present, else upload to last selected folder
 					//m_ftpSession->UploadFile();
-					TCHAR source[MAX_PATH];
+					TCHAR source[MAX_PATH]{};
 					BOOL doUpload = FALSE;
 					SHORT state = GetKeyState(VK_CONTROL);
 					if ((state & 0x8000) && LOWORD(wParam) == IDB_BUTTON_TOOLBAR_UPLOAD) {
@@ -492,7 +492,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					result = TRUE;
 					break;}
 				case IDM_POPUP_UPLOADOTHERFILE: {
-					TCHAR source[MAX_PATH];
+					TCHAR source[MAX_PATH]{};
 					source[0] = 0;
 					int res = PU::GetOpenFilename(source, MAX_PATH, m_hwnd);
 					if (res == 0) {
@@ -820,7 +820,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				switch(nmh.code) {
 					case RBN_CHEVRONPUSHED: {
 						NMREBARCHEVRON * lpnm = (NMREBARCHEVRON*) lParam;
-						POINT pt;
+						POINT pt{};
 						pt.x = lpnm->rc.left;//right;
 						pt.y = lpnm->rc.bottom;
 						ClientToScreen(m_rebar.GetHWND(), &pt);
@@ -849,7 +849,7 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			HWND hWinContext = (HWND)wParam;
 			HMENU hContext = NULL;
 
-			POINT menuPos;
+			POINT menuPos{};
 			menuPos.x = GET_X_LPARAM(lParam);
 			menuPos.y = GET_Y_LPARAM(lParam);
 			bool fromKeyboard = (menuPos.x == -1 && menuPos.y == -1);
@@ -1016,7 +1016,7 @@ int FTPWindow::OnFileItemDrop(FileObject* item, FileObject* parent, bool bIsMove
 }
 
 bool FTPWindow::AcceptType(LPDATAOBJECT pDataObj) {
-	FORMATETC fmtetc;
+	FORMATETC fmtetc{};
 
 	fmtetc.ptd	    = NULL;
 	fmtetc.dwAspect = DVASPECT_CONTENT;
@@ -1059,7 +1059,7 @@ HRESULT FTPWindow::OnDrop(LPDATAOBJECT pDataObj, DWORD /*grfKeyState*/, POINTL /
 	TreeView_Select(m_treeview.GetHWND(), NULL, TVGN_DROPHILITE);
 
 	STGMEDIUM medium;
-	FORMATETC formatetc;
+	FORMATETC formatetc{};
 	formatetc.cfFormat = CF_HDROP;
 	formatetc.tymed = TYMED_HGLOBAL;
 	formatetc.dwAspect = 0;
@@ -1709,7 +1709,7 @@ int FTPWindow::VScrollTreeView(LONG yPos)
 {
 	static LONG scrollregion = TreeView_GetItemHeight(m_treeview.GetHWND()) * 4;
 
-	SCROLLINFO si;
+	SCROLLINFO si{};
 	si.cbSize = sizeof(SCROLLINFO);
 	si.fMask = SIF_POS | SIF_RANGE;
 	GetScrollInfo(m_treeview.GetHWND(), SB_VERT, &si);

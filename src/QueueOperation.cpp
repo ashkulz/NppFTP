@@ -322,7 +322,7 @@ QueueCopyFile::QueueCopyFile(HWND hNotify, const char* externalFile, const char*
 {
 	m_externalFile = SU::strdup(externalFile);
 	m_target = SU::strdup(externalParent);
-	OutMsg("INIT PARENT: %s", externalParent);
+	OutMsg("INIT PARENT: %T", SU::Utf8ToTChar(externalParent));
 }
 
 QueueCopyFile::~QueueCopyFile() {

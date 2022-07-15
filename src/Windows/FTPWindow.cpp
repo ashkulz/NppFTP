@@ -1312,7 +1312,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			}
 
 			if (queueResult == -1) {
-				OutErr("Failure retrieving contents of directory %s", dirop->GetDirPath());
+				OutErr("Failure retrieving contents of directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
 				//break commented: even if failed, update the treeview etc., count should result in 0 anyway
 				//break;	//failure
 			}
@@ -1328,7 +1328,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Download of %s failed", opdld->GetExternalPath());
+				OutErr("Download of %T failed", SU::Utf8ToTChar(opdld->GetExternalPath()));
 				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
@@ -1336,7 +1336,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (queueOp->GetType() == QueueOperation::QueueTypeDownload) {
 				if (code == 0) {
 					//Download to cache: Open file
-					OutMsg("Download of %s succeeded, opening file.", opdld->GetExternalPath());
+					OutMsg("Download of %T succeeded, opening file.", SU::Utf8ToTChar(opdld->GetExternalPath()));
 					::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)opdld->GetLocalPath());
 				} else {
 					//Download to other location: Ask
@@ -1346,7 +1346,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 					}
 				}
 			} else {
-				OutMsg("Download of %s succeeded.", opdld->GetExternalPath());
+				OutMsg("Download of %T succeeded.", SU::Utf8ToTChar(opdld->GetExternalPath()));
 			}
 			break; }
 		case QueueOperation::QueueTypeUpload: {
@@ -1354,12 +1354,12 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Upload of %S failed", opuld->GetLocalPath());
+				OutErr("Upload of %T failed", opuld->GetLocalPath());
 				OnError(queueOp, code, data, isStart);
 				break;	//failure
 			}
 
-			OutMsg("Upload of %s succeeded.", opuld->GetExternalPath());
+			OutMsg("Upload of %T succeeded.", SU::Utf8ToTChar(opuld->GetExternalPath()));
 
 			char path[MAX_PATH];
 			strcpy(path, opuld->GetExternalPath());
@@ -1376,67 +1376,67 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to create directory %s", opmkdir->GetDirPath());
+				OutErr("Unable to create directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
 				break;	//failure
 			}
-			OutMsg("Created directory %s", opmkdir->GetDirPath());
+			OutMsg("Created directory %T", SU::Utf8ToTChar(opmkdir->GetDirPath()));
 			break; }
 		case QueueOperation::QueueTypeDirectoryRemove: {
 			QueueRemoveDir * oprmdir = (QueueRemoveDir*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to remove directory %s", oprmdir->GetDirPath());
+				OutErr("Unable to remove directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
 				break;	//failure
 			}
-			OutMsg("Removed directory %s", oprmdir->GetDirPath());
+			OutMsg("Removed directory %T", SU::Utf8ToTChar(oprmdir->GetDirPath()));
 			break; }
 		case QueueOperation::QueueTypeFileCreate: {
 			QueueCreateFile * opmkfile = (QueueCreateFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to create file %s", opmkfile->GetFilePath());
+				OutErr("Unable to create file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("Created file %s", opmkfile->GetFilePath());
+			OutMsg("Created file %T", SU::Utf8ToTChar(opmkfile->GetFilePath()));
 			break; }
 		case QueueOperation::QueueTypeFileDelete: {
 			QueueDeleteFile * opdelfile = (QueueDeleteFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to delete file %s", opdelfile->GetFilePath());
+				OutErr("Unable to delete file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("Deleted file %s", opdelfile->GetFilePath());
+			OutMsg("Deleted file %T", SU::Utf8ToTChar(opdelfile->GetFilePath()));
 			break; }
 		case QueueOperation::QueueTypeFileRename: {
 			QueueRenameFile * oprename = (QueueRenameFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to rename file %s", oprename->GetFilePath());
+				OutErr("Unable to rename file %T", SU::Utf8ToTChar(oprename->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("Renamed %s to %s", oprename->GetFilePath(), oprename->GetNewPath());
+			OutMsg("Renamed %T to %T", SU::Utf8ToTChar(oprename->GetFilePath()), SU::Utf8ToTChar(oprename->GetNewPath()));
 			break; }
 		case QueueOperation::QueueTypeFileChmod: {
 			QueueChmodFile * opchmod = (QueueChmodFile*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to chmod file %s", opchmod->GetFilePath());
+				OutErr("Unable to chmod file %T", SU::Utf8ToTChar(opchmod->GetFilePath()));
 				break;	//failure
 			}
-			OutMsg("Chmod %s to %s", opchmod->GetFilePath(), opchmod->GetNewMode());
+			OutMsg("Chmod %T to %T", SU::Utf8ToTChar(opchmod->GetFilePath()), SU::Utf8ToTChar(opchmod->GetNewMode()));
 			break; }
 		case QueueOperation::QueueTypeQuote: {
 			QueueQuote* opquote = (QueueQuote*)queueOp;
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to perform quote operation %s", opquote->GetQuote());
+				OutErr("Unable to perform quote operation %T", SU::Utf8ToTChar(opquote->GetQuote()));
 				break;	//failure
 			}
 			break; }
@@ -1445,7 +1445,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			if (isStart)
 				break;
 			if (queueResult == -1) {
-				OutErr("Unable to perform copy operation %s", opcopy->GetExternalPath());
+				OutErr("Unable to perform copy operation %T", SU::Utf8ToTChar(opcopy->GetExternalPath()));
 				break;	//failure
 			}
 			m_ftpSession->GetDirectory(opcopy->GetExternalNewParent());

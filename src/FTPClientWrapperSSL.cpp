@@ -478,7 +478,7 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 		if (datacpy[i] == '\r' || datacpy[i] == '\n')
 			datacpy[i] = ' ';
 	}
-	OutClnt("-> %s", datacpy);
+	OutClnt("-> %T", SU::Utf8ToTChar(datacpy));
 	delete [] datacpy;
 
 	return CUT_WSClient::Send(data, len);
@@ -516,7 +516,7 @@ int FtpSSLWrapper::GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen) {
 	for(;; index++){
 		const char * pbuf = GetMultiLineResponse(index);
 		if(pbuf != NULL)
-			OutClnt("%s", pbuf);
+			OutClnt("%T", SU::Utf8ToTChar(pbuf));
 		else
 			break;
 	}

@@ -142,9 +142,9 @@ if (MINGW)
     #remove the lib from the generated target lib
     SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 
-    target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto crypto32 z ws2_32)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto z ws2_32)
 else (MINGW)
-    target_link_libraries (NppFTP comctl32 shlwapi ssh libssl libcrypto libcrypto32 zlib ws2_32)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh libssl libcrypto zlib ws2_32)
 endif (MINGW)
 
 # build a CPack driven zip package

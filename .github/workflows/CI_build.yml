@@ -49,7 +49,7 @@ jobs:
 
   build_linux:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       max-parallel: 2
       matrix:
@@ -97,7 +97,7 @@ jobs:
 
   # build_linux_cmake:
 
-    # runs-on: ubuntu-latest
+    # runs-on: ubuntu-22.04
     # strategy:
       # max-parallel: 2
       # matrix:

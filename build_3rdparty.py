@@ -43,8 +43,8 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'https://downloads.sourceforge.net/libpng/zlib-1.2.11.tar.gz',
-        'sha1'  : 'e6d119755acdf9104d7ba236b1242696940ed6dd',
+        'url'   : 'https://zlib.net/zlib-1.2.12.tar.gz',
+        'sha1'  : '207ba741d387e2c1607104cf0bd8cff27deb2605',
         'target': {
             'mingw-w64': {
                 'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],

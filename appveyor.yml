@@ -1,10 +1,10 @@
 version: 0.30.14.{build}
-image: Visual Studio 2019
+image: Visual Studio 2022
 
 
 environment:
   matrix:
-    - PlatformToolset: v142
+    - PlatformToolset: v143
 
 platform:
     - x64
@@ -26,6 +26,7 @@ install:
     - if "%platform%"=="arm64" set platform_input=ARM64
 
     - if "%PlatformToolset%"=="v142"    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
+    - if "%PlatformToolset%"=="v143"    call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
     #avoid issues with preinstalled openssl versions
     - ps: Remove-Item -Recurse -Force C:\OpenSSL*
@@ -39,6 +40,7 @@ before_build:
     Write-Output "Platform: $env:PLATFORM_INPUT"
     $generator = switch ($env:PLATFORMTOOLSET)
     {
+        "v143"    {"Visual Studio 17 2022"}
         "v142"    {"Visual Studio 16 2019"}
         "v141"    {"Visual Studio 15 2017"}
         "v141_xp" {"Visual Studio 15 2017"}

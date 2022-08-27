@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build_windows:
 
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       max-parallel: 6
       matrix:
@@ -19,7 +19,7 @@ jobs:
       run: |
            mkdir _build
            cd _build
-           cmake -G "Visual Studio 16 2019" -A ${{ matrix.build_platform }} -T "v142" ..
+           cmake -G "Visual Studio 17 2022" -A ${{ matrix.build_platform }} -T "v143" ..
 
     - name: build cmake
       run: |

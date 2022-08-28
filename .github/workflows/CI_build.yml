@@ -24,7 +24,7 @@ jobs:
     - name: build cmake
       run: |
            cd _build
-           cmake --build . --config ${{ matrix.build_configuration }}
+           cmake --build . --config ${{ matrix.build_configuration }} --target package
 
     - name: Archive artifacts for x64
       if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
@@ -95,31 +95,31 @@ jobs:
 
 
 
-  # build_linux_cmake:
+  build_linux_cmake:
 
-    # runs-on: ubuntu-22.04
-    # strategy:
-      # max-parallel: 2
-      # matrix:
-        # build_configuration: [Release, Debug]
-        # build_platform: ["Unix Makefiles"]
+    runs-on: ubuntu-22.04
+    strategy:
+      max-parallel: 2
+      matrix:
+        build_configuration: [Release, Debug]
+        build_platform: ["Unix Makefiles"]
 
-    # steps:
-    # - uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-    # - name: Install packages via apt
-      # run: |
-           # sudo apt-get -qq update
-           # sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
-           # (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
+    - name: Install packages via apt
+      run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install -y mingw-w64 python3 perl cmake zip
+           (for alt in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do sudo update-alternatives --set $alt /usr/bin/$alt-posix; done);
 
-    # - name: generate cmake
-      # run: |
-           # mkdir _build
-           # cd _build
-           # cmake -G "${{ matrix.build_platform }}" ..
+    - name: generate cmake
+      run: |
+           mkdir _build
+           cd _build
+           cmake -DCMAKE_TOOLCHAIN_FILE=../cmake_toolchain-mingw-w64-ubuntu.cmake -G "${{ matrix.build_platform }}" ..
 
-    # - name: build cmake
-      # run: |
-           # cd _build
-           # cmake --build . --config ${{ matrix.build_configuration }}
+    - name: build cmake
+      run: |
+           cd _build
+           cmake --build . --config ${{ matrix.build_configuration }} --target package

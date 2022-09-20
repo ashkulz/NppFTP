@@ -1,2 +1,2 @@
-#define IDT_VERSION_TEXT	"0.29.10 Unicode"
-#define IDT_VERSION_NUM		0,29,10,0
+#define IDT_VERSION_TEXT	"0.29.11 Unicode"
+#define IDT_VERSION_NUM		0,29,11,0

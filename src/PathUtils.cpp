@@ -27,24 +27,19 @@ int PU::LocalToExternalPath(const TCHAR * local, char * external, int externalsi
 		return -1;
 
 	int i = 0;
-	int j = 0;
 
-	for(i = 0; i < externalsize; i++, j++) {
-		if (local[i] == 0) {
-			external[j] = 0;
+	char* transformed = SU::TCharToUtf8(local);
+
+	for(i = 0; i < externalsize; i++) {
+		if (transformed[i] == 0) {
+			external[i] = 0;
 			break;
 		}
 
-		if (local[i] == TEXT('\\')) {						//replace path separators
-			external[j] = '/';
+		if (transformed[i] == '\\') {						//replace path separators
+			external[i] = '/';
 		} else {
-#ifndef UNICODE
-			external[j] = (char)(external[i]);
-#else
-			int res = WideCharToMultiByte(CP_ACP, 0, local+i, 1, external+j, externalsize-j, NULL, NULL);
-			if (res == 0)
-				return -1;
-#endif
+			external[i] = transformed[i];
 		}
 	}
 
@@ -59,22 +54,27 @@ int PU::ExternalToLocalPath(const char * external, TCHAR * local, int localsize)
 		return -1;
 
 	int i = 0;
-	int j = 0;
 	bool converted = false;
 
-	for(i = 0; i < localsize; i++, j++) {
-		if (external[i] == 0) {
-			local[j] = 0;
+	TCHAR * transformed = SU::Utf8ToTChar(external);
+
+	for(i = 0; i < localsize; i++) {
+		if (transformed[i] == 0) {
+			local[i] = 0;
 			break;
 		}
 
-		if (external[i] == '/') {						//replace path separators
-			local[j] = TEXT('\\');
-		} else if (!IsValidLocalChar(external[i])) {	//replace invalid chars
-			local[j] = TEXT('_');
+		if (transformed[i] == TEXT('/')) {						//replace path separators
+			local[i] = TEXT('\\');
+		} else if (!IsValidLocalChar(transformed[i])) {	//replace invalid chars
+			//TODO: try to add substitution here which could be transformed back in LocalToExternalPath() above
+			//TODO: e.g. unicode point like in xml &#nnnn; 
+			//TODO: problem of buffer size needs to be taken into account which maybe needs a change to use dynamic memory
+			//TODO: see https://github.com/ashkulz/NppFTP/issues/193
+			local[i] = TEXT('_');
 			converted = true;
 		} else {
-			local[j] = (TCHAR)(external[i]);
+			local[i] = transformed[i];
 		}
 	}
 

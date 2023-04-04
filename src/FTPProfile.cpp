@@ -175,7 +175,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		InputDialog passDialog;
 		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter password"), TEXT("Please enter the password to connect to the server"), TEXT(""), true);
 		if (ret == 1) {
-			password = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
+			password = SU::TCharToUtf8(passDialog.GetValue());
 		} else {
 			return NULL;
 		}
@@ -187,7 +187,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		InputDialog passDialog;
 		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter passphrase"), TEXT("Please enter the passphrase to decrypt private key:"), TEXT(""), true);
 		if (ret == 1) {
-			passphrase = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
+			passphrase = SU::TCharToUtf8(passDialog.GetValue());
 		} else {
 			return NULL;
 		}

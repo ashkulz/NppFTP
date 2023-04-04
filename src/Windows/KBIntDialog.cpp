@@ -169,7 +169,7 @@ INT_PTR KBIntDialog::OnNotify(NMHDR * pnmh) {
 
 int KBIntDialog::OnAccept() {
 	int ctrlID = IDC_EDIT_ANSWER1;
-	char buffer[MAX_PATH];
+	TCHAR buffer[MAX_PATH];
 	bool failed = false;
 
 	for(int i = 0; i < m_nrPrompt; i++) {
@@ -180,8 +180,8 @@ int KBIntDialog::OnAccept() {
 			continue;
 		}
 
-		GetWindowTextA(hEditAnswer, buffer, MAX_PATH);
-		ssh_userauth_kbdint_setanswer(m_session, i, buffer);
+		GetWindowText(hEditAnswer, buffer, MAX_PATH);
+		ssh_userauth_kbdint_setanswer(m_session, i, SU::TCharToUtf8(buffer));
 		ctrlID += 2;
 	}
 

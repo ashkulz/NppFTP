@@ -90,7 +90,6 @@ INT_PTR ProfilesDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
-	char aTextBuffer[MAX_PATH];
 	TCHAR TTextBuffer[MAX_PATH];
 
 	//things that can do without a profile
@@ -174,8 +173,8 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_EDIT_HOSTNAME: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetHostname(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetHostname(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 		case IDC_EDIT_PORT: {
@@ -188,14 +187,14 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_EDIT_USERNAME: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetUsername(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetUsername(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 		case IDC_EDIT_PASSWORD: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetPassword(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetPassword(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 		case IDC_CHECK_ASKPASSWORD: {
@@ -215,8 +214,8 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_EDIT_INITDIR: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetInitialDir(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetInitialDir(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 		case IDC_COMBO_SECURITY: {
@@ -256,8 +255,8 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_EDIT_PASSPHRASE: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetPassphrase(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetPassphrase(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 		case IDC_CHECK_ASKPASSPHRASE: {
@@ -395,8 +394,8 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 
 		case IDC_EDIT_LISTPARAMS: {
 			if (notifCode == EN_USERCHANGE) {
-				GetWindowTextA(idHwnd, aTextBuffer, MAX_PATH);
-				m_currentProfile->SetListParams(aTextBuffer);
+				GetWindowText(idHwnd, TTextBuffer, MAX_PATH);
+				m_currentProfile->SetListParams(SU::TCharToUtf8(TTextBuffer));
 			}
 			break; }
 
@@ -711,16 +710,16 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	::EnableWindow(::GetDlgItem(m_hwnd, IDC_BUTTON_PROFILE_DELETE), enableProfileBtn);
 	::EnableWindow(::GetDlgItem(m_hwnd, IDC_BUTTON_PROFILE_COPY), enableProfileBtn);
 
-	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_HOSTNAME, m_currentProfile->GetHostname());
+	::SetDlgItemText(m_hPageConnection, IDC_EDIT_HOSTNAME, SU::Utf8ToTChar(m_currentProfile->GetHostname()) );
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_PORT, m_currentProfile->GetPort(), FALSE);
-	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_USERNAME, m_currentProfile->GetUsername());
-	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_PASSWORD, m_currentProfile->GetPassword());
+	::SetDlgItemText(m_hPageConnection, IDC_EDIT_USERNAME, SU::Utf8ToTChar(m_currentProfile->GetUsername()) );
+	::SetDlgItemText(m_hPageConnection, IDC_EDIT_PASSWORD, SU::Utf8ToTChar(m_currentProfile->GetPassword()) );
 	Button_SetCheck(::GetDlgItem(m_hPageConnection, IDC_CHECK_ASKPASSWORD), (m_currentProfile->GetAskPassword())?TRUE:FALSE);
 	::EnableWindow(::GetDlgItem(m_hPageConnection, IDC_EDIT_PASSWORD), !(m_currentProfile->GetAskPassword()));
 
 	::SetDlgItemInt(m_hPageConnection, IDC_EDIT_TIMEOUT, m_currentProfile->GetTimeout(), FALSE);
 
-	::SetDlgItemTextA(m_hPageConnection, IDC_EDIT_INITDIR, m_currentProfile->GetInitialDir());
+	::SetDlgItemText(m_hPageConnection, IDC_EDIT_INITDIR, SU::Utf8ToTChar(m_currentProfile->GetInitialDir()) );
 
 
 	AuthenticationMethods methods = m_currentProfile->GetAcceptedMethods();
@@ -728,7 +727,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_KEY), (methods&Method_Key)?TRUE:FALSE);
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_INTERACTIVE), (methods&Method_Interactive)?TRUE:FALSE);
 	::SetDlgItemText(m_hPageAuthentication, IDC_EDIT_KEYFILE, m_currentProfile->GetKeyFile());
-	::SetDlgItemTextA(m_hPageAuthentication, IDC_EDIT_PASSPHRASE, m_currentProfile->GetPassphrase());
+	::SetDlgItemText(m_hPageAuthentication, IDC_EDIT_PASSPHRASE, SU::Utf8ToTChar(m_currentProfile->GetPassphrase()) );
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_ASKPASSPHRASE), (m_currentProfile->GetAskPassphrase())?TRUE:FALSE);
 	::EnableWindow(::GetDlgItem(m_hPageAuthentication, IDC_EDIT_PASSPHRASE), !(m_currentProfile->GetAskPassphrase()));
 	Button_SetCheck(::GetDlgItem(m_hPageAuthentication, IDC_CHECK_AGENT), m_currentProfile->GetUseAgent()?TRUE:FALSE);
@@ -749,7 +748,7 @@ int ProfilesDialog::OnSelectProfile(FTPProfile * profile) {
 	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MIN, min, FALSE);
 	::SetDlgItemInt(m_hPageTransfer, IDC_EDIT_PORT_MAX, max, FALSE);
 
-	::SetDlgItemTextA(m_hPageFTP, IDC_EDIT_LISTPARAMS, m_currentProfile->GetListParams());
+	::SetDlgItemText(m_hPageFTP, IDC_EDIT_LISTPARAMS, SU::Utf8ToTChar(m_currentProfile->GetListParams()) );
 	::SetDlgItemText(m_hPageFTP, IDC_EDIT_PARENT, m_currentProfile->GetParent());
 
 	LoadFiletypes();

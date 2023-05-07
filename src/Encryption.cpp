@@ -29,7 +29,7 @@ const char * defaultString = "NppFTP00";	//must be 8 in length
 //const size_t Encryption::KeySize = 8;
 
 int Encryption::Init() {
-	_DefaultKey = new char[KeySize];
+	_DefaultKey = new char[KeySize+1];
 	strncpy(_DefaultKey, defaultString, KeySize);
 	return 0;
 }

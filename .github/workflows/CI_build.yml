@@ -10,7 +10,7 @@ jobs:
       max-parallel: 6
       matrix:
         build_configuration: [Release, Debug]
-        build_platform: [x64, Win32]
+        build_platform: [x64, ARM64, Win32]
 
     steps:
     - uses: actions/checkout@v3

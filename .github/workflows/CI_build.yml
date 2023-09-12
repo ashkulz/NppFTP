@@ -7,7 +7,7 @@ jobs:
 
     runs-on: windows-2022
     strategy:
-      max-parallel: 6
+      fail-fast: false
       matrix:
         build_configuration: [Release, Debug]
         build_platform: [x64, ARM64, Win32]
@@ -51,7 +51,7 @@ jobs:
 
     runs-on: ubuntu-22.04
     strategy:
-      max-parallel: 2
+      fail-fast: false
       matrix:
         build_platform: ["64", "32"]
 
@@ -99,7 +99,7 @@ jobs:
 
     runs-on: ubuntu-22.04
     strategy:
-      max-parallel: 2
+      fail-fast: false
       matrix:
         build_configuration: [Release, Debug]
         build_platform: ["Unix Makefiles"]

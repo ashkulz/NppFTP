@@ -164,7 +164,7 @@ def shell(cmd):
 def rmdir(path):
     if os.path.exists(path):
         if platform.system() == 'Windows':
-            shell('attrib -R %s\* /S' % path)
+            shell('attrib -R %s\\* /S' % path)
         shutil.rmtree(path)
 
 def mkdir_p(*paths):

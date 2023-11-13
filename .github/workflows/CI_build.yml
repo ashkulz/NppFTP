@@ -49,6 +49,14 @@ jobs:
           name: plugin_dll_x86
           path: _build\${{ matrix.build_configuration }}\NppFTP.dll
 
+    - name: Archive artifacts for Win32 CPack
+      if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v3
+      with:
+          name: cpack_plugin_dll_x86
+          path: _build\NppFTP-0.30.17-win32.zip
+
+
   build_linux:
 
     runs-on: ubuntu-22.04

@@ -834,6 +834,8 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
         return OnError(UTE_ABORTED);
         }
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
     Send(m_szBuf);

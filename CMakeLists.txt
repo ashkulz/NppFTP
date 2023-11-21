@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.5)
 
 set (CMAKE_SYSTEM_NAME Windows)
 
@@ -150,13 +150,14 @@ endif (MINGW)
 # build a CPack driven zip package
 #include (InstallRequiredSystemLibraries)
 
+set (CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 install(TARGETS NppFTP 
-  DESTINATION ${CMAKE_BINARY_DIR}/zip/bin)
+  DESTINATION zip)
 
-FILE(GLOB files "${CMAKE_SOURCE_DIR}/doc/*")
-INSTALL(FILES ${files} DESTINATION ${CMAKE_BINARY_DIR}/zip/doc)
+INSTALL(DIRECTORY docs/ DESTINATION zip/doc)
 
 
+set(CPACK_PACKAGE_VERSION "0.30.17")
 set(CPACK_GENERATOR ZIP)
 
 INCLUDE(CPack)

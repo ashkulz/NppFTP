@@ -834,6 +834,8 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
         return OnError(UTE_ABORTED);
         }
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
     Send(m_szBuf);
@@ -2218,6 +2220,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     if ( port <= 0 || port > 65535 )
         return OnError(UTE_DATAPORT_FAILED);
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.

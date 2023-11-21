@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://www.openssl.org/source/openssl-1.1.1w.tar.gz',
-        'sha1'  : '76fbf3ca4370e12894a408ef75718f32cdab9671',
+        'url'   : 'https://www.openssl.org/source/openssl-3.1.4.tar.gz',
+        'sha1'  : '24c5d4308e0f901326f15c274c8c736117966499',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -18,7 +18,7 @@ DEPENDENT_LIBS = {
             'mingw-w64_x64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
                 'commands': [
-                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s --cross-compile-prefix=%(prefix)s- no-asm mingw64',
+                    'perl Configure --prefix=%(dest)s --openssldir=%(dest)s --libdir=lib --cross-compile-prefix=%(prefix)s- no-asm mingw64',
                     'make', 'make install_sw'
                 ]
             },
@@ -164,7 +164,7 @@ def shell(cmd):
 def rmdir(path):
     if os.path.exists(path):
         if platform.system() == 'Windows':
-            shell('attrib -R %s\* /S' % path)
+            shell('attrib -R %s\\* /S' % path)
         shutil.rmtree(path)
 
 def mkdir_p(*paths):

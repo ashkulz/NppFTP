@@ -693,6 +693,8 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
     if (rt == UTE_SUCCESS)
     {
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     // if the file exist then we will send the REST command  with the size of the file we have
     // otherwise we just call retrieve as we do normally
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %ld\r\n",dest.Seek (0,SEEK_END));
@@ -707,6 +709,8 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
         }
     fileType = UTM_OM_APPEND ; // appending
     }
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
@@ -1124,6 +1128,8 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
     if(IsAborted()) {
         return OnError(UTE_ABORTED);
         }
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the store command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"STOR %s\r\n",destFile);

@@ -1,4 +1,4 @@
-version: 0.29.12.{build}
+version: 0.29.13.{build}
 image: Visual Studio 2022
 
 
@@ -59,7 +59,7 @@ build_script:
         if ($LastExitCode -ne 0) {
             throw "Exec: $ErrorMessage"
         }
-        & cmake --build . --config $env:CONFIGURATION -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+        & cmake --build . --config $env:CONFIGURATION --target package -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
         if ($LastExitCode -ne 0) {
             throw "Exec: $ErrorMessage"
         }

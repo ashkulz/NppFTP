@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.5)
 
 set (CMAKE_SYSTEM_NAME Windows)
 
@@ -142,21 +142,22 @@ if (MINGW)
     #remove the lib from the generated target lib
     SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 
-    target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto crypt32 z ws2_32)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh ssl crypto crypt32 z ws2_32 iphlpapi)
 else (MINGW)
-    target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 crypt32 zlib ws2_32)
+    target_link_libraries (NppFTP comctl32 shlwapi ssh libeay32 ssleay32 crypt32 zlib ws2_32 iphlpapi)
 endif (MINGW)
 
 # build a CPack driven zip package
 #include (InstallRequiredSystemLibraries)
 
+set (CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 install(TARGETS NppFTP 
-  DESTINATION ${CMAKE_BINARY_DIR}/zip/bin)
+  DESTINATION zip)
 
-FILE(GLOB files "${CMAKE_SOURCE_DIR}/doc/*")
-INSTALL(FILES ${files} DESTINATION ${CMAKE_BINARY_DIR}/zip/doc)
+INSTALL(DIRECTORY docs/ DESTINATION zip/doc)
 
 
+set(CPACK_PACKAGE_VERSION "0.29.13")
 set(CPACK_GENERATOR ZIP)
 
 INCLUDE(CPack)

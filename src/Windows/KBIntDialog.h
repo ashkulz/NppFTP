@@ -12,6 +12,8 @@ public:
 							//Return 1 if answers set, 2 if not
 	virtual int				Create(HWND hParent, ssh_session session);	//if modal, returns 99 on close
 protected:
+	using Dialog::Create; //avoid compiler warning about hidden method
+
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR			OnInitDialog();	//DialogProc filters this one out, therefore calback
 

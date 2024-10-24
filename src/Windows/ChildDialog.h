@@ -28,6 +28,8 @@ public:
 
 	virtual int				Create(HWND hParent, HWND hOwner, const TCHAR * title);	//if modal, returns 99 on close
 protected:
+	using Dialog::Create; //avoid compiler warning about hidden method
+
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HWND					m_hOwner;

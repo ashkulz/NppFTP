@@ -31,8 +31,8 @@ public:
 
 	virtual HWND			GetHWND();
 
-	virtual int				GetWidth();
-	virtual int				GetHeight();
+	virtual int				GetWidth() const;
+	virtual int				GetHeight() const;
 
 	virtual int				OnSize(int newWidth, int newHeight);
 

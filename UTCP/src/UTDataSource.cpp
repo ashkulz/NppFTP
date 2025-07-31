@@ -186,7 +186,7 @@ RETURN:
 ************************************************/
 int CUT_FileDataSource::Open(OpenMsgType type)
 {
-    if (m_szFileName == NULL || _tcslen(m_szFileName) == 0)
+    if (_tcslen(m_szFileName) == 0)
         return -1;
 
     // Open file for either reading or writing depending

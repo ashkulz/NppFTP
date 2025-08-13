@@ -112,6 +112,8 @@ protected:
 
 	static vProfile*		m_vProfiles;
 private:
+	using FileObject::SetParent; //avoid compiler warning about hidden method
+
 	char*					MkPath(const char* first, const char* second) const;
 	static std::unordered_map<std::string, ProfileObject*>	treeMap;
 

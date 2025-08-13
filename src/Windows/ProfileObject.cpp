@@ -292,7 +292,6 @@ int ProfileObject::RemoveAllChildren(bool del) {
 	m_childCount = 0;
 
 	return 0;
-
 }
 
 int ProfileObject::MoveTo(ProfileObject* newParent)

@@ -44,6 +44,8 @@ public:
 	virtual int				SetTitle(const TCHAR* title);
 	virtual int				SetInfo(const TCHAR* info);
 protected:
+	using Window::Create; //avoid compiler warning about hidden method
+
 	virtual int				RegisterDockableDialog();
 	virtual int				UpdateDockInfo();
 

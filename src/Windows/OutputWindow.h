@@ -43,6 +43,8 @@ public:
 
 	virtual int				ScrollLastLine();
 protected:
+	using DockableWindow::Create; //avoid compiler warning about hidden method
+
 	virtual int				SetScintillaParameters();
 	virtual int				AddMessage(const TCHAR * message, Output_Type type, time_t time);
 

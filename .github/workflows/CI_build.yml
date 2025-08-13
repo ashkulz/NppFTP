@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build_windows:
 
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -28,52 +28,41 @@ jobs:
            cd _build
            cmake --build . --config ${{ matrix.build_configuration }} --target package
 
-    - name: Archive artifacts for x64
-      if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-          name: plugin_dll_x64
-          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
-
     - name: Archive artifacts for x64 CPack
       if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
-          name: cpack_plugin_dll_x64
-          path: _build\NppFTP-0.29.13-win64.zip
-
-    - name: Archive artifacts for ARM64
-      if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-          name: plugin_dll_ARM64
-          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
-
-    - name: Archive artifacts for ARM64 CPack
-      if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-          name: cpack_plugin_dll_ARM64
-          path: _build\NppFTP-0.29.13-win64.zip
-
-    - name: Archive artifacts for Win32
-      if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-          name: plugin_dll_x86
-          path: _build\${{ matrix.build_configuration }}\NppFTP.dll
+          name: plugin_dll_x64
+          path: _build\NppFTP-0.29.14-win64.zip
 
     - name: Archive artifacts for Win32 CPack
       if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
-          name: cpack_plugin_dll_x86
-          path: _build\NppFTP-0.29.13-win32.zip
+          name: plugin_dll_x86
+          path: _build\NppFTP-0.29.14-win32.zip
 
+    - name: Rename and copy artifacts from ARM64 CPack
+      if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
+      run: |
+           copy _build\NppFTP-0.29.14-win64.zip .\NppFTP-arm64.zip
+
+    - name: Archive artifacts for ARM64 CPack
+      if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+          name: NppFTP-arm64.zip
+          path: NppFTP-arm64.zip
+
+    - name: Release for x64
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == 'ARM64'
+      with:
+          files: NppFTP-arm64.zip
 
   build_linux:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -106,13 +95,13 @@ jobs:
           path: NppFTP-x64.zip
 
     - name: Release for x86
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '32'
       with:
           files: NppFTP-x86.zip
 
     - name: Release for x64
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/') && matrix.build_platform == '64'
       with:
           files: NppFTP-x64.zip
@@ -121,7 +110,7 @@ jobs:
 
   build_linux_cmake:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -152,5 +141,5 @@ jobs:
       if: matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
-          name: cpack_plugin_dll_x64_linux
-          path: _build/NppFTP-0.29.13-win64.zip
+          name: plugin_dll_x64_linux
+          path: _build/NppFTP-0.29.14-win64.zip

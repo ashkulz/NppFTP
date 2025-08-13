@@ -34,7 +34,7 @@ public:
 
 	virtual int				GetChildCount() const;
 	virtual FileObject*		GetChild(int index) const;
-	virtual FileObject*     GetChildByName(const char *filename);
+	virtual FileObject*		GetChildByName(const char *filename);
 	virtual int				AddChild(FileObject * child);
 	virtual int				RemoveChild(FileObject * child, bool del = true);
 	virtual int				RemoveAllChildren(bool del = true);

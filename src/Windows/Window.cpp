@@ -85,14 +85,14 @@ HWND Window::GetHWND() {
 	return m_hwnd;
 }
 
-int Window::GetWidth() {
+int Window::GetWidth() const {
 	RECT rc;
 	::GetClientRect(m_hwnd, &rc);
 	return (rc.right - rc.left);
 
 }
 
-int Window::GetHeight() {
+int Window::GetHeight() const {
 	RECT rc;
 	::GetClientRect(m_hwnd, &rc);
 	//commented check: only usefull for rebars

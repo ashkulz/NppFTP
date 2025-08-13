@@ -33,6 +33,8 @@ public:
 
 	virtual int				Create(HWND hParent, FTPWindow* ftpWindow, vProfile* profileVect, FTPCache* globalCache, FTPProfile* selProfile=NULL);
 protected:
+	using Dialog::Create; //avoid compiler warning about hidden method
+
 	virtual INT_PTR			DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR			OnInitDialog();	//DialogProc filters this one out, therefore calback
 

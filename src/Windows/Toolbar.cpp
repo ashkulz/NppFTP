@@ -148,7 +148,7 @@ int Toolbar::GetWidth() const {
 
 int Toolbar::GetHeight() const {
 	DWORD size = (DWORD)SendMessage(m_hwnd, TB_GETBUTTONSIZE, 0, 0);
-    DWORD padding = (DWORD)SendMessage(m_hwnd, TB_GETPADDING, 0,0);
+	DWORD padding = (DWORD)SendMessage(m_hwnd, TB_GETPADDING, 0,0);
 	int totalHeight = HIWORD(size) + HIWORD(padding);
 
 	return totalHeight;
@@ -331,7 +331,7 @@ int Rebar::Destroy() {
 	int ret = Window::Destroy();
 	m_usedIDs.clear();
 	return ret;
-};
+}
 
 int Rebar::AddBand(REBARBANDINFO * rBand, bool useID) {
 	if (rBand->fMask & RBBIM_STYLE)

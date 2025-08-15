@@ -60,7 +60,7 @@ INT_PTR AboutDialog::OnInitDialog() {
 	::SetDlgItemText(m_hwnd, IDC_STATIC_NPPFTPVERSION, nppFTPVersion);
 
 	const TCHAR * aboutMessage = 
-		TEXT("NppFTP, Copyright 2010-2017\r\n")
+		TEXT("NppFTP, Copyright 2010-2025\r\n")
 		TEXT("Created by Harry ( harrybharry@users.sourceforge.net )\r\n")
 		TEXT("Maintained by Ashish Kulkarni (kulkarni.ashish@gmail.com)\r\n")
 		TEXT("and Christian Grasser (christian.grasser@web.de)\r\n")

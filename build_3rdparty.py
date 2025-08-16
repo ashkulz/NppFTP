@@ -6,7 +6,7 @@ DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
         'url'   : 'https://www.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz',
-        'sha1'  : '740916d79ab0d209d2775277b1c6c3ec2f6502b2',
+        'sha256'  : 'ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -37,7 +37,7 @@ DEPENDENT_LIBS = {
     'zlib': {
         'order' : 2,
         'url'   : 'https://zlib.net/fossils/zlib-1.3.1.tar.gz',
-        'sha1'  : 'f535367b1a11e2f9ac3bec723fb007fbc0d189e5',
+        'sha256'  : '9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23',
         'target': {
             'mingw-w64': {
                 'result':   ['include/zlib.h', 'include/zconf.h', 'lib/libz.a'],
@@ -74,7 +74,7 @@ DEPENDENT_LIBS = {
         'order' : 3,
         'shadow': True,
         'url'   : 'https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz',
-        'sha1'  : 'e8fb3b4750db11d2483cac4b5f046e301c09b72f',
+        'sha256'  : '1861d498f5b6f1741b6abc73e608478491edcf9c9d4b6630eef6e74596de9dc1',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],
@@ -144,12 +144,12 @@ def mkdir_p(*paths):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def download_file(url, sha1, dir):
+def download_file(url, sha256, dir):
     name = url.split('/')[-1]
     loc  = join_path(dir, name)
     if os.path.exists(loc):
-        hash = hashlib.sha1(open(loc, 'rb').read()).hexdigest()
-        if hash == sha1:
+        hash = hashlib.sha256(open(loc, 'rb').read()).hexdigest()
+        if hash == sha256:
             return loc
         os.remove(loc)
         message('Checksum mismatch for %s, re-downloading.\n' % name)
@@ -158,15 +158,15 @@ def download_file(url, sha1, dir):
         message("\rDownloading: %s [%d%%]" % (name, pct))
     urllib.request.urlretrieve(url, loc, reporthook=hook)
     message("\r")
-    hash = hashlib.sha1(open(loc, 'rb').read()).hexdigest()
-    if hash != sha1:
+    hash = hashlib.sha256(open(loc, 'rb').read()).hexdigest()
+    if hash != sha256:
         os.remove(loc)
         error('Checksum mismatch for %s, aborting.' % name)
     message("\rDownloaded: %s [checksum OK]\n" % name)
     return loc
 
-def download_tarball(url, sha1, dir, name):
-    loc = download_file(url, sha1, dir)
+def download_tarball(url, sha256, dir, name):
+    loc = download_file(url, sha256, dir)
     tar = tarfile.open(loc)
     sub = tar.getnames()[0]
     if '/' in sub:
@@ -206,7 +206,7 @@ def main(outdir, prefix):
             continue
         print('-' * 60, library)
         download_tarball(DEPENDENT_LIBS[library]['url'],
-                         DEPENDENT_LIBS[library]['sha1'], build, library)
+                         DEPENDENT_LIBS[library]['sha256'], build, library)
 
         if DEPENDENT_LIBS[library].get('shadow'):
             rmdir(join_path(build, library+'-build'))

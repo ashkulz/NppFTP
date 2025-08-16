@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -22,6 +22,11 @@
 #include "MessageDialog.h"
 #include "KBIntDialog.h"
 #include <fcntl.h>
+
+
+#include <sys/stat.h> /* mode_t */
+#include <stdio.h>
+#include <stdlib.h>  /* strtoul */
 
 #ifdef strdup	//undefine strdup from libssh
 #undef strdup
@@ -84,7 +89,7 @@ int FTPClientWrapperSSH::Disconnect() {
 int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 	sftp_dir dir;
 	sftp_attributes sfile;
-	FTPFile file;
+	FTPFile file{};
 	std::vector<FTPFile> vFiles;
 	int count = 0;
 
@@ -196,6 +201,14 @@ int FTPClientWrapperSSH::Pwd(char* buf, size_t size) {
 
 int FTPClientWrapperSSH::Rename(const char * from, const char * to) {
 	int retcode = sftp_rename(m_sftpsession, from, to);
+
+	return OnReturn((retcode == 0)?0:-1);
+}
+
+int FTPClientWrapperSSH::ChmodFile(const char * path, const char * mode) {
+
+	mode_t perm = (mode_t) strtoul(mode, 0, 8);
+	int retcode = sftp_chmod(m_sftpsession, path, perm );
 
 	return OnReturn((retcode == 0)?0:-1);
 }
@@ -483,6 +496,8 @@ int FTPClientWrapperSSH::connect_ssh() {
 int FTPClientWrapperSSH::authenticate(ssh_session session) {
 	int methods = 0;
 	int authres = 0;
+	int retries = 0;
+	const int maxRetries = 5;
 
 	authres = ssh_userauth_none(session, NULL);
 	if (authres == SSH_AUTH_AGAIN)
@@ -501,46 +516,49 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		ssh_string_free_char(banner);
 	}
 
-	methods = ssh_auth_list(session);
-	if (methods == -1) {
-		OutErr("[SFTP] No authentication methods provided.");
-		return -1;
-	}
+	do {
+		methods = ssh_auth_list(session);
+		if (methods == -1) {
+			OutErr("[SFTP] No authentication methods provided.");
+			return -1;
+		}
 
-	if (methods == SSH_AUTH_METHOD_UNKNOWN) {
-		OutErr("[SFTP] Unknown authentication method.");
-		return -1;
-	}
+		if (methods == SSH_AUTH_METHOD_UNKNOWN) {
+			OutErr("[SFTP] Unknown authentication method.");
+			return -1;
+		}
 
-	//Filter out methods client does not wish to use
-	methods &= m_acceptedMethods;
+		//Filter out methods client does not wish to use
+		methods &= m_acceptedMethods;
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PUBLICKEY)) {
-		authres = authenticate_key(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PUBLICKEY)) {
+			authres = authenticate_key(session);
+		}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_INTERACTIVE)) {
-		authres = authenticate_kbinteractive(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_INTERACTIVE)) {
+			authres = authenticate_kbinteractive(session);
+		}
 
-	if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PASSWORD)) {
-		authres = authenticate_password(session);
-	}
+		if ((authres == SSH_AUTH_DENIED || authres == SSH_AUTH_PARTIAL) && (methods & SSH_AUTH_METHOD_PASSWORD)) {
+			authres = authenticate_password(session);
+		}
 
-	if (methods == 0) {
-		OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
-		return -1;
-	}
+		if (methods == 0) {
+			OutErr("[SFTP] None of the server's authentication methods were accepted. Please check the options under the authentication tab.");
+			return -1;
+		}
 
-	if (authres == SSH_AUTH_ERROR) {
-		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
-		return -1;
-	}
+		if (authres == SSH_AUTH_ERROR) {
+			OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
+			return -1;
+		}
 
-	if (authres == SSH_AUTH_SUCCESS) {
-		OutMsg("[SFTP] Successfully authenticated");
-		return 0;
-	}
+		if (authres == SSH_AUTH_SUCCESS) {
+			OutMsg("[SFTP] Successfully authenticated");
+			return 0;
+		}
+		retries++;
+	} while (authres == SSH_AUTH_PARTIAL && retries <= maxRetries);
 
 	OutErr("[SFTP] Unable to authenticate");
 
@@ -729,7 +747,7 @@ HANDLE FTPClientWrapperSSH::OpenFile(const TCHAR* file, bool write) {
 }
 
 FILETIME FTPClientWrapperSSH::ConvertFiletime(uint32_t nTime, uint32_t /*nNanosecs*/) {
-	FILETIME ft;
+	FILETIME ft{};
 	// Note that LONGLONG is a 64-bit value
 	LONGLONG ll;
 

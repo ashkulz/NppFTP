@@ -78,7 +78,7 @@ FTPProfile::FTPProfile(const TCHAR * name) :
 	m_keyFile = SU::DupString(TEXT(""));
 	m_passphrase = SU::strdup("");
 
-	m_cache->SetEnvironment(m_hostname, m_username);
+	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 }
 
 FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
@@ -108,10 +108,10 @@ FTPProfile::FTPProfile(const TCHAR * name, const FTPProfile* other) :
 	m_keyFile = SU::DupString(other->m_keyFile);
 	m_passphrase = SU::strdup(other->m_passphrase);
 
-	m_cache->SetEnvironment(m_hostname, m_username);
+	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 
 	for(int i = 0; i < other->m_cache->GetPathMapCount(); i++) {
-		PathMap map;
+		PathMap map{};
 		const PathMap & othermap = other->m_cache->GetPathMap(i);
 		map.localpath = SU::DupString(othermap.localpath);
 		map.externalpath = SU::strdup(othermap.externalpath);
@@ -175,7 +175,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		InputDialog passDialog;
 		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter password"), TEXT("Please enter the password to connect to the server"), TEXT(""), true);
 		if (ret == 1) {
-			password = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
+			password = SU::TCharToUtf8(passDialog.GetValue());
 		} else {
 			return NULL;
 		}
@@ -187,7 +187,7 @@ FTPClientWrapper* FTPProfile::CreateWrapper() {
 		InputDialog passDialog;
 		int ret = passDialog.Create(_MainOutputWindow, TEXT("Enter passphrase"), TEXT("Please enter the passphrase to decrypt private key:"), TEXT(""), true);
 		if (ret == 1) {
-			passphrase = SU::TCharToCP(passDialog.GetValue(), CP_ACP);
+			passphrase = SU::TCharToUtf8(passDialog.GetValue());
 		} else {
 			return NULL;
 		}
@@ -262,7 +262,7 @@ int FTPProfile::SetParent(const TCHAR * parent) {
 int FTPProfile::SetHostname(const char * hostname) {
 	SU::free(m_hostname);
 	m_hostname = SU::strdup(hostname);
-	m_cache->SetEnvironment(m_hostname, m_username);
+	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 	return 0;
 }
 
@@ -274,6 +274,7 @@ int FTPProfile::SetPort(int port) {
 	if (port <= 0 || port >= 65536)
 		return -1;
 	m_port = port;
+	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 	return 0;
 }
 
@@ -284,7 +285,7 @@ const char* FTPProfile::GetUsername() const {
 int FTPProfile::SetUsername(const char * username) {
 	SU::free(m_username);
 	m_username = SU::strdup(username);
-	m_cache->SetEnvironment(m_hostname, m_username);
+	m_cache->SetEnvironment(m_hostname, m_username, m_port);
 	return 0;
 }
 

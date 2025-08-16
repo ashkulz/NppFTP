@@ -26,6 +26,7 @@
 //
 IDI_ICON_FOLDERS   ICON           "bitmaps/icon_folder.ico"
 IDI_ICON_MESSAGES  ICON           "bitmaps/icon_messages.ico"
+IDI_ICON_MAINFOLDERS   ICON       "bitmaps/maintoolbar_folder.ico"
 
 //
 // Bitmap resources

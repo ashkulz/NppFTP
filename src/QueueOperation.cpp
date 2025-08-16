@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -322,7 +322,7 @@ QueueCopyFile::QueueCopyFile(HWND hNotify, const char* externalFile, const char*
 {
 	m_externalFile = SU::strdup(externalFile);
 	m_target = SU::strdup(externalParent);
-	OutMsg("INIT PARENT: %s", externalParent);
+	OutMsg("INIT PARENT: %T", SU::Utf8ToTChar(externalParent));
 }
 
 QueueCopyFile::~QueueCopyFile() {
@@ -347,12 +347,12 @@ int QueueCopyFile::Perform() {
 	GetTempPath(MAX_PATH, lpTempPathBuffer);
 	GetTempFileName(lpTempPathBuffer, _T("NppFtp"), 0, szTempFileName);
 
-	HANDLE hTempFile = ::CreateFile(szTempFileName, 
-		GENERIC_READ | GENERIC_WRITE,   
-		0,                     // do not share 
-		NULL,                  // default security 
-		CREATE_ALWAYS,         // existing file only 
-		FILE_ATTRIBUTE_NORMAL, // normal file 
+	HANDLE hTempFile = ::CreateFile(szTempFileName,
+		GENERIC_READ | GENERIC_WRITE,
+		0,                     // do not share
+		NULL,                  // default security
+		CREATE_ALWAYS,         // existing file only
+		FILE_ATTRIBUTE_NORMAL, // normal file
 		NULL);                 // no template
 
 	if ((m_result = m_client->ReceiveFile(hTempFile, m_externalFile)) != 0)
@@ -361,7 +361,7 @@ int QueueCopyFile::Perform() {
 	m_result = m_client->SendFile(szTempFileName, m_target);
 
 	DeleteFile(szTempFileName);
-	
+
 	return m_result;
 }
 
@@ -462,7 +462,7 @@ QueueGetDir::QueueGetDir(HWND hNotify, const char * dirPath, std::vector<char*> 
 	m_dirPath = SU::strdup(dirPath);
 
 	for(i=0; i<inputParentDirs.size(); i++)
-        parentDirs.push_back (inputParentDirs[i]);
+		parentDirs.push_back (inputParentDirs[i]);
 }
 
 QueueGetDir::~QueueGetDir() {
@@ -476,7 +476,7 @@ QueueGetDir::~QueueGetDir() {
 
 	size_t i;
 	for(i=0; i<parentDirs.size(); i++)
-        SU::free(parentDirs[i]);
+		SU::free(parentDirs[i]);
 }
 
 int QueueGetDir::Perform() {
@@ -487,24 +487,24 @@ int QueueGetDir::Perform() {
 		m_result = -1;
 	}
 
-    if (parentDirs.size() > 0) {
+	if (parentDirs.size() > 0) {
 
-        size_t i;
-        for(i=0; i<parentDirs.size(); i++) {
+		size_t i;
+		for(i=0; i<parentDirs.size(); i++) {
 
-            FTPFile* files;
-            char* currentDir = parentDirs[i];
-            int result = m_client->GetDir(currentDir, &files);
-            if (result == -1)
-                return result;
+			FTPFile* files;
+			char* currentDir = parentDirs[i];
+			int result = m_client->GetDir(currentDir, &files);
+			if (result == -1)
+				return result;
 
-            FTPDir* thisFtpDir  = new FTPDir;
-            thisFtpDir->count   = result;
-            thisFtpDir->dirPath = currentDir;
-            thisFtpDir->files   = files;
-            parentDirObjs.push_back(thisFtpDir);
-        }
-    }
+			FTPDir* thisFtpDir  = new FTPDir;
+			thisFtpDir->count   = result;
+			thisFtpDir->dirPath = currentDir;
+			thisFtpDir->files   = files;
+			parentDirObjs.push_back(thisFtpDir);
+		}
+	}
 
 	FTPFile* files;
 	m_result = m_client->GetDir(m_dirPath, &files);
@@ -537,7 +537,7 @@ int QueueGetDir::GetFileCount() {
 }
 
 std::vector<FTPDir*> QueueGetDir::GetParentDirObjs() {
-    return parentDirObjs;
+	return parentDirObjs;
 }
 
 //////////////////////////////////////
@@ -765,4 +765,48 @@ bool QueueQuote::Equals(const QueueOperation & other) {
 
 char * QueueQuote::GetQuote() {
 	return m_quote;
+}
+
+
+//////////////////////////////////////
+
+QueueChmodFile::QueueChmodFile(HWND hNotify, const char * filePath, const char * newMode, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeFileChmod, hNotify, notifyCode, notifyData)
+{
+	m_filePath = SU::strdup(filePath);
+	m_newMode = SU::strdup(newMode);
+}
+
+QueueChmodFile::~QueueChmodFile() {
+	SU::free(m_filePath);
+	SU::free(m_newMode);
+}
+
+int QueueChmodFile::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		m_result = m_client->Connect();
+		if (m_result == -1)
+			return m_result;
+		m_result = -1;
+	}
+
+	m_result = m_client->ChmodFile(m_filePath, m_newMode);
+
+	return m_result;
+}
+
+bool QueueChmodFile::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueChmodFile & otherChmod = (QueueChmodFile&) other;
+
+	return (!strcmp(otherChmod.m_filePath, m_filePath) && !strcmp(otherChmod.m_newMode, m_newMode));
+}
+
+char * QueueChmodFile::GetFilePath() {
+	return m_filePath;
+}
+
+char * QueueChmodFile::GetNewMode() {
+	return m_newMode;
 }

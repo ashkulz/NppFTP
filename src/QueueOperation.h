@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef QUEUEOPERATION_H
@@ -46,7 +46,7 @@ public:
 	enum QueueType { QueueTypeConnect, QueueTypeDisconnect, QueueTypeDownload, QueueTypeUpload,
 	                 QueueTypeDirectoryGet, QueueTypeDirectoryCreate, QueueTypeDirectoryRemove,
 	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote,
-	                 QueueTypeDownloadHandle, QueueTypeCopyFile
+	                 QueueTypeDownloadHandle, QueueTypeCopyFile, QueueTypeFileChmod
 	               };
 
 	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
@@ -142,17 +142,17 @@ protected:
 
 class QueueDownloadHandle : public QueueOperation {
 public:
-							QueueDownloadHandle(HWND hNotify, const char * externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode = 0, void * notifyData = NULL);
+	                        QueueDownloadHandle(HWND hNotify, const char* externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode = 0, void* notifyData = NULL);
 	virtual					~QueueDownloadHandle();
 
 	virtual int				Perform();
 
-	virtual bool			Equals(const QueueOperation & other);
+	virtual bool			Equals(const QueueOperation& other);
 
-	virtual const TCHAR*	GetLocalPath();
-	virtual const char*		GetExternalPath();
+	virtual const TCHAR* GetLocalPath();
+	virtual const char* GetExternalPath();
 protected:
-	char*					m_externalFile;
+	char* m_externalFile;
 	HANDLE					m_hFile;
 	Transfer_Mode			m_tMode;
 };
@@ -286,6 +286,22 @@ public:
 protected:
 	char*					m_filePath;
 	char*					m_newPath;
+};
+
+class QueueChmodFile : public QueueOperation {
+public:
+							QueueChmodFile(HWND hNotify, const char * filePath, const char * newMode, int notifyCode = 0, void * notifyData = NULL);
+	virtual					~QueueChmodFile();
+
+	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
+
+	virtual char*			GetFilePath();
+	virtual char*			GetNewMode();
+protected:
+	char*					m_filePath;
+	char*					m_newMode;
 };
 
 //Requires SSL client wrapper

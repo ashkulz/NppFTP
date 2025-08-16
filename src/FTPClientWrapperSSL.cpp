@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -145,7 +145,7 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 		if (!lstrcmp(TEXT("."), di.fileName) || !lstrcmp(TEXT(".."), di.fileName))
 			continue;
 
-		FTPFile ftpfile;
+		FTPFile ftpfile{};
 
 		ftpfile.filePath[0] = 0;
 
@@ -237,6 +237,12 @@ int FTPClientWrapperSSL::Pwd(char* buf, size_t size) {
 
 int FTPClientWrapperSSL::Rename(const char * from, const char * to) {
 	int retcode = m_client.RenameFile(from, to);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
+int FTPClientWrapperSSL::ChmodFile(const char * path, const char * mode) {
+	int retcode = m_client.ChmodFile(path, mode);
 
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
@@ -419,7 +425,7 @@ int FTPClientWrapperSSL::Quote(const char * quote) {
 
 FILETIME FTPClientWrapperSSL::ConvertFiletime(int day, int month, int year, int hour, int minute) {
 	FILETIME ft;
-	SYSTEMTIME st;
+	SYSTEMTIME st{};
 	st.wYear = year;
 	st.wMonth = month;
 	st.wDayOfWeek = 0;	//ignored
@@ -472,7 +478,7 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 		if (datacpy[i] == '\r' || datacpy[i] == '\n')
 			datacpy[i] = ' ';
 	}
-	OutClnt("-> %s", datacpy);
+	OutClnt("-> %T", SU::Utf8ToTChar(datacpy));
 	delete [] datacpy;
 
 	return CUT_WSClient::Send(data, len);
@@ -510,7 +516,7 @@ int FtpSSLWrapper::GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen) {
 	for(;; index++){
 		const char * pbuf = GetMultiLineResponse(index);
 		if(pbuf != NULL)
-			OutClnt("%s", pbuf);
+			OutClnt("%T", SU::Utf8ToTChar(pbuf));
 		else
 			break;
 	}
@@ -630,23 +636,23 @@ BOOL FtpSSLWrapper::IsConnected() {
 
 	//also test if sending is possible
 
-    fd_set writeSet;
-    struct timeval tv;
+	fd_set writeSet{};
+	struct timeval tv{};
 
-    tv.tv_sec = 0;      // do not block - for polling
-    tv.tv_usec = 0;
+	tv.tv_sec = 0;      // do not block - for polling
+	tv.tv_usec = 0;
 
-    FD_ZERO(&writeSet);  // always reinit
+	FD_ZERO(&writeSet);  // always reinit
 
-    FD_SET(m_socket,&writeSet);
+	FD_SET(m_socket,&writeSet);
 
 	int rt1 = select(-1,NULL,&writeSet,NULL,&tv);
 
-    if(rt1 == SOCKET_ERROR || rt1 == 0) {
+	if(rt1 == SOCKET_ERROR || rt1 == 0) {
 		return FALSE;
-    }
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 

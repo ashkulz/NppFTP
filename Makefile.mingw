@@ -9,7 +9,7 @@ OUTDIR = x86
 endif
 
 CXX    = $(PREFIX)-g++
-CFLAGS = -MMD -Os -O3 -Wall -Wno-unused-value -Werror -fexpensive-optimizations -DLIBSSH_STATIC -DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE
+CFLAGS = -MMD -Os -O3 -Wall -pedantic -Wformat=2 -Wno-deprecated-declarations -Wno-unused-value -Werror -fexpensive-optimizations -DLIBSSH_STATIC -DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE
 LFLAGS = -static -L$(OUTDIR)/obj -L$(OUTDIR)/3rdparty/lib -lcomdlg32 -lcomctl32 -luuid -lole32 -lshlwapi -lssh -lssl -lcrypto -lcrypt32 -lz -lgdi32 -lws2_32 -liphlpapi
 INC    = -I$(OUTDIR)/3rdparty/include -Isrc -Isrc/Windows -Itinyxml/include -IUTCP/include -I.
 RES    = $(OUTDIR)/obj/NppFTP.res

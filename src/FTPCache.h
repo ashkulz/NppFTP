@@ -35,7 +35,7 @@ public:
 	virtual					~FTPCache();
 
 	virtual int				SetCacheParent(FTPCache * m_cacheParent);
-	virtual int				SetEnvironment(const char * host, const char * user);
+	virtual int				SetEnvironment(const char * host, const char * user, int port);
 
 	virtual const PathMap &	GetPathMap(int i) const;
 	virtual int				GetPathMapCount() const;
@@ -67,6 +67,7 @@ private:
 
 	TCHAR*					m_activeHost;
 	TCHAR*					m_activeUser;
+	int						m_activePort;
 };
 
 #endif //FTPCACHE_H

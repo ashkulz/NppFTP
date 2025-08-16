@@ -693,6 +693,8 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
     if (rt == UTE_SUCCESS)
     {
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     // if the file exist then we will send the REST command  with the size of the file we have
     // otherwise we just call retrieve as we do normally
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"REST %ld\r\n",dest.Seek (0,SEEK_END));
@@ -707,6 +709,8 @@ int CUT_FTPClient::ResumeReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFil
         }
     fileType = UTM_OM_APPEND ; // appending
     }
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
@@ -833,6 +837,8 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
         m_wsData.CloseConnection();
         return OnError(UTE_ABORTED);
         }
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
@@ -1123,6 +1129,8 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
         return OnError(UTE_ABORTED);
         }
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
+
     //send the store command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"STOR %s\r\n",destFile);
     Send(m_szBuf);
@@ -1242,6 +1250,42 @@ int CUT_FTPClient::RenameFile(LPCSTR sourceFile,LPCSTR destFile){
     else
         return OnError(UTE_RNFR_NA);
 }
+
+
+/***************************************
+ChmodFile
+    Description: change file permissions
+Params
+    sourceFile - name of file on the FTP server
+    permissions - new file premissions
+Return
+    UTE_SUCCESS             - success
+    UTE_NO_RESPONSE         - no response
+    UTE_SVR_REQUEST_DENIED  - request denied by server
+****************************************/
+#if defined _UNICODE
+int CUT_FTPClient::ChmodFile(LPCWSTR sourceFile,LPCWSTR permissions){
+    return ChmodFile(AC(sourceFile), AC(permissions));}
+#endif
+int CUT_FTPClient::ChmodFile(LPCSTR sourceFile,LPCSTR permissions){
+
+    int     rt;
+
+    // SITE CHMOD 644 transfer.png
+
+    _snprintf(m_szBuf,sizeof(m_szBuf)-1,"SITE CHMOD %s %s\r\n",permissions,sourceFile);
+    Send(m_szBuf);
+
+    //check for a return of 2??
+    rt = GetResponseCode(this);
+    if(rt == 0)
+        return OnError(UTE_NO_RESPONSE);   //no response
+    else if(rt >=200 && rt <=299)
+        return OnError(UTE_SUCCESS);
+    return OnError(UTE_SVR_REQUEST_DENIED);
+}
+
+
 /***************************************
 GetCurDir
     Returns the name of the current
@@ -2182,6 +2226,7 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     if ( port <= 0 || port > 65535 )
         return OnError(UTE_DATAPORT_FAILED);
 
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.
@@ -2549,7 +2594,7 @@ int CUT_FTPClient::PeekResponseCode(CUT_WSClient *ws, LPSTR string, int maxlen) 
     char c;
     int  code;
     //int  once = TRUE;
-    char mlCode[5];
+    char mlCode[5]{};
 
     m_cachedResponse = true;
 

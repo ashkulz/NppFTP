@@ -13,7 +13,7 @@ jobs:
         build_platform: [x64, ARM64, Win32]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: generate cmake
       run: |
@@ -69,7 +69,7 @@ jobs:
         build_platform: ["64", "32"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install packages via apt
       run: |
@@ -118,7 +118,7 @@ jobs:
         build_platform: ["Unix Makefiles"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install packages via apt
       run: |

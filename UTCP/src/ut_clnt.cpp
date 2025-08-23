@@ -621,7 +621,14 @@ int CUT_WSClient::EnableSSL(bool enable) {
 
         m_ssl = SSL_new(m_ctx);
 
-        m_isSSL = true;
+        if (m_ssl)
+        {
+            m_isSSL = true;
+        }
+        else
+        {
+            return OnError(UTE_ERROR);
+        }
 
         return UTE_SUCCESS;
     }
@@ -637,13 +644,8 @@ int CUT_WSClient::SetSecurityMode(SSLMode mode){
         return OnError(UTE_SUCCESS);
 
     m_sslMode = mode;
-    switch(mode) {
-        case TLS:
-        default:
-            //all version specific methods are deprecated since openssl 1.1.0
-            m_meth = TLS_client_method();
-            break;
-    }
+    //all version specific methods are deprecated since openssl 1.1.0
+    m_meth = TLS_client_method();
 
     if (m_meth == NULL) //possible?
         return OnError(UTE_ERROR);

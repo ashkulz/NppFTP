@@ -838,11 +838,11 @@ int CUT_FTPClient::ReceiveFilePASV(CUT_DataSource & dest, LPCSTR sourceFile) {
         return OnError(UTE_ABORTED);
         }
 
-    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
-
     //send the RETR command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"RETR %s\r\n",sourceFile);
     Send(m_szBuf);
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     // connect to the server supplied port to establish the
     // data connection.
@@ -1134,6 +1134,8 @@ int CUT_FTPClient::SendFilePASV(CUT_DataSource & source, LPCSTR destFile) {
     //send the store command
     _snprintf(m_szBuf,sizeof(m_szBuf)-1,"STOR %s\r\n",destFile);
     Send(m_szBuf);
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     // connect to the server supplied port to establish the
     // data connection.
@@ -2226,8 +2228,6 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     if ( port <= 0 || port > 65535 )
         return OnError(UTE_DATAPORT_FAILED);
 
-    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
-
     //send the list command, the server will then wait for us to
     // connect on the port it provided in the PASV statement.
     if (path != NULL)
@@ -2235,6 +2235,8 @@ int CUT_FTPClient::GetDirInfoPASV(LPCSTR path){
     else
         _snprintf(m_szBuf,sizeof(m_szBuf)-1,"LIST\r\n");
     Send(m_szBuf);
+
+    m_wsData.SSLSetReuseSession(SSLGetCurrentSession());
 
     // connect to the server supplied port to establish the
     // data connection.
@@ -2515,6 +2517,7 @@ The assigned reply codes relating to FTP are:
    200  Last command received correctly.
    201  An ABORT has terminated activity, as requested.
    202  Abort request ignored, no activity in progress.
+   226  Operation successful
    230  User is "logged in".  May proceed.
    231  User is "logged out".  Service terminated.
    232  Logout command noted, will complete when transfer done.
@@ -2537,6 +2540,8 @@ The assigned reply codes relating to FTP are:
    400  This service not implemented.
    401  This service not accepting users now, goodbye.
    402  Command not implemented for requested value or action.
+   421  Activity timeout.
+   425  Unable to build data connection: ECONNABORTED - Connection aborted
    430  Log-on time or tries exceeded, goodbye.
    431  Log-on unsuccessful.  User and/or password invalid.
    432  User not valid for this service.

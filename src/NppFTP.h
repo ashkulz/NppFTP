@@ -35,7 +35,7 @@ public:
 
 	int						ShowFTPWindow();
 	int						FocusFTPWindow();
-	int						ShowAboutDialog();
+	int						ShowAboutDialog() const;
 
 	int						OnSave(const TCHAR* path);
 	int						OnActivateLocalFile(const TCHAR* path);

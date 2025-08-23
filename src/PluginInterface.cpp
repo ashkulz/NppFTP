@@ -100,7 +100,7 @@ void beNotified(SCNotification * scNotification) {
 			SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_DEPRECATED, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiFtp);
 			break; }
 		case NPPN_READY: {
-			TCHAR configStore[MAX_PATH];
+			TCHAR configStore[MAX_PATH]{};
 			configStore[0] = 0;
 			SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, (WPARAM)MAX_PATH, (LPARAM)configStore);
 			int res = nppFTP.Start(nppData, configStore, 0, funcItems[0]);

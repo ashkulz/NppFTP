@@ -43,7 +43,7 @@ INT_PTR KBIntDialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 inline void ScreenRectToClient(HWND hWnd, RECT * rect) {
-	POINT pt;
+	POINT pt{};
 
 	pt.x = rect->left;
 	pt.y = rect->top;

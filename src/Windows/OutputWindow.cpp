@@ -119,7 +119,7 @@ int OutputWindow::OnSize(int newWidth, int newHeight) {
 }
 
 int OutputWindow::RegisterClass() {
-	WNDCLASSEX OUTWindowClass;
+	WNDCLASSEX OUTWindowClass{};
 	OUTWindowClass.cbSize = sizeof(WNDCLASSEX);
 	OUTWindowClass.style = CS_DBLCLKS;//|CS_NOCLOSE;
 	OUTWindowClass.cbClsExtra = 0;
@@ -199,7 +199,7 @@ LRESULT OutputWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			}
 			break; }
 		case WM_CONTEXTMENU: {
-			POINT menuPos;
+			POINT menuPos{};
 			menuPos.x = GET_X_LPARAM(lParam);
 			menuPos.y = GET_Y_LPARAM(lParam);
 			bool fromKeyboard = (menuPos.x == -1 && menuPos.y == -1);
@@ -367,7 +367,7 @@ int OutputWindow::AddMessage(const TCHAR * message, Output_Type type, time_t tti
 	if (lineCount > m_maxLines) {
 		::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)false, 0);
 		int endPos = ::SendMessage(m_hScintilla, SCI_POSITIONFROMLINE, (WPARAM)1, 0);
-		char buffer[13];
+		char buffer[13]{};
 		::SendMessage(m_hScintilla, SCI_MARGINGETTEXT, (WPARAM)1, (LPARAM)buffer);
 
 		::SendMessage(m_hScintilla, SCI_SETTARGETSTART, 0, 0);

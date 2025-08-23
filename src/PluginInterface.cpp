@@ -79,17 +79,17 @@ FuncItem * getFuncsArray(int * arraysize) {
 	funcItems[0]._pFunc = &ShowFTPWindow;
 	funcItems[0]._init2Check = false;
 	funcItems[0]._pShKey = NULL;
-	lstrcpyn(funcItems[0]._itemName, TEXT("Show NppFTP Window"), nbChar);
+	lstrcpyn(funcItems[0]._itemName, TEXT("Show NppFTP Window"), menuItemSize);
 
 	funcItems[1]._pFunc = &FocusFTPWindow;
 	funcItems[1]._init2Check = false;
 	funcItems[1]._pShKey = NULL;
-	lstrcpyn(funcItems[1]._itemName, TEXT("Focus NppFTP Window"), nbChar);
+	lstrcpyn(funcItems[1]._itemName, TEXT("Focus NppFTP Window"), menuItemSize);
 
 	funcItems[2]._pFunc = &ShowAboutDialog;
 	funcItems[2]._init2Check = false;
 	funcItems[2]._pShKey = NULL;
-	lstrcpyn(funcItems[2]._itemName, TEXT("About NppFTP"), nbChar);
+	lstrcpyn(funcItems[2]._itemName, TEXT("About NppFTP"), menuItemSize);
 
 	return &funcItems[0];
 }
@@ -97,7 +97,7 @@ FuncItem * getFuncsArray(int * arraysize) {
 void beNotified(SCNotification * scNotification) {
 	switch(scNotification->nmhdr.code) {
 		case NPPN_TBMODIFICATION: {
-			SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiFtp);
+			SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_DEPRECATED, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiFtp);
 			break; }
 		case NPPN_READY: {
 			TCHAR configStore[MAX_PATH];

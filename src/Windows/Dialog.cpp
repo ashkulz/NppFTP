@@ -18,6 +18,7 @@
 
 #include "StdInc.h"
 #include "Dialog.h"
+#include "Npp/PluginInterface.h"
 
 #include "resource.h"
 
@@ -112,6 +113,9 @@ INT_PTR Dialog::DlgMsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 INT_PTR Dialog::OnInitDialog() {
 	if (m_title != NULL)
 		::SetWindowText(m_hwnd, m_title);
+
+	//Modified for darkmode support
+	::SendMessage(_MainOutputWindow, NPPM_DARKMODESUBCLASSANDTHEME, static_cast<WPARAM>(NppDarkMode::dmfInit), reinterpret_cast<LPARAM>(m_hwnd));
 
 	return TRUE;	//Allow focus to be set
 }

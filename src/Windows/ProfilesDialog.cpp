@@ -622,6 +622,8 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	}
 	OnSelectProfile(cur_selectedProfile);
 
+	Dialog::OnInitDialog();
+
 	return FALSE;
 }
 

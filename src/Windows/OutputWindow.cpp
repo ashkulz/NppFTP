@@ -18,6 +18,7 @@
 
 #include "StdInc.h"
 #include "OutputWindow.h"
+#include "Npp/PluginInterface.h"
 
 #include "resource.h"
 #include "Commands.h"
@@ -73,7 +74,7 @@ int OutputWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand, H
 
 	m_hNotify = hNotify;
 
-	m_hScintilla = ::CreateWindowEx(WS_EX_CLIENTEDGE,
+	m_hScintilla = ::CreateWindowEx(0,
 									TEXT("Scintilla"), TEXT(""),
 									WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN,
 									0, 0, 10, 10,
@@ -286,6 +287,28 @@ int OutputWindow::SetScintillaParameters() {
 	if (m_hScintilla == NULL)
 		return -1;
 
+	COLORREF defaultColor = RGB(0, 180, 180);
+	COLORREF clientColor = RGB(0, 180, 0);
+	COLORREF systemColor = RGB(0, 0, 180);
+	COLORREF errorColor = RGB(255, 0, 0);
+	COLORREF backgroundColorMargin = RGB(245, 245, 245);
+	COLORREF backgroundColor = RGB(255, 255, 255);
+
+	bool isdarkmodeenabled = ::SendMessage(_MainOutputWindow, NPPM_ISDARKMODEENABLED, 0, 0);
+	if (isdarkmodeenabled)
+	{
+		NppDarkMode::Colors returnColors;
+		if (::SendMessage(_MainOutputWindow, NPPM_GETDARKMODECOLORS, sizeof(NppDarkMode::Colors), (LPARAM)&returnColors))
+		{
+			defaultColor = returnColors.text;
+			clientColor = returnColors.darkerText;
+			systemColor = returnColors.linkText;
+			errorColor = returnColors.errorBackground;
+			backgroundColorMargin = returnColors.background;
+			backgroundColor = returnColors.softerBackground;
+		}
+	}
+
 	::SendMessage(m_hScintilla, SCI_USEPOPUP, (WPARAM)false, 0);
 
 	::SendMessage(m_hScintilla, SCI_SETREADONLY, (WPARAM)true, 0);
@@ -297,21 +320,22 @@ int OutputWindow::SetScintillaParameters() {
 
 	::SendMessage(m_hScintilla, SCI_STARTSTYLING, (WPARAM)0, (LPARAM)0xff);
 
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_DEFAULT, RGB(0, 180, 180));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_DEFAULT, defaultColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_DEFAULT, backgroundColor);
 	::SendMessage(m_hScintilla, SCI_STYLECLEARALL, 0, 0);
 
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_CLIENT, RGB(0, 180, 0));
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_SYSTEM, RGB(0, 0, 180));
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_ERROR, RGB(255, 0, 0));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_CLIENT, clientColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_SYSTEM, systemColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_ERROR, errorColor);
 
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_CLIENT, RGB(0, 180, 0));
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_SYSTEM, RGB(0, 0, 180));
-	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_ERROR, RGB(255, 0, 0));
-	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_CLIENT, RGB(245, 245, 245));
-	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_SYSTEM, RGB(245, 245, 245));
-	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_ERROR, RGB(245, 245, 245));
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_CLIENT, clientColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_SYSTEM, systemColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETFORE, STYLE_MARGIN_ERROR, errorColor);
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_CLIENT, backgroundColorMargin);
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_SYSTEM, backgroundColorMargin);
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_MARGIN_ERROR, backgroundColorMargin);
 
-	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_LINENUMBER, RGB(245, 245, 245));
+	::SendMessage(m_hScintilla, SCI_STYLESETBACK, STYLE_LINENUMBER, backgroundColorMargin);
 
 	::SendMessage(m_hScintilla, SCI_SETMARGINTYPEN, (WPARAM)0, (LPARAM)SC_MARGIN_TEXT);
 	int width = ::SendMessage(m_hScintilla, SCI_TEXTWIDTH, (WPARAM)STYLE_SYSTEM, (LPARAM)"88:88:88  ");

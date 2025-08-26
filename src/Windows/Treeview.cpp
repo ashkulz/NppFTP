@@ -39,7 +39,7 @@ Treeview::Treeview() :
 	m_exStyle = WS_EX_CLIENTEDGE;
 	m_style = WS_CHILD|/*WS_VISIBLE|WS_BORDER|*/TVS_HASBUTTONS|TVS_SHOWSELALWAYS|TVS_LINESATROOT|TVS_HASLINES;
 
-	INITCOMMONCONTROLSEX icx;
+	INITCOMMONCONTROLSEX icx{};
 	icx.dwSize = sizeof(icx);
 	icx.dwICC = ICC_TREEVIEW_CLASSES;
 	InitCommonControlsEx(&icx);
@@ -65,7 +65,7 @@ int Treeview::Create(HWND hParent) {
 }
 
 HTREEITEM Treeview::AddRoot(FileObject * rootDir) {
-	TV_INSERTSTRUCT tvinsert;
+	TV_INSERTSTRUCT tvinsert{};
 
 	tvinsert.hParent = TVI_ROOT;
 	tvinsert.hInsertAfter = TVI_LAST;
@@ -84,7 +84,7 @@ HTREEITEM Treeview::AddRoot(FileObject * rootDir) {
 }
 
 HTREEITEM Treeview::AddFileObject(HTREEITEM root, FileObject * file) {
-	TV_INSERTSTRUCT tvinsert;
+	TV_INSERTSTRUCT tvinsert{};
 
 	tvinsert.hParent = root;
 	tvinsert.hInsertAfter = TVI_LAST;
@@ -176,7 +176,7 @@ HTREEITEM Treeview::OnClick() {
 	POINT pos = {pts.x, pts.y};
 	ScreenToClient(m_hwnd, &pos);
 
-	TV_HITTESTINFO ht;
+	TV_HITTESTINFO ht{};
 	ht.pt = pos;
 	selected = TreeView_HitTest(m_hwnd, &ht);
 
@@ -216,7 +216,7 @@ int Treeview::OnExpanding(const NM_TREEVIEW* nmt) {
 }
 
 FileObject* Treeview::GetItemFileObject(HTREEITEM item) {
-	TV_ITEM tvi;
+	TV_ITEM tvi{};
 	tvi.hItem = item;
 	tvi.mask = TVIF_PARAM;
 	tvi.lParam = 0;
@@ -237,7 +237,7 @@ bool Treeview::GetObjectItemRect(FileObject * fo, RECT * pRect) {
 }
 
 FileObject* Treeview::GetItemByPoint(POINTL pt) {
-	TV_HITTESTINFO ht;
+	TV_HITTESTINFO ht{};
 	ht.pt.x = pt.x;
 	ht.pt.y = pt.y;
 	::ScreenToClient(m_hwnd, &ht.pt);
@@ -256,7 +256,7 @@ int Treeview::UpdateFileObject(FileObject * fo) {
 
 	HTREEITEM hti = (HTREEITEM)dat;
 
-	TV_ITEM tvi;
+	TV_ITEM tvi{};
 	tvi.hItem = hti;
 	tvi.mask = TVIF_IMAGE|TVIF_SELECTEDIMAGE|(fo->isDir()?TVIF_CHILDREN:0);
 	tvi.iImage = I_IMAGECALLBACK;
@@ -276,7 +276,7 @@ int Treeview::UpdateDirectory(FileObject * dir) {
 
 	HTREEITEM hti = (HTREEITEM)dat;
 
-	TV_ITEM tvi;
+	TV_ITEM tvi{};
 	tvi.hItem = hti;
 	tvi.mask = TVIF_STATE;
 	tvi.stateMask = TVIS_EXPANDED;
@@ -301,7 +301,7 @@ int Treeview::CollapseDirectory(FileObject* dir)
 
 	HTREEITEM hti = (HTREEITEM)dat;
 
-	TV_ITEM tvi;
+	TV_ITEM tvi{};
 	tvi.hItem = hti;
 	tvi.mask = TVIF_STATE;
 	tvi.stateMask = TVIS_EXPANDED;
@@ -403,7 +403,7 @@ int Treeview::RedrawItem(HTREEITEM item) {
 	if (!item)
 		return -1;
 
-	RECT rc;
+	RECT rc{};
 	RECT *rcPtr = &rc;
 	BOOL visible = TreeView_GetItemRect(m_hwnd, item, rcPtr, TRUE);	//TRUE: get rect of entire row
 	if (visible == TRUE) {

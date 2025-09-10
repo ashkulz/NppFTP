@@ -1,0 +1,38 @@
+SPDXID: "SPDXRef-DOCUMENT"
+spdxVersion: "SPDX-2.2"
+creationInfo:
+  created: "2025-09-10T12:30:22Z"
+  creators:
+  - "Person: Harry ( harrybharry@users.sourceforge.net )"
+  licenseListVersion: "3.9"
+name: "nppftp-v0.30.21"
+dataLicense: "CC0-1.0"
+documentNamespace: "http://spdx.org/spdxdocs/spdx-document-nppftp"
+documentDescribes:
+- "SPDXRef-Package-nppftp"
+packages:
+- SPDXID: "SPDXRef-Package-nppftp"
+  summary: "Plugin for Notepad++ allowing FTP, FTPS, FTPES and SFTP communications"
+  copyrightText: "Copyright 2010-2025."
+  downloadLocation: "https://github.com/ashkulz/NppFTP/releases/tag/v0.30.21"
+  filesAnalyzed: false
+  homepage: "https://ashkulz.github.io/NppFTP/"
+  licenseConcluded:  "NOASSERTION"
+  licenseDeclared: "NOASSERTION"
+  name: "nppftp"
+  versionInfo: "v0.30.21"
+- SPDXID: "SPDXRef-Package-openssl"
+  description: "OpenSSL is a robust, commercial-grade, full-featured Open Source Toolkit for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol. The protocol implementation is based on a full-strength general purpose cryptographic library, which can also be used stand-alone."
+  copyrightText: "copyright 1998-2025 The OpenSSL Project Authors. All Rights Reserved."
+  downloadLocation: "https://github.com/openssl/openssl/releases/download/openssl-3.5.2/openssl-3.5.2.tar.gz"
+  filesAnalyzed: false
+  homepage: "https://openssl-library.org/"
+  licenseConcluded: "NOASSERTION"
+  licenseDeclared: "Apache-2.0"
+  packageFileName: "./libs/openssl"
+  name: "openssl"
+  versionInfo: "3.5.2"
+relationships:
+- spdxElementId: "SPDXRef-Package-nppftp"
+  relatedSpdxElement: "SPDXRef-Package-openssl"
+  relationshipType: "CONTAINS"

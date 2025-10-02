@@ -33,19 +33,19 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: plugin_dll_x64
-          path: _build\NppFTP-0.30.21-win64.zip
+          path: _build\NppFTP-0.30.22-win64.zip
 
     - name: Archive artifacts for Win32 CPack
       if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
           name: plugin_dll_x86
-          path: _build\NppFTP-0.30.21-win32.zip
+          path: _build\NppFTP-0.30.22-win32.zip
 
     - name: Rename and copy artifacts from ARM64 CPack
       if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
       run: |
-           copy _build\NppFTP-0.30.21-win64.zip .\NppFTP-arm64.zip
+           copy _build\NppFTP-0.30.22-win64.zip .\NppFTP-arm64.zip
 
     - name: Archive artifacts for ARM64 CPack
       if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
@@ -142,4 +142,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: plugin_dll_x64_linux
-          path: _build/NppFTP-0.30.21-win64.zip
+          path: _build/NppFTP-0.30.22-win64.zip

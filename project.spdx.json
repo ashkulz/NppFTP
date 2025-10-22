@@ -9,16 +9,16 @@
     "created": "2025-10-22T09:13:54Z",
     "licenseListVersion": "3.26"
   },
-  "name": "nppftp-v0.30.21",
+  "name": "nppftp-v0.30.22",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "http://spdx.org/spdxdocs/nppftp-v0.30.21-dfbe4781-4406-4acd-9437-ffb16bbcc3ac",
+  "documentNamespace": "http://spdx.org/spdxdocs/nppftp-v0.30.22-dfbe4781-4406-4acd-9437-ffb16bbcc3ac",
   "packages": [
     {
       "SPDXID": "SPDXRef-Package-nppftp",
       "name": "nppftp",
-      "versionInfo": "v0.30.21",
+      "versionInfo": "v0.30.22",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://github.com/ashkulz/NppFTP/releases/tag/v0.30.21",
+      "downloadLocation": "https://github.com/ashkulz/NppFTP/releases/tag/v0.30.22",
       "filesAnalyzed": false,
       "homepage": "https://ashkulz.github.io/NppFTP/",
       "licenseConcluded": "NOASSERTION",
@@ -30,9 +30,9 @@
     {
       "SPDXID": "SPDXRef-Package-openssl",
       "name": "openssl",
-      "versionInfo": "3.5.2",
+      "versionInfo": "3.5.4",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.5.2/openssl-3.5.2.tar.gz",
+      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz",
       "filesAnalyzed": false,
       "packageFileName": "./libs/openssl",
       "homepage": "https://openssl-library.org/",

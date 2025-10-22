@@ -24,7 +24,8 @@
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "copyrightText": "Copyright 2010-2025.",
-      "summary": "Plugin for Notepad++ allowing FTP, FTPS, FTPES and SFTP communications"
+      "summary": "Plugin for Notepad++ allowing FTP, FTPS, FTPES and SFTP communications",
+      "supplier" : "Person: Ashish Kulkarni"
     },
     {
       "SPDXID": "SPDXRef-Package-openssl",
@@ -38,10 +39,16 @@
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "Apache-2.0",
       "copyrightText": "copyright 1998-2025 The OpenSSL Project Authors. All Rights Reserved.",
-      "description": "OpenSSL is a robust, commercial-grade, full-featured Open Source Toolkit for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol. The protocol implementation is based on a full-strength general purpose cryptographic library, which can also be used stand-alone."
+      "description": "OpenSSL is a robust, commercial-grade, full-featured Open Source Toolkit for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol. The protocol implementation is based on a full-strength general purpose cryptographic library, which can also be used stand-alone.",
+      "supplier" : "Organization: OpenSSL Software Foundation (foundation@openssl.org)"
     }
   ],
   "relationships": [
+    {
+      "relatedSpdxElement": "SPDXRef-Package-nppftp",
+      "relationshipType": "DESCRIBES",
+      "spdxElementId": "SPDXRef-DOCUMENT"
+    },
     {
       "spdxElementId": "SPDXRef-Package-nppftp",
       "relatedSpdxElement": "SPDXRef-Package-openssl",

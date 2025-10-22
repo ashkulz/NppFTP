@@ -24,9 +24,8 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: sbom
-        path: ./project.spdx.yml
+        path: ./project.spdx.json
     - name: SBOM upload 
       uses: advanced-security/spdx-dependency-submission-action@v0.1.1
       with:
         filePath: "./"
-        filePattern: "*.spdx.yml"

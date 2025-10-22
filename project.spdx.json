@@ -1,0 +1,51 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "comment": "This document has been automatically generated.",
+    "creators": [
+      "Tool: sbomconvert-0.1.0"
+    ],
+    "created": "2025-10-22T09:13:54Z",
+    "licenseListVersion": "3.26"
+  },
+  "name": "nppftp-v0.30.21",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "http://spdx.org/spdxdocs/nppftp-v0.30.21-dfbe4781-4406-4acd-9437-ffb16bbcc3ac",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-nppftp",
+      "name": "nppftp",
+      "versionInfo": "v0.30.21",
+      "primaryPackagePurpose": "LIBRARY",
+      "downloadLocation": "https://github.com/ashkulz/NppFTP/releases/tag/v0.30.21",
+      "filesAnalyzed": false,
+      "homepage": "https://ashkulz.github.io/NppFTP/",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "Copyright 2010-2025.",
+      "summary": "Plugin for Notepad++ allowing FTP, FTPS, FTPES and SFTP communications"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-openssl",
+      "name": "openssl",
+      "versionInfo": "3.5.2",
+      "primaryPackagePurpose": "LIBRARY",
+      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.5.2/openssl-3.5.2.tar.gz",
+      "filesAnalyzed": false,
+      "packageFileName": "./libs/openssl",
+      "homepage": "https://openssl-library.org/",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "copyright 1998-2025 The OpenSSL Project Authors. All Rights Reserved.",
+      "description": "OpenSSL is a robust, commercial-grade, full-featured Open Source Toolkit for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol. The protocol implementation is based on a full-strength general purpose cryptographic library, which can also be used stand-alone."
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-nppftp",
+      "relatedSpdxElement": "SPDXRef-Package-openssl",
+      "relationshipType": "CONTAINS"
+    }
+  ]
+}

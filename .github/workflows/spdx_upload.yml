@@ -3,6 +3,8 @@ name: SBOM upload
 
 on: 
   workflow_dispatch:
+  push: 
+    branches: ["spdx_test"]
 
 jobs:
   SBOM-upload:

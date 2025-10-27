@@ -30,14 +30,14 @@ jobs:
 
     - name: Archive artifacts for x64 CPack
       if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: plugin_dll_x64
           path: _build\NppFTP-0.30.22-win64.zip
 
     - name: Archive artifacts for Win32 CPack
       if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: plugin_dll_x86
           path: _build\NppFTP-0.30.22-win32.zip
@@ -49,7 +49,7 @@ jobs:
 
     - name: Archive artifacts for ARM64 CPack
       if: matrix.build_platform == 'ARM64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: NppFTP-arm64.zip
           path: NppFTP-arm64.zip
@@ -82,14 +82,14 @@ jobs:
 
     - name: Archive artifacts for x86
       if: matrix.build_platform == '32'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: NppFTP-x86.zip
           path: NppFTP-x86.zip
 
     - name: Archive artifacts for x64
       if: matrix.build_platform == '64'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: NppFTP-x64.zip
           path: NppFTP-x64.zip
@@ -139,7 +139,7 @@ jobs:
 
     - name: Archive artifacts for x64 CPack
       if: matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
           name: plugin_dll_x64_linux
           path: _build/NppFTP-0.30.22-win64.zip

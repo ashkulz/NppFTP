@@ -224,9 +224,8 @@ void SU::free(char * data) {
 
 bool SU::InString(const tstring & source, const tstring & find) {
 	tstring result(source);
-	tstring::size_type pos = 0;
 
-	tstring::size_type pos = result.find(find, pos);
+	tstring::size_type pos = result.find(find, 0);
 
 	return pos != tstring::npos ? true : false;
 }

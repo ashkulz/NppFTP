@@ -2857,7 +2857,7 @@ void CUT_FTPClient::GetInfoInDOSFormat( CUT_DIRINFOA * di){
     long    value;
 
         //parse and store the directory information
-        
+
         // mod info is not present
         di->mod[0] = '\0';
 
@@ -2980,9 +2980,10 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     }
 
     //CUT_StrMethods::ParseString(m_szBuf," ", 0, di->mod, sizeof(di->mod));
-      
+
     strncpy(di->mod, m_szBuf, 10);
-    
+    di->mod[10] = 0;
+
     //directory attribute
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')
         di->isDir = TRUE;

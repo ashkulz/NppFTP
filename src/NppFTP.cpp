@@ -165,7 +165,7 @@ int NppFTP::OnSave(const TCHAR* path) {
 		return -1;
 	}
 	
-	FTPProfile * matchProfile;
+	FTPProfile * matchProfile = nullptr;
 	for(size_t i = 0; i < m_profiles.size(); i++) {
 	
 		matchProfile = m_profiles.at(i);	
@@ -181,10 +181,10 @@ int NppFTP::OnSave(const TCHAR* path) {
 			break;			
 		}
 		
-		matchProfile = 0;
+		matchProfile = nullptr;
 	}
 	
-	if (matchProfile == 0) {
+	if (matchProfile == nullptr) {
 		//MessageBoxOutput(TEXT("No FTP profile could be found to upload this file to."));
 		return -1;
 	}

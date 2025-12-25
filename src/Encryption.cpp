@@ -48,6 +48,7 @@ char* Encryption::Encrypt(const char * key, int keysize, const char * data, int 
 	char * encdata = DES_encrypt(key, keysize, data, size, false, DES_ENCRYPT);
 	if (!encdata)
 		return NULL;
+
 	char * hexData = SU::DataToHex(encdata, size);
 	delete [] encdata;
 	return hexData;

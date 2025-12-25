@@ -81,7 +81,6 @@ CUT_WSClient::CUT_WSClient() :
     if (!isSSLInit) {
         SSL_library_init();
         SSL_load_error_strings();
-        //ERR_load_BIO_strings();
         OpenSSL_add_all_algorithms();
         isSSLInit = true;
     }
@@ -1746,7 +1745,7 @@ Return
     UTE_SUCCESS - success
     otherwise failure
 ****************************************************/
-int CUT_WSClient::SetMaxSend(int length){
+int CUT_WSClient::SetMaxSend(int length) const{
     return setsockopt(m_socket,SOL_SOCKET,SO_SNDBUF,(char *)&length,sizeof(int));
 }
 
@@ -1765,7 +1764,7 @@ Return
     UTE_SUCCESS - success
     otherwise failure
 ****************************************************/
-int CUT_WSClient::SetMaxReceive(int length){
+int CUT_WSClient::SetMaxReceive(int length) const{
     return setsockopt(m_socket,SOL_SOCKET,SO_RCVBUF,(char *)&length,sizeof(int));
 }
 
@@ -2444,7 +2443,7 @@ PARAM
 RETURN
     int     - 0 if success otherwise SOCKET_ERROR
 ***********************************************/
-int CUT_WSClient::SetSocketOption(int option,void *optionValue, int iBufferSize)
+int CUT_WSClient::SetSocketOption(int option,void *optionValue, int iBufferSize) const
 {
     return setsockopt(m_socket,SOL_SOCKET,option,(char *)optionValue, iBufferSize);
 }

@@ -1939,7 +1939,7 @@ int CUT_FTPClient::SetDataSecure(int level) {
 
 }
 
-int CUT_FTPClient::GetDataSecure() {
+int CUT_FTPClient::GetDataSecure() const {
     return m_dataSecLevel;
 }
 
@@ -1967,7 +1967,7 @@ int CUT_FTPClient::SetDataPortRange(int min, int max) {
     return UTE_SUCCESS;
 }
 
-int CUT_FTPClient::GetDataPortRange(int * min, int * max) {
+int CUT_FTPClient::GetDataPortRange(int * min, int * max) const {
     if (!min || !max)
         return UTE_ERROR;
 

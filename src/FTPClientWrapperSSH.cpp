@@ -19,7 +19,6 @@
 #include "StdInc.h"
 #include "FTPClientWrapper.h"
 
-#include "MessageDialog.h"
 #include "KBIntDialog.h"
 #include <fcntl.h>
 

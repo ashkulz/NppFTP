@@ -12,7 +12,7 @@
 // ===================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -94,12 +94,12 @@ public:
 
     virtual int SocketWaitForReceive(SOCKET s, long secs, long uSecs)
     {
-        fd_set readSet;
+        fd_set readSet{};
         FD_ZERO(&readSet);
 
         FD_SET(s, &readSet);
 
-        struct timeval tv;
+        struct timeval tv{};
         tv.tv_sec = secs;
         tv.tv_usec = uSecs;
 
@@ -307,16 +307,16 @@ public:
     int GetReceiveTimeOut() const;
 
     // Set/Get a socket option for the client socket
-    int SetSocketOption(int option, void *optionValue, int iBufferSize = 4);
+    int SetSocketOption(int option, void *optionValue, int iBufferSize = 4) const;
     int GetSocketOption(int option, void *optionValue) const;
 
     // Get the send buffer size for the client socket
     int GetMaxSend() const;
     // Set the send buffer size for the client socket
-    int SetMaxSend(int length);
+    int SetMaxSend(int length) const;
 
     //  Get/Set the Buffer size for receives for the client socket
-    int SetMaxReceive(int length);
+    int SetMaxReceive(int length) const;
     int GetMaxReceive() const;
 
     ////////////////////////////////////////////////////////////////////////////

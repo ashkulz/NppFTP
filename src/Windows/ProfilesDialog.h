@@ -47,7 +47,7 @@ protected:
 
 	int						LoadFiletypes();
 	int						LoadCacheMaps();
-	int						EnableCacheMapUI();
+	int						EnableCacheMapUI() const;
 	int						OnCacheMapSelect();
 	int						UpdateCacheMapSpinner();
 

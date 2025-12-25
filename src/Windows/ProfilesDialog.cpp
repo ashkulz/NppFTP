@@ -415,7 +415,7 @@ INT_PTR ProfilesDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			break; }
 		case IDC_BUTTON_CACHE_ADD:
 		case IDC_BUTTON_CACHE_EDIT: {
-			PathMap pathmap;
+			PathMap pathmap{};
 			TCHAR local[MAX_PATH];
 			char external[MAX_PATH];
 			GetDlgItemText(m_hPageCache, IDC_EDIT_CACHELOCAL, local, MAX_PATH);
@@ -508,7 +508,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 
 	HWND hTab = GetDlgItem(m_hwnd, IDC_TAB_PROFILEPAGE);
 
-	TCITEM tci;
+	TCITEM tci{};
 	tci.mask = TCIF_TEXT;
 
 	tci.pszText = (TCHAR*)TEXT("Connection");
@@ -541,7 +541,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	PF::EnableThemeDialogTexture(m_pageCache.GetHWND(), ETDT_ENABLETAB);
 	//PF::EnableThemeDialogTexture(m_hwnd, ETDT_ENABLETAB);
 
-	RECT tabRect;
+	RECT tabRect{};
 	::GetClientRect(hTab, (LPRECT)&tabRect);
 	::MapWindowPoints(hTab, m_hwnd, (LPPOINT)&tabRect, 2);
 	TabCtrl_AdjustRect(hTab, FALSE, &tabRect);
@@ -585,7 +585,7 @@ INT_PTR ProfilesDialog::OnInitDialog() {
 	HWND hListCache = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
 	ListView_SetExtendedListViewStyle(hListCache, LVS_EX_FULLROWSELECT);
 
-	LVCOLUMN lvc;
+	LVCOLUMN lvc{};
 	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT;
 	lvc.fmt = LVCFMT_LEFT;
 
@@ -840,7 +840,7 @@ int ProfilesDialog::LoadCacheMaps() {
 
 	ListView_DeleteAllItems(hListview);
 
-	LVITEM lvi;
+	LVITEM lvi{};
 	lvi.mask = LVIF_TEXT | LVIF_STATE;
 	lvi.state = 0;
 	lvi.stateMask = LVIS_SELECTED;
@@ -867,7 +867,7 @@ int ProfilesDialog::LoadCacheMaps() {
 	return 0;
 }
 
-int ProfilesDialog::EnableCacheMapUI() {
+int ProfilesDialog::EnableCacheMapUI() const {
 	HWND hListview = ::GetDlgItem(m_hPageCache, IDC_LIST_CACHE);
 	int selectedindex = ListView_GetNextItem(hListview, -1, LVNI_ALL|LVNI_SELECTED);
 

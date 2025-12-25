@@ -149,7 +149,7 @@ bool ProfilesWindow::OnProfileItemDrop(FileObject* item, FileObject* parent, boo
 		HTREEITEM hti = (HTREEITEM)(dropObject->GetData());
 		dropObject->MoveTo(parentFolder);
 
-		TVITEMEX tvi;
+		TVITEMEX tvi{};
 		tvi.hItem = hti;
 		tvi.mask = TVIF_HANDLE;
 		if (TreeView_GetItem(m_ftpwindow->m_treeview.GetHWND(), &tvi)) //check if handle is valid

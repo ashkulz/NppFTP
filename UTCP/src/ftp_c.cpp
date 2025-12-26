@@ -2975,7 +2975,8 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
             ++ loop;
     }
 
-    strncpy(di->mod, m_szBuf, sizeof(di->mod)-1);
+    strncpy(di->mod, &m_szBuf[0], sizeof(di->mod)-1);
+    di->mod[sizeof(di->mod)-1] = '\0';
 
     //directory  attrib
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')

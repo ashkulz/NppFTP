@@ -19,6 +19,7 @@
 #include "StdInc.h"
 #include "Treeview.h"
 #include "ut_strop.h"
+#include <math.h>
 
 /* Tree view extended styles */
 #if 1

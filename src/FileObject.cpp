@@ -52,6 +52,8 @@ FileObject::FileObject(const char* path, bool _isDir, bool _isLink) :
 	m_ctime = ft;
 	m_mtime = ft;
 	m_atime = ft;
+
+	m_mod = nullptr;
 }
 
 FileObject::FileObject(FTPFile * ftpfile) :
@@ -77,11 +79,14 @@ FileObject::FileObject(FTPFile * ftpfile) :
 	m_ctime = ftpfile->ctime;
 	m_mtime = ftpfile->mtime;
 	m_atime = ftpfile->atime;
+
+	m_mod = SU::strdup(ftpfile->mod);
 }
 
 FileObject::~FileObject() {
 	RemoveAllChildren();
 	SU::free(m_path);
+	SU::free(m_mod);
 	SU::FreeTChar(m_localName);
 }
 
@@ -165,6 +170,11 @@ bool FileObject::isRoot() const
 	return (strcmp(GetPath(), "/") == 0);
 }
 
+bool FileObject::containsProfile() const
+{
+	return false;
+}
+
 const char* FileObject::GetName() const {
 	return m_name;
 }
@@ -175,6 +185,10 @@ const TCHAR* FileObject::GetLocalName() const {
 
 const char* FileObject::GetPath() const {
 	return m_path;
+}
+
+const char* FileObject::GetMod() const {
+	return m_mod;
 }
 
 int FileObject::SetRefresh(bool refresh) {

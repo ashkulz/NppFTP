@@ -205,6 +205,14 @@ int FTPClientWrapperSSL::GetDir(const char * path, FTPFile** files) {
 				break;
 		}
 
+
+		char* utf8mod = SU::TCharToUtf8(di.mod);
+
+		strncpy(ftpfile.mod, utf8mod, sizeof(ftpfile.mod)-1);
+		SU::FreeChar(utf8mod);
+
+		ftpfile.permissions = di.permissions;
+
 		vfiles.push_back(ftpfile);
 	}
 

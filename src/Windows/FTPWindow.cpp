@@ -726,6 +726,11 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 						FileObject* current = m_treeview.GetItemFileObject(tvitem.hItem);
 						if (!current || current->isRoot()) result = TRUE;
 						break;	}
+					case TVN_GETINFOTIP: {
+						const NMTVGETINFOTIP & nmt = (NMTVGETINFOTIP) * (NMTVGETINFOTIP*)lParam;
+						return m_treeview.OnToolTip(&nmt);
+						break;
+					}
 					case TVN_SELCHANGED: {
 						const NM_TREEVIEW & nmt = (NM_TREEVIEW) *(NM_TREEVIEW*)lParam;
 						m_currentSelection = m_treeview.GetItemFileObject(nmt.itemNew.hItem);

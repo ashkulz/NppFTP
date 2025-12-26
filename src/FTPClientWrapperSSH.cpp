@@ -138,8 +138,16 @@ int FTPClientWrapperSSH::GetDir(const char * path, FTPFile** files) {
 				break;
 		}
 
+		file.permissions = sfile->permissions;
+		if(file.permissions)
+		{
+			//file permissions are available in unix format
+			strncpy(file.mod, sfile->longname, sizeof(file.mod)-1);
+		}
+
 		vFiles.push_back(file);
 		count++;
+		sftp_attributes_free(sfile);
 	}
 
 	if (m_aborting) {

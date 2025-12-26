@@ -99,30 +99,32 @@ public:
 
 // directory infomation linked list - ascii fileName for internal use
 typedef struct CUT_DIRINFOATag{
-    char fileName[MAX_PATH+1];  // file or directory name
-    long fileSize;              // size of directory or file in bytes
-    int  day;                   // the day digit of the file date
-    int  month;                 // the month digit of the file date
-    int  year;                  // the year digit of the file date
-    int  hour;                  // the hour digit of the file date
-    int  minute;                // the minute digit of the file date
-    int  isDir;                 // flag if the entry is directory or a file
-    int  permissions;           // file or directoy permissions
-    CUT_DIRINFOATag * next;     // next available entry
+    char fileName[MAX_PATH + 1]{};  // file or directory name
+    char mod[11]{};                 // unix file mod text
+    long fileSize = 0;              // size of directory or file in bytes
+    int  day = 0;                   // the day digit of the file date
+    int  month = 0;                 // the month digit of the file date
+    int  year = 0;                  // the year digit of the file date
+    int  hour = 0;                  // the hour digit of the file date
+    int  minute = 0;                // the minute digit of the file date
+    int  isDir = 0;                 // flag if the entry is directory or a file
+    int  permissions = 0;           // file or directoy permissions
+    CUT_DIRINFOATag * next = nullptr;     // next available entry
 }CUT_DIRINFOA;
 
 // _TCHAR for UI
 typedef struct CUT_DIRINFOTag{
-    _TCHAR fileName[MAX_PATH+1];    // file or directory name
-    long fileSize;              // size of directory or file in bytes
-    int  day;                   // the day digit of the file date
-    int  month;                 // the month digit of the file date
-    int  year;                  // the year digit of the file date
-    int  hour;                  // the hour digit of the file date
-    int  minute;                // the minute digit of the file date
-    int  isDir;                 // flag if the entry is directory or a file
-    int  permissions;           // file or directoy permissions
-    CUT_DIRINFOTag * next;      // next available entry
+    _TCHAR fileName[MAX_PATH+1]{};  // file or directory name
+    _TCHAR mod[11]{};               // unix file mod text
+    long fileSize = 0;              // size of directory or file in bytes
+    int  day = 0;                   // the day digit of the file date
+    int  month = 0;                 // the month digit of the file date
+    int  year = 0;                  // the year digit of the file date
+    int  hour = 0;                  // the hour digit of the file date
+    int  minute = 0;                // the minute digit of the file date
+    int  isDir = 0;                 // flag if the entry is directory or a file
+    int  permissions = 0;           // file or directoy permissions
+    CUT_DIRINFOTag * next = nullptr;      // next available entry
 }CUT_DIRINFO;
 
 

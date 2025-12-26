@@ -2424,6 +2424,7 @@ int CUT_FTPClient::GetDirEntry(int index, CUT_DIRINFO *dirInfo) {
     //also not explicitly requested via OPTS UTF8 ON, see https://tools.ietf.org/html/draft-ietf-ftpext-utf-8-option-00
     //see also issue https://github.com/ashkulz/NppFTP/issues/55
     CUT_Str::cvtcpy(dirInfo->fileName,MAX_PATH, di->fileName, CP_UTF8);
+    CUT_Str::cvtcpy(dirInfo->mod, sizeof(dirInfo->mod), di->mod, CP_UTF8);
     dirInfo->fileSize   = di->fileSize;
     dirInfo->day        = di->day;
     dirInfo->month      = di->month;
@@ -2974,6 +2975,7 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
             ++ loop;
     }
 
+    strncpy(di->mod, m_szBuf, sizeof(di->mod)-1);
 
     //directory  attrib
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')

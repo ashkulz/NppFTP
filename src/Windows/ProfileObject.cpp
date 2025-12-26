@@ -382,6 +382,11 @@ bool ProfileObject::isRoot() const
 	return m_isRoot;
 }
 
+bool ProfileObject::containsProfile() const
+{
+	return true;
+}
+
 const char* ProfileObject::GetName() const {
 	size_t l = strlen(m_name) + strlen(".mlc") + 1;
 	char* name = new char[l];
@@ -430,6 +435,11 @@ const TCHAR* ProfileObject::GetLocalName() const {
 
 const char* ProfileObject::GetPath() const {
 	return m_path;
+}
+
+const char* ProfileObject::GetMod() const
+{
+	return nullptr;
 }
 
 bool ProfileObject::UpdatePath()

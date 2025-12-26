@@ -55,12 +55,14 @@ public:
 	virtual bool			isLink() const;
 	virtual bool			isDir() const;
 	virtual bool			isRoot() const;
+	virtual bool			containsProfile() const;
 
 	virtual const char*		GetName() const;
 	virtual int				SetName(const char* newName);
 	virtual FTPProfile*		GetProfile() const;
 	virtual const TCHAR*	GetLocalName() const;
 	virtual const char*		GetPath() const;
+	virtual const char*		GetMod() const;
 
 	virtual bool			UpdatePath();
 	virtual void			SetProfiles(vProfile* profiles);

@@ -47,6 +47,7 @@ public:
 	virtual int				GetDispInfo(TV_DISPINFO* ptvdi);
 	virtual HTREEITEM		OnClick();
 	virtual int				OnExpanding(const NM_TREEVIEW* nmt);	//return true when refresh is required
+	virtual int				OnToolTip(const NMTVGETINFOTIP* nmt);
 
 	virtual FileObject*		GetItemFileObject(HTREEITEM item);
 	virtual bool			GetObjectItemRect(FileObject * fo, RECT * pRect);

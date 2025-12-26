@@ -23,6 +23,7 @@ enum FTPFileType { FTPTypeFile, FTPTypeDir, FTPTypeLink };
 
 struct FTPFile {
     char                    filePath[MAX_PATH+1];   // full path to file (name included)
+    char                    mod[11];                // unix file permissions as text, e.g. -rw-------
     long                    fileSize;               // size of directory or file in bytes
     FILETIME                ctime;
     FILETIME                mtime;

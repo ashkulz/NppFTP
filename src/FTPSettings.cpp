@@ -22,6 +22,8 @@
 #include "Encryption.h"
 #include "InputDialog.h"
 
+bool	_DebugMode = false;
+
 FTPSettings::FTPSettings() :
 	m_clearCache(false),
 	m_clearCachePermanent(false),
@@ -73,6 +75,16 @@ const char* FTPSettings::GetEncryptionKey() const {
 
 int FTPSettings::SetEncryptionKey(const char * key) {
 	Encryption::SetDefaultKey(key, -1);
+	return 0;
+}
+
+bool FTPSettings::GetDebugMode() const {
+	return m_debugMode;
+}
+
+int FTPSettings::SetDebugMode(bool debugMode) {
+	m_debugMode = debugMode;
+	_DebugMode = m_debugMode;	
 	return 0;
 }
 
@@ -175,6 +187,15 @@ int FTPSettings::LoadSettings(const TiXmlElement * settingsElem) {
 		clearState = 0;
 	}
 	m_clearCache = (clearState != 0);
+	
+	int debugModeState = 0;
+	const char * debugModeStr = settingsElem->Attribute("debugMode", &debugModeState);
+	if (!debugModeStr) {
+		debugModeState = 0;
+	}
+	m_debugMode = (debugModeState != 0);
+	_DebugMode = m_debugMode;
+
 
 	clearState = 0;
 	clearstr = settingsElem->Attribute("clearCachePermanent", &clearState);
@@ -199,7 +220,7 @@ int FTPSettings::SaveSettings(TiXmlElement * settingsElem) {
 		settingsElem->SetAttribute("MasterPass", challenge);
 		Encryption::FreeData(challenge);
 	}
-
+	settingsElem->SetAttribute("debugMode", m_debugMode?1:0);
 	settingsElem->SetAttribute("clearCache", m_clearCache?1:0);
 	settingsElem->SetAttribute("clearCachePermanent", m_clearCachePermanent?1:0);
 

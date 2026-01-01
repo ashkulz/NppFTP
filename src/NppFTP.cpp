@@ -106,7 +106,7 @@ int NppFTP::Start(NppData nppData, TCHAR * nppConfigStore, int id, FuncItem func
 
 	res = m_ftpSession->SetCertificates(&m_certificates);
 
-	OutMsg("[NppFTP] Everything initialized");
+	OutDebug("[NppFTP] Everything initialized");
 
 	return 0;
 }
@@ -151,8 +151,6 @@ int NppFTP::FocusFTPWindow() {
 
 	return 0;
 }
-
-
 
 int NppFTP::ShowAboutDialog() const {
 	AboutDialog ab;

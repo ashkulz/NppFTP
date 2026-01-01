@@ -37,6 +37,7 @@ protected:
 	virtual INT_PTR			OnCommand(int ctrlId, int notifCode, HWND idHwnd);
 	virtual INT_PTR			OnNotify(NMHDR * pnmh);
 
+	int						SaveDebugMode();
 	int						SaveGlobalPath();
 	int						SaveMasterPassword();
 	int						SaveClearCache();

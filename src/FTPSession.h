@@ -44,8 +44,11 @@ public:
 	const FTPProfile*		GetCurrentProfile();
 
 	int						Connect();
+
+	void					QueueTimerHandler();
+
 	int						GetDirectory(const char * dir);
-	int                     GetDirectoryHierarchy(const char * dir);
+	int						GetDirectoryHierarchy(const char * dir);
 
 	int						DownloadFileCache(const char * sourcefile);	//return 0 on download, -1 on error, 1 when no cache match was found
 	int						DownloadFile(const char * sourcefile, const TCHAR * target, bool targetIsDir, int code = 1);
@@ -55,6 +58,8 @@ public:
 	int						UploadFile(const TCHAR * sourcefile, const char * target, bool targetIsDir, int code = 1);
 
 	int						CopyFile(const char* sourcefile, const char* target,  int code=0);
+
+	int						NoOp();
 
 	int						MkDir(const char * path);
 	int						RmDir(const char * path);
@@ -71,6 +76,10 @@ public:
 	int						CancelOperation(QueueOperation * cancelOp);
 private:
 	int						Clear();
+
+	HANDLE					m_timerHandle = NULL;
+	int						m_timerCount = 0;
+	bool					m_timerIsInit = false;
 
 	FTPProfile*				m_currentProfile;
 	FTPSettings*			m_ftpSettings;

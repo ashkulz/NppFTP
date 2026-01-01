@@ -19,6 +19,24 @@
 #include "StdInc.h"
 //#include "Output.h"
 
+
+int OutputDebug(const TCHAR * msg, ...) {
+
+	if (!_DebugMode) {
+		return 0;
+	}
+	
+	va_list vaList;
+	va_start(vaList, msg);
+	int ret = -1;
+	if (_MainOutput)
+		ret = _MainOutput->OutVA(Output_System, msg, vaList);
+	va_end(vaList);
+
+	return ret;
+
+}
+
 int OutputMsg(const TCHAR * msg, ...) {
 	va_list vaList;
 	va_start(vaList, msg);
@@ -31,6 +49,11 @@ int OutputMsg(const TCHAR * msg, ...) {
 }
 
 int OutputClnt(const TCHAR * msg, ...) {
+
+	if (!_DebugMode) {
+		return 0;
+	}
+
 	va_list vaList;
 	va_start(vaList, msg);
 	int ret = -1;
@@ -56,6 +79,6 @@ int MessageBoxOutput(const TCHAR * msg) {
 	if (!_MainOutputWindow)
 		return -1;
 
-	MessageBox(_MainOutputWindow, TEXT("NppFTP"), msg, MB_OK);
+	MessageBox(_MainOutputWindow, msg, TEXT("NppFTP"), MB_OK);
 	return 0;
 }

@@ -33,6 +33,11 @@ enum Connection_Mode {Mode_Passive = 0, Mode_Active = 1, Mode_ConnectionMax = 2}
 enum Transfer_Mode {Mode_Binary = 0, Mode_ASCII = 1, Mode_TransferMax = 2};
 enum AuthenticationMethods {Method_Password=0x01, Method_Key=0x02, Method_Interactive=0x04, Method_All=0x07};
 
+
+// =================================================================================================
+// FtpSSLWrapper
+// =================================================================================================
+
 class FtpSSLWrapper : public CUT_FTPClient {
 public:
 							FtpSSLWrapper();
@@ -45,6 +50,8 @@ public:
 	virtual int				SetCurrentTotal(long total);
 
 	virtual int				SetCertificates(vX509 * x509Vect);
+
+	virtual DWORD			LastAction();
 
 	virtual BOOL			IsConnected();
 protected:
@@ -64,7 +71,13 @@ protected:
 	ProgressMonitor*		m_progmon;
 	long					m_currentTotal;	//kinda hacky
 	vX509*					m_certificates;
+
+	DWORD					m_lastAction;
 };
+
+// =================================================================================================
+// FTPClientWrapper
+// =================================================================================================
 
 class FTPClientWrapper {
 public:
@@ -81,6 +94,8 @@ public:
 
 	virtual int				Connect() = 0;
 	virtual int				Disconnect() = 0;
+
+	virtual int				NoOp() = 0;
 
 	//Don't forget to call releasedir
 	virtual int				GetDir(const char * path, FTPFile** files) = 0;
@@ -102,6 +117,8 @@ public:
 	virtual int				SendFile(HANDLE hFile, const char * ftpfile) = 0;
 	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile) = 0;
 	virtual int				DeleteFile(const char * path) = 0;
+
+	virtual DWORD			LastAction() = 0;
 
 	virtual bool			IsConnected();
 	virtual int				Abort();
@@ -125,6 +142,10 @@ protected:
 	vX509*					m_certificates;
 };
 
+// =================================================================================================
+// FTPClientWrapperSSH
+// =================================================================================================
+
 class FTPClientWrapperSSH : public FTPClientWrapper {
 public:
 							FTPClientWrapperSSH(const char * host, int port, const char * user, const char * password);
@@ -140,6 +161,8 @@ public:
 	virtual int				Cwd(const char * path);
 	virtual int				Pwd(char* buf, size_t size);
 
+	virtual int 			NoOp();	
+
 	//Modifying operations
 	virtual int				Rename(const char * from, const char * to);
 	virtual int				ChmodFile(const char * path, const char * mode);
@@ -153,6 +176,8 @@ public:
 	virtual int				SendFile(HANDLE hFile, const char * ftpfile);
 	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile);
 	virtual int				DeleteFile(const char * path);
+
+	virtual DWORD			LastAction();
 
 	virtual bool			IsConnected();
 
@@ -182,6 +207,10 @@ protected:
 	unsigned int			m_acceptedMethods;
 };
 
+// =================================================================================================
+// FTPClientWrapperSSL
+// =================================================================================================
+
 class FTPClientWrapperSSL : public FTPClientWrapper {
 public:
 							FTPClientWrapperSSL(const char * host, int port, const char * user, const char * password);
@@ -195,6 +224,8 @@ public:
 
 	virtual int				Connect();
 	virtual int				Disconnect();
+
+	virtual int 			NoOp();	
 
 	virtual int				GetDir(const char * path, FTPFile** files);
 
@@ -214,6 +245,8 @@ public:
 	virtual int				SendFile(HANDLE hFile, const char * ftpfile);
 	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile);
 	virtual int				DeleteFile(const char * path);
+
+	virtual DWORD			LastAction();
 
 	virtual bool			IsConnected();
 	virtual int				Abort();
@@ -235,9 +268,12 @@ protected:
 	FILETIME				ConvertFiletime(int day, int month, int year, int hour, int minute);
 };
 
-/////////////////////////////////////////////////////////
-/////Class extending some classes from CUT
-/////////////////////////////////////////////////////////
+
+// =================================================================================================
+// MemoryDataSource
+// =================================================================================================
+
+// Class extending some classes from CUT
 
 class MemoryDataSource : public CUT_DataSource {
 protected:

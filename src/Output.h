@@ -31,17 +31,21 @@ public:
 
 extern Output* _MainOutput;
 extern HWND _MainOutputWindow;
+extern bool _DebugMode;
 
+int OutputDebug(const TCHAR * msg, ...);
 int OutputMsg(const TCHAR * msg, ...);
 int OutputClnt(const TCHAR * msg, ...);
 int OutputErr(const TCHAR * msg, ...);
 int MessageBoxOutput(const TCHAR * msg);
 
 #ifdef UNICODE
+#define OutDebug(x,...) OutputDebug(L##x , ##__VA_ARGS__)
 #define OutMsg(x,...) OutputMsg(L##x , ##__VA_ARGS__)
 #define OutClnt(x,...) OutputClnt(L##x , ##__VA_ARGS__)
 #define OutErr(x,...) OutputErr(L##x , ##__VA_ARGS__)
 #else
+#define OutDebug(x,...) OutputDebug(x , ##__VA_ARGS__)
 #define OutMsg(x,...) OutputMsg(x , ##__VA_ARGS__)
 #define OutClnt(x,...) OutputClnt(x , ##__VA_ARGS__)
 #define OutErr(x,...) OutputErr(x , ##__VA_ARGS__)

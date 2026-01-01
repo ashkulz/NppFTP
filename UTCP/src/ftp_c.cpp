@@ -19,7 +19,7 @@
 // =================================================================
 // Ultimate TCP/IP v4.2
 // This software along with its related components, documentation and files ("The Libraries")
-// is Â© 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
+// is © 1994-2007 The Code Project (1612916 Ontario Limited) and use of The Libraries is
 // governed by a software license agreement ("Agreement").  Copies of the Agreement are
 // available at The Code Project (www.codeproject.com), as part of the package you downloaded
 // to obtain this file, or directly from our office.  For a copy of the license governing
@@ -2978,7 +2978,7 @@ void CUT_FTPClient::GetInfoInUNIXFormat( CUT_DIRINFOA * di){
     strncpy(di->mod, &m_szBuf[0], sizeof(di->mod)-1);
     di->mod[sizeof(di->mod)-1] = '\0';
 
-    //directory  attrib
+    //directory attribute
     if(m_szBuf[0]=='d' || m_szBuf[0] =='D')
         di->isDir = TRUE;
     else if (m_szBuf[0]=='l' || m_szBuf[0] =='L')

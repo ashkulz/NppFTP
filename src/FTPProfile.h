@@ -56,6 +56,9 @@ public:
 	bool					GetAskPassword() const;
 	int						SetAskPassword(bool askPassword);
 
+	int						GetNoOp() const;
+	int						SetNoOp(int noop);
+
 	int						GetTimeout() const;
 	int						SetTimeout(int timeout);
 
@@ -121,39 +124,40 @@ private:
 
 	static bool				CompareProfile(const FTPProfile * prof1, const FTPProfile * prof2);
 
-	TCHAR*					m_name;
+	TCHAR*					m_name = nullptr;
 
-	TCHAR*					m_parent;
+	TCHAR*					m_parent = nullptr;
 
-	FTPCache*				m_cache;
+	FTPCache*				m_cache = nullptr;
 
-	char*					m_hostname;
-	int						m_port;
-	char*					m_username;
-	char*					m_password;
-	bool					m_askPassword;
-	bool					m_askPassphrase;
+	char*					m_hostname = nullptr;
+	int						m_port = 0;
+	char*					m_username = nullptr;
+	char*					m_password = nullptr;
+	bool					m_askPassword = false;
+	bool					m_askPassphrase = false;
 
-	int						m_timeout;
+	int						m_timeout = 30;
+	int						m_noop = 0;
 
-	Security_Mode			m_securityMode;
-	Transfer_Mode			m_transferMode;
-	Connection_Mode			m_connectionMode;
+	Security_Mode			m_securityMode = Mode_FTP;
+	Transfer_Mode			m_transferMode = Mode_Binary;
+	Connection_Mode			m_connectionMode = Mode_Passive;
 
-	int						m_dataPortMin;
-	int						m_dataPortMax;
+	int						m_dataPortMin = 10000;
+	int						m_dataPortMax = 32000;
 
-	char*					m_ftpListParams;
+	char*					m_ftpListParams = nullptr;
 
-	char*					m_initialDir;
+	char*					m_initialDir = nullptr;
 
 	vString					m_asciiTypes;
 	vString					m_binTypes;
 
-	TCHAR*					m_keyFile;
-	char*					m_passphrase;
-	bool					m_useAgent;
-	AuthenticationMethods	m_acceptedMethods;
+	TCHAR*					m_keyFile = nullptr;
+	char*					m_passphrase = nullptr;
+	bool					m_useAgent = false;
+	AuthenticationMethods	m_acceptedMethods = Method_Password;
 };
 
 #endif //FTPPROFILE_H

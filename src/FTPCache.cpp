@@ -123,10 +123,12 @@ int FTPCache::Clear() {
 	return 0;
 }
 
+// should return 0 on success
 int FTPCache::GetExternalPathFromLocal(const TCHAR * localpath, char * extbuf, int extsize) const {
 	TCHAR expanded[MAX_PATH];
 	BOOL res = PathSearchAndQualify(localpath, expanded, MAX_PATH);
 	if (res == FALSE) {
+		OutErr("[GetExternalPathFromLocal] PathSearchAndQualify res is false");
 		return -1;
 	}
 
@@ -138,8 +140,10 @@ int FTPCache::GetExternalPathFromLocal(const TCHAR * localpath, char * extbuf, i
 		}
 	}
 
-	if (!m_cacheParent)
+	if (!m_cacheParent) {
+		OutErr("[GetExternalPathFromLocal] At root folder. End of search. No match was found.");
 		return 1;
+	}
 
 	return m_cacheParent->GetExternalPathFromLocal(localpath, extbuf, extsize);
 }
@@ -177,7 +181,7 @@ int FTPCache::ClearCurrentCache(bool permanent) {
 
 
 	for(size_t i = 0; i < m_vCachePaths.size(); i++) {
-		OutMsg("[Cache] Clearing cache in '%T'", m_vCachePaths[i].localpathExpanded);
+		OutDebug("[FTPCache] Clearing cache in '%T'", m_vCachePaths[i].localpathExpanded);
 		lstrcpy(dirPath, m_vCachePaths[i].localpathExpanded);
 		int len = lstrlen(dirPath);
 		dirPath[len+1] = 0;

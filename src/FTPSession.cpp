@@ -21,6 +21,11 @@
 
 #include "FTPWindow.h"
 
+void CALLBACK FTPSessionTimerProc(PVOID lpHandle, BOOLEAN TimerOrWaitFired) {
+  FTPSession* obj = (FTPSession*) lpHandle;
+  obj->QueueTimerHandler();
+}
+
 FTPSession::FTPSession() :
 	m_currentProfile(NULL),
 	m_ftpSettings(NULL),
@@ -44,8 +49,9 @@ FTPSession::FTPSession() :
 }
 
 FTPSession::~FTPSession() {
-	if (m_running)
+	if (m_running) {
 		TerminateSession();
+	}
 
 	Clear();
 }
@@ -58,6 +64,10 @@ int FTPSession::Init(FTPWindow * ftpWindow, FTPSettings * ftpSettings) {
 	m_ftpSettings = ftpSettings;
 	m_hNotify = m_ftpWindow->GetHWND();
 	m_isInit = true;
+
+	m_timerHandle = NULL;
+	m_timerCount = 0;
+	m_timerIsInit = false;
 
 	return 0;
 }
@@ -113,8 +123,13 @@ int FTPSession::StartSession(FTPProfile * sessionProfile) {
 }
 
 int FTPSession::TerminateSession() {
-	if (!m_running)
+
+	OutDebug("[FTPSession] Terminating session.");
+
+	if (!m_running) {
+		OutDebug("[FTPSession] session is not running, so no termination will be performed.");	
 		return 0;
+	}
 
 	if (m_transferQueue->GetQueueSize() > 0) {
 		int ret = ::MessageBox(_MainOutputWindow, TEXT("There are still transfers running, do you want to close the connection?"), TEXT("Closing connection"), MB_YESNO);
@@ -124,13 +139,26 @@ int FTPSession::TerminateSession() {
 
 	m_running = false;
 
+	// window's INVALID_HANDLE_VALUE does not work. need to keep track if timer has been initialied ourselves.	
+	if (m_timerIsInit) {
+		OutDebug("[FTPSession] Deleting session timer");
+		DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
+		m_timerCount = 0;
+		OutDebug("[FTPSession] Successfully deleted session timer");
+
+		m_timerIsInit = false;
+	}
+
 	Clear();
-	if (m_currentProfile)
+	if (m_currentProfile) {
 		m_currentProfile->Release();
+	}
 	m_currentProfile = NULL;
 
 	delete m_rootObject;
 	m_rootObject = NULL;
+
+	OutDebug("[FTPSession] Finished terminating session.");
 
 	return 0;
 }
@@ -144,13 +172,69 @@ const FTPProfile* FTPSession::GetCurrentProfile() {
 }
 
 int FTPSession::Connect() {
-	if (!m_running)
+	if (!m_running) {
 		return -1;
+	}
 
 	QueueConnect * connop = new QueueConnect(m_hNotify, 0);
 	m_mainQueue->AddQueueOp(connop);
 
+	// start timer if noop
+	
+	if (m_currentProfile->GetNoOp() == 0) {
+		return 0;
+	}
+
+	// we do a timer slighly more than specified NOOP interval so that we minimize
+	// timer missing valid interval by small amount
+	BOOL success = ::CreateTimerQueueTimer(
+		&m_timerHandle,
+		NULL,
+		(WAITORTIMERCALLBACK) FTPSessionTimerProc,
+		this,
+		0,
+		(m_currentProfile->GetNoOp() * 1000) + 500, 
+		WT_EXECUTEINTIMERTHREAD
+	);
+	
+	if (!success) {
+		OutErr("[FTPSession] Could not create timer queue.");		
+	}
+	
+	m_timerIsInit = true;
+	
 	return 0;
+}
+
+
+
+void FTPSession::QueueTimerHandler() {
+	// don't call on first immediate run
+	if (m_timerCount++ == 0) {
+		return;
+	}
+	
+	// don't call if last action has been recently run
+	DWORD mainSecs = m_mainWrapper->LastAction();
+	DWORD transSecs = m_transferWrapper->LastAction();
+	
+	if (mainSecs == 0 && transSecs == 0) {
+		OutDebug("[FTPSession] Both main/trans wrappers report 0 seconds since last action");
+		return;
+	}
+	
+	DWORD minSecs = mainSecs;
+	if (transSecs < mainSecs) {
+		minSecs = transSecs;
+	}
+	
+	OutDebug("[FTPSession] There has been %d seconds since last action with server", minSecs);
+	
+	if (minSecs > (DWORD) m_currentProfile->GetNoOp()) {
+		OutDebug("[FTPSession] Running NOOP");
+		NoOp();
+	}
+
 }
 
 int FTPSession::GetDirectory(const char * dir) {
@@ -302,28 +386,38 @@ int FTPSession::DownloadFileHandle(const char * sourcefile, HANDLE target) {
 }
 
 int FTPSession::UploadFileCache(const TCHAR * sourcefile) {
-	if (!m_running)
+	if (!m_running) {
+		OutErr("[UploadFileCache] fail. m_running is not set");
 		return -1;
+	}
 
-	if (sourcefile == NULL)
+	if (sourcefile == NULL) {
+		OutErr("[UploadFileCache] fail. sourcefile is null");	
 		return -1;
+	}
 
 	char target[MAX_PATH]{};
 	target[0] = 0;
 
 	int res = m_currentProfile->GetCacheExternal(sourcefile, target, MAX_PATH);
-	if (res != 0)
+	if (res != 0) {
+		OutErr("[UploadFileCache] fail. res is non-zero");
 		return res;
+	}
 
 	return UploadFile(sourcefile, target, false, 0);
 }
 
 int FTPSession::UploadFile(const TCHAR * sourcefile, const char * target, bool targetIsDir, int code) {
-	if (!m_running)
+	if (!m_running) {
+		OutErr("[UploadFile] m_running is not set");
 		return -1;
+	}
 
-	if (sourcefile == NULL || target == NULL)
+	if (sourcefile == NULL || target == NULL) {
+		OutErr("[UploadFile] sourcefile or target is null");
 		return -1;
+	}
 
 	const TCHAR * sourcenamelocal = PU::FindLocalFilename(sourcefile);
 
@@ -364,6 +458,17 @@ int FTPSession::CopyFile(const char* sourcefile, const char* target, int code) {
 	m_transferQueue->AddQueueOp(uldop);
 
 	delete[] targetfile;
+
+	return 0;
+}
+
+int FTPSession::NoOp() {
+	if (!m_running)
+		return -1;
+
+	QueueNoOp * dirop = new QueueNoOp(m_hNotify);
+
+	m_mainQueue->AddQueueOp(dirop);
 
 	return 0;
 }
@@ -524,6 +629,9 @@ int FTPSession::CancelOperation(QueueOperation * cancelOp) {
 }
 
 int FTPSession::Clear() {
+
+	OutDebug("[FTPSession.Clear] Now clearing the transfer queue.");
+
 	if (m_mainQueue)
 		m_mainQueue->ClearQueue();
 	if (m_transferQueue)
@@ -553,6 +661,8 @@ int FTPSession::Clear() {
 		//Always perform disconnect operation, if if no connection present
 		//Allows for cleanup
 		//if (m_transferWrapper->IsConnected()) {
+
+			OutDebug("[FTPSession.Clear] Sending disconnect queue item (via m_transferWrapper).");
 			opdisc->SetClient(m_transferWrapper);
 			opdisc->SendNotification(QueueOperation::QueueEventStart);
 			opdisc->Perform();
@@ -566,6 +676,8 @@ int FTPSession::Clear() {
 		//Always perform disconnect operation, if if no connection present
 		//Allows for cleanup
 		//if (m_mainWrapper->IsConnected()) {
+
+			OutDebug("[FTPSession.Clear] Sending disconnect queue item (via m_mainWrapper).");
 			opdisc->SetClient(m_mainWrapper);
 			opdisc->SendNotification(QueueOperation::QueueEventStart);
 			opdisc->Perform();

@@ -92,6 +92,8 @@ BEGIN
     EDITTEXT        IDC_EDIT_TIMEOUT, 8, 128, 36, 14, ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Initial remote directory:", IDC_STATIC, 4, 152, 80, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_INITDIR, 8, 160, 140, 14, ES_AUTOHSCROLL
+    LTEXT           "Keep Alive Every X Seconds. Server must support NOOP. Zero for disable.", IDC_STATIC, 50, 180, 150, 20, SS_LEFT
+    EDITTEXT        IDC_EDIT_NOOP, 8, 180, 36, 14, ES_AUTOHSCROLL | ES_NUMBER    
 END
 
 IDD_DIALOG_PROFILESAUTHENTICATION DIALOGEX 4, 20, 200, 192
@@ -164,19 +166,20 @@ BEGIN
     PUSHBUTTON      "Delete", IDC_BUTTON_CACHE_DELETE, 168, 168, 36, 14, WS_DISABLED
 END
 
-IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 128
+IDD_DIALOG_GLOBAL DIALOGEX 0, 0, 186, 150
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
 CAPTION "Global settings"
 FONT 8, "Ms Shell Dlg 2", 400, 0, 1
 BEGIN
     LTEXT           "Global cache:", IDC_STATIC, 4, 4, 44, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_CACHE, 8, 12, 160, 14, ES_AUTOHSCROLL
-    AUTOCHECKBOX    "Clear ENTIRE cache on disconnect (Use with care!)", IDC_CHECK_CLEARCACHE, 4, 30, 174, 8
+    AUTOCHECKBOX    "Clear ENTIRE cache on disconnect (Use with care!)", IDC_CHECK_CLEARCACHE, 8, 30, 174, 8
     AUTOCHECKBOX    "Do not use the recycle bin (delete permanently)", IDC_CHECK_CLEARNORECYCLE, 12, 42, 170, 8
     LTEXT           "Master password (max 8 characters):", IDC_STATIC, 4, 56, 160, 8, SS_LEFT
     EDITTEXT        IDC_EDIT_MASTERPASS, 8, 64, 160, 14, ES_AUTOHSCROLL | ES_PASSWORD
     LTEXT           "When this field is left blank, a default string will be used.\r\nOtherwise, you will be asked for the password on each start of Notepad++.", IDC_STATIC, 8, 82, 180, 24, SS_LEFT
-    DEFPUSHBUTTON   "OK", IDC_BUTTON_CLOSE, 132, 104, 48, 14
+    AUTOCHECKBOX    "Verbose Console (For Debugging)", IDC_CHECK_DEBUGMODE, 8, 115, 170, 8
+    DEFPUSHBUTTON   "OK", IDC_BUTTON_CLOSE, 132, 128, 48, 14
 END
 
 IDD_DIALOG_GENERIC DIALOGEX 0, 0, 10, 10

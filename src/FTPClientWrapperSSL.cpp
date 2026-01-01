@@ -75,6 +75,10 @@ int FTPClientWrapperSSL::SetTimeout(int timeout) {
 	return ret;
 }
 
+DWORD FTPClientWrapperSSL::LastAction() {
+	return m_client.LastAction();
+}
+
 int FTPClientWrapperSSL::Connect() {
 	if (m_connected)
 		return OnReturn(0);
@@ -88,13 +92,23 @@ int FTPClientWrapperSSL::Connect() {
 }
 
 int FTPClientWrapperSSL::Disconnect() {
-	if (!m_connected)
+
+	OutDebug("[FTPS] now disconnecting.");
+
+	if (!m_connected) {
+		OutDebug("[FTPS] not connected. nothing will be done.");
 		return OnReturn(0);
+	}
 
 	int retcode = m_client.Close();
 
 	m_connected = false;	//just set to disconnected state, ignore errors
-
+	
+	if (retcode == UTE_SUCCESS) {
+		OutDebug("[FTPS] successfully disconnected.");	
+	} else {
+		OutDebug("[FTPS] failed to disconnect.");
+	}
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
@@ -231,6 +245,10 @@ int FTPClientWrapperSSL::Cwd(const char * path) {
 	int retcode = m_client.ChDir(path);
 
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
+int FTPClientWrapperSSL::NoOp() {
+	return m_client.NoOp();
 }
 
 int FTPClientWrapperSSL::Pwd(char* buf, size_t size) {
@@ -488,6 +506,8 @@ int FtpSSLWrapper::Send(LPCSTR data, int len) {
 	}
 	OutClnt("-> %T", SU::Utf8ToTChar(datacpy));
 	delete [] datacpy;
+	
+	m_lastAction = GetTickCount();
 
 	return CUT_WSClient::Send(data, len);
 }
@@ -530,6 +550,14 @@ int FtpSSLWrapper::GetResponseCode(CUT_WSClient *ws,LPSTR string,int maxlen) {
 	}
 
 	return res;
+}
+
+DWORD FtpSSLWrapper::LastAction() {	
+	if (m_lastAction == 0) {
+		return 0;
+	} else {
+		return (DWORD) ((GetTickCount() - m_lastAction) / 1000);
+	}
 }
 
 BOOL FtpSSLWrapper::ReceiveFileStatus(long bytesReceived) {
@@ -603,7 +631,7 @@ int FtpSSLWrapper::OnSSLCertificate(const SSL * ssl, const X509* certificate, in
 	}
 
 	if (verifyResult == X509_V_OK || previouslyAccepted) {
-		OutMsg("[FTPS] Certificate valid.");
+		OutDebug("[FTPS] Certificate valid.");
 	} else {
 		//X509_error_string(verifyResult);
 		OutErr("[FTPS] Certificate invalid (%d): %s.", verifyResult, X509_verify_cert_error_string(verifyResult));
@@ -620,14 +648,14 @@ int FtpSSLWrapper::OnSSLCertificate(const SSL * ssl, const X509* certificate, in
 		int ret = MessageBox(_MainOutputWindow, msgBuf, TEXT("FTP(E)S certificate verification"), MB_YESNO | MB_ICONWARNING);
 		SU::FreeTChar(msgBuf);
 		if (ret == IDYES) {
-			OutMsg("[FTPS] Certificate accepted");
+			OutDebug("[FTPS] Certificate accepted");
 
 			if (m_certificates) {
 				SSL_get_peer_certificate(ssl);	//increase reference counter
 				m_certificates->push_back(certificate);
 			}
 		} else {
-			OutMsg("[FTPS] Certificate rejected");
+			OutDebug("[FTPS] Certificate rejected");
 			return UTE_ERROR;
 		}
 	}

@@ -62,6 +62,12 @@ FTPClientWrapper* FTPClientWrapperSSH::Clone() {
 	return wrapper;
 }
 
+DWORD FTPClientWrapperSSH::LastAction() {
+
+	// SSH last action not needed to be followed, since SSH doesn't need timer to send NOOP command.
+	return 0;
+}
+
 int FTPClientWrapperSSH::Connect() {
 	if (m_connected)
 		return 0;
@@ -260,6 +266,10 @@ int FTPClientWrapperSSH::ReceiveFile(const TCHAR * localfile, const char * ftpfi
 	}
 
 	return ReceiveFile(hFile, ftpfile);
+}
+
+int FTPClientWrapperSSH::NoOp() {
+	return 0;
 }
 
 int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
@@ -513,13 +523,13 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		OutErr("[SFTP] Error during authentication: %s", ssh_get_error(session));
 		return -1;
 	} else if (authres == SSH_AUTH_SUCCESS) {
-		OutMsg("[SFTP] Authenticated without credentials.");
+		OutDebug("[SFTP] Authenticated without credentials.");
 		return 0;
 	}
 
 	char * banner = ssh_get_issue_banner(session);
 	if (banner) {
-		OutMsg("[SFTP] Banner: %s\n", banner);
+		OutDebug("[SFTP] Banner: %s\n", banner);
 		ssh_string_free_char(banner);
 	}
 
@@ -561,7 +571,7 @@ int FTPClientWrapperSSH::authenticate(ssh_session session) {
 		}
 
 		if (authres == SSH_AUTH_SUCCESS) {
-			OutMsg("[SFTP] Successfully authenticated");
+			OutDebug("[SFTP] Successfully authenticated");
 			return 0;
 		}
 		retries++;
@@ -594,7 +604,7 @@ int FTPClientWrapperSSH::authenticate_key(ssh_session session) {
 	ssh_key_free(privkey);
 
 	if (rc == SSH_AUTH_DENIED) {
-		OutErr("[SFTP] Key authentication denied.");
+		OutDebug("[SFTP] Key authentication denied.");
 	}
 
 	return rc;
@@ -605,7 +615,7 @@ int FTPClientWrapperSSH::authenticate_password(ssh_session session) {
 
 	rc = ssh_userauth_password(session, NULL, m_password);
 	if (rc == SSH_AUTH_DENIED) {
-		OutMsg("[SFTP] Password authentication denied.");
+		OutDebug("[SFTP] Password authentication denied.");
 	}
 
 	return rc;
@@ -624,7 +634,7 @@ int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
 			OutErr("[SFTP] Error creating interactive dialog");
 			return SSH_AUTH_ERROR;
 		} else if (res != 1 && res != 0) {	//1: Gave answer, 0: No input required
-			OutMsg("[SFTP] Keyboard interactive authentication cancelled.");
+			OutDebug("[SFTP] Keyboard interactive authentication cancelled.");
 			return SSH_AUTH_ERROR;
 		}
 		rc = ssh_userauth_kbdint(session, NULL, NULL);
@@ -632,7 +642,7 @@ int FTPClientWrapperSSH::authenticate_kbinteractive(ssh_session session) {
 	}
 
 	if (rc == SSH_AUTH_DENIED) {
-		OutMsg("[SFTP] Keyboard interactive authentication denied.");
+		OutDebug("[SFTP] Keyboard interactive authentication denied.");
 	}
 
 	return rc;
@@ -666,11 +676,11 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 
 	switch(state){
 		case SSH_SERVER_KNOWN_OK:
-			OutMsg("[SFTP] Host key accepted");
+			OutDebug("[SFTP] Host key accepted");
 			result = 0;
 			break; /* ok */
 		case SSH_SERVER_FILE_NOT_FOUND:
-			OutMsg("[SFTP] Creating known hosts file.");
+			OutDebug("[SFTP] Creating known hosts file.");
 			/* fallback to SSH_SERVER_NOT_KNOWN behavior */
 		case SSH_SERVER_NOT_KNOWN: {
 			SU::TSprintf(errMessage, 512, TEXT("The server is unknown. Do you trust the host key\r\n%s %s ?"), keytype, hashHex);
@@ -699,7 +709,7 @@ int FTPClientWrapperSSH::verify_knownhost(ssh_session session) {
 				OutErr("[SFTP] The session will continue but the key will not be stored");
 				result = 0;	//return 0 even if an error occured
 			} else {
-				OutMsg("[SFTP] Host key written to file");
+				OutDebug("[SFTP] Host key written to file");
 				result = 0;
 			}
 		} else {

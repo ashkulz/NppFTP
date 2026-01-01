@@ -56,6 +56,8 @@ INT_PTR SettingsDialog::OnInitDialog() {
 	Button_SetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE), (m_ftpSettings->GetClearCachePermanent())?TRUE:FALSE);
 	::EnableWindow( ::GetDlgItem(m_hwnd, IDC_CHECK_CLEARNORECYCLE), (m_ftpSettings->GetClearCache()) );
 
+	Button_SetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_DEBUGMODE), (m_ftpSettings->GetDebugMode())?TRUE:FALSE);		
+
 	return Dialog::OnInitDialog();
 }
 
@@ -81,6 +83,7 @@ INT_PTR SettingsDialog::OnCommand(int ctrlId, int notifCode, HWND idHwnd) {
 			SaveGlobalPath();
 			SaveMasterPassword();
 			SaveClearCache();
+			SaveDebugMode();
 			EndDialog(m_hwnd, 0);
 			break; }
 		case IDC_CHECK_CLEARCACHE: {
@@ -106,6 +109,13 @@ int SettingsDialog::SaveGlobalPath() {
 	::GetDlgItemText(m_hwnd, IDC_EDIT_CACHE, TTextBuffer, MAX_PATH);
 
 	m_ftpSettings->SetGlobalCachePath(TTextBuffer);
+
+	return 0;
+}
+
+int SettingsDialog::SaveDebugMode() {
+	LRESULT checked = Button_GetCheck(::GetDlgItem(m_hwnd, IDC_CHECK_DEBUGMODE));
+	m_ftpSettings->SetDebugMode(checked == BST_CHECKED);
 
 	return 0;
 }

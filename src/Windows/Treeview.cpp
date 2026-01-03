@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -23,12 +23,12 @@
 
 /* Tree view extended styles */
 #if 1
-    #define TVS_EX_DOUBLEBUFFER         0x00000004L
-    #define TVS_EX_AUTOHSCROLL          0x00000020L
-    #define TVS_EX_FADEINOUTEXPANDOS    0x00000040L
+	#define TVS_EX_DOUBLEBUFFER         0x00000004L
+	#define TVS_EX_AUTOHSCROLL          0x00000020L
+	#define TVS_EX_FADEINOUTEXPANDOS    0x00000040L
 #endif
 #ifndef TVM_SETEXTENDEDSTYLE
-    #define TVM_SETEXTENDEDSTYLE		(TV_FIRST + 44)
+	#define TVM_SETEXTENDEDSTYLE		(TV_FIRST + 44)
 #endif
 
 
@@ -46,7 +46,7 @@ Treeview::Treeview() :
 	icx.dwICC = ICC_TREEVIEW_CLASSES;
 	InitCommonControlsEx(&icx);
 
-    curSelectedItem = NULL;
+	curSelectedItem = NULL;
 }
 
 Treeview::~Treeview() {
@@ -363,8 +363,8 @@ int Treeview::CollapseDirectory(FileObject* dir)
 	tvi.hItem = hti;
 	tvi.mask = TVIF_STATE;
 	tvi.stateMask = TVIS_EXPANDED;
-	BOOL res = TreeView_GetItem(m_hwnd, &tvi); 
-	if (res == FALSE) 
+	BOOL res = TreeView_GetItem(m_hwnd, &tvi);
+	if (res == FALSE)
 		return -2;
 
 	bool expanded = (tvi.state & TVIS_EXPANDED);
@@ -380,7 +380,7 @@ int Treeview::ExpandDirectory(FileObject * dir, FileObject* selectSubItem) {
 	if (!dat)
 		return 0;
 
-	
+
 	HTREEITEM hti = (HTREEITEM)dat;
 	RECT rc = {0,0,0,0};
 	RECT *rcPtr = &rc;
@@ -426,7 +426,7 @@ int Treeview::EnsureObjectVisible(FileObject * fo) {
 
 	TreeView_EnsureVisible(m_hwnd, hti);
 
-	return 0; 
+	return 0;
 }
 
 int Treeview::ClearAll() {

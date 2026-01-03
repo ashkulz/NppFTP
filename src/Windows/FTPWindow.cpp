@@ -1277,7 +1277,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			m_connecting = isStart;
 			if (isStart) {
 				SetInfo(TEXT("Connecting"));
-				OutMsg("[FTPWindow] Connecting to %S...", m_ftpSession->GetCurrentProfile()->GetName());
+				OutMsg("[FTPWindow] Connecting to profile: %T...", m_ftpSession->GetCurrentProfile()->GetName());
 			} else {
 				if (queueOp->GetResult() != -1) {
 					OnConnect(code);
@@ -1321,7 +1321,7 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 				//break commented: even if failed, update the treeview etc., count should result in 0 anyway
 				//break;	//failure
 			}
-			OutMsg("[FTPWindow] Loaded directory %s", dirop->GetDirPath());
+			OutMsg("[FTPWindow] Loaded directory %T", SU::Utf8ToTChar(dirop->GetDirPath()));
 
 			FTPFile* files = (FTPFile*)queueData;
 			int count = dirop->GetFileCount();

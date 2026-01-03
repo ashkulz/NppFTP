@@ -40,7 +40,7 @@ public:
 	int						StartSession(FTPProfile * sessionProfile);
 	int						TerminateSession();
 
-	bool					IsConnected();
+	bool					IsConnected() const;
 	const FTPProfile*		GetCurrentProfile();
 
 	int						Connect();
@@ -78,7 +78,6 @@ private:
 	int						Clear();
 
 	HANDLE					m_timerHandle = NULL;
-	int						m_timerCount = 0;
 	bool					m_timerIsInit = false;
 
 	FTPProfile*				m_currentProfile;

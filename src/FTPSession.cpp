@@ -21,7 +21,7 @@
 
 #include "FTPWindow.h"
 
-void CALLBACK FTPSessionTimerProc(PVOID lpHandle, BOOLEAN TimerOrWaitFired) {
+void CALLBACK FTPSessionTimerProc(PVOID lpHandle, BOOLEAN /*TimerOrWaitFired*/) {
   FTPSession* obj = (FTPSession*) lpHandle;
   obj->QueueTimerHandler();
 }
@@ -66,7 +66,6 @@ int FTPSession::Init(FTPWindow * ftpWindow, FTPSettings * ftpSettings) {
 	m_isInit = true;
 
 	m_timerHandle = NULL;
-	m_timerCount = 0;
 	m_timerIsInit = false;
 
 	return 0;
@@ -143,7 +142,6 @@ int FTPSession::TerminateSession() {
 	if (m_timerIsInit) {
 		OutDebug("[FTPSession] Deleting session timer");
 		DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
-		m_timerCount = 0;
 		OutDebug("[FTPSession] Successfully deleted session timer");
 
 		m_timerIsInit = false;
@@ -163,7 +161,7 @@ int FTPSession::TerminateSession() {
 	return 0;
 }
 
-bool FTPSession::IsConnected() {
+bool FTPSession::IsConnected() const {
 	return m_running;
 }
 
@@ -192,8 +190,8 @@ int FTPSession::Connect() {
 		NULL,
 		(WAITORTIMERCALLBACK) FTPSessionTimerProc,
 		this,
-		0,
-		(m_currentProfile->GetNoOp() * 1000) + 500, 
+		(m_currentProfile->GetNoOp() * 1000) + 2000,
+		(m_currentProfile->GetNoOp() * 1000) + 1000, 
 		WT_EXECUTEINTIMERTHREAD
 	);
 	
@@ -209,28 +207,21 @@ int FTPSession::Connect() {
 
 
 void FTPSession::QueueTimerHandler() {
-	// don't call on first immediate run
-	if (m_timerCount++ == 0) {
-		return;
-	}
-	
+
 	// don't call if last action has been recently run
 	DWORD mainSecs = m_mainWrapper->LastAction();
 	DWORD transSecs = m_transferWrapper->LastAction();
-	
+
 	if (mainSecs == 0 && transSecs == 0) {
 		OutDebug("[FTPSession] Both main/trans wrappers report 0 seconds since last action");
 		return;
 	}
-	
-	DWORD minSecs = mainSecs;
-	if (transSecs < mainSecs) {
-		minSecs = transSecs;
-	}
-	
+
+	DWORD minSecs = min(mainSecs, transSecs);
+
 	OutDebug("[FTPSession] There has been %d seconds since last action with server", minSecs);
-	
-	if (minSecs > (DWORD) m_currentProfile->GetNoOp()) {
+
+	if (minSecs >= (DWORD) m_currentProfile->GetNoOp()) {
 		OutDebug("[FTPSession] Running NOOP");
 		NoOp();
 	}

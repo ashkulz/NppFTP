@@ -217,7 +217,7 @@ void FTPSession::QueueTimerHandler() {
 		return;
 	}
 
-	DWORD minSecs = min(mainSecs, transSecs);
+	DWORD minSecs = std::min(mainSecs, transSecs);
 
 	OutDebug("[FTPSession] There has been %d seconds since last action with server", minSecs);
 

@@ -1,19 +1,19 @@
 /*
-    NppFTP: FTP/SFTP functionality for Notepad++
-    Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
+	NppFTP: FTP/SFTP functionality for Notepad++
+	Copyright (C) 2010  Harry (harrybharry@users.sourceforge.net)
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "StdInc.h"
@@ -22,7 +22,7 @@
 #include "Encryption.h"
 #include "InputDialog.h"
 
-bool	_DebugMode = false;
+bool	FTPSettings::m_debugMode = false;
 
 FTPSettings::FTPSettings() :
 	m_clearCache(false),
@@ -32,7 +32,7 @@ FTPSettings::FTPSettings() :
 {
 	m_globalCachePath = SU::DupString(TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%"));
 
-	PathMap globalPathmap;
+	PathMap globalPathmap{};
 	globalPathmap.localpath = SU::DupString(m_globalCachePath);
 	globalPathmap.externalpath = SU::strdup("/");
 	m_globalCache.Clear();
@@ -53,7 +53,7 @@ int FTPSettings::SetGlobalCachePath(const TCHAR * path) {
 		path = TEXT("%CONFIGDIR%\\Cache\\%USERNAME%@%HOSTNAME%\\%PORT%");
 	}
 
-	PathMap globalPathmap;
+	PathMap globalPathmap{};
 	globalPathmap.localpath = SU::DupString(path);
 	globalPathmap.externalpath = SU::strdup("/");
 	m_globalCache.Clear();
@@ -78,13 +78,12 @@ int FTPSettings::SetEncryptionKey(const char * key) {
 	return 0;
 }
 
-bool FTPSettings::GetDebugMode() const {
+bool FTPSettings::GetDebugMode() {
 	return m_debugMode;
 }
 
 int FTPSettings::SetDebugMode(bool debugMode) {
 	m_debugMode = debugMode;
-	_DebugMode = m_debugMode;	
 	return 0;
 }
 
@@ -187,14 +186,13 @@ int FTPSettings::LoadSettings(const TiXmlElement * settingsElem) {
 		clearState = 0;
 	}
 	m_clearCache = (clearState != 0);
-	
+
 	int debugModeState = 0;
 	const char * debugModeStr = settingsElem->Attribute("debugMode", &debugModeState);
 	if (!debugModeStr) {
 		debugModeState = 0;
 	}
 	m_debugMode = (debugModeState != 0);
-	_DebugMode = m_debugMode;
 
 
 	clearState = 0;
@@ -207,7 +205,7 @@ int FTPSettings::LoadSettings(const TiXmlElement * settingsElem) {
 	return 0;
 }
 
-int FTPSettings::SaveSettings(TiXmlElement * settingsElem) {
+int FTPSettings::SaveSettings(TiXmlElement * settingsElem) const {
 	char * defaultCacheutf8 = SU::TCharToUtf8(m_globalCachePath);
 	settingsElem->SetAttribute("defaultCache", defaultCacheutf8);
 	SU::FreeChar(defaultCacheutf8);

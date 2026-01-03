@@ -177,8 +177,8 @@ public:
 	virtual bool			Equals(const QueueOperation& other);
 
 	virtual const char* GetExternalPath();
-	const char* GetExternalOriginParent();
-	const char* GetExternalNewParent();
+	const char* GetExternalOriginParent() const;
+	const char* GetExternalNewParent() const;
 protected:
 	char* m_externalFile;
 	char* m_target;

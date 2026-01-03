@@ -377,7 +377,7 @@ const char* QueueCopyFile::GetExternalPath() {
 	return m_externalFile;
 }
 
-const char* QueueCopyFile::GetExternalOriginParent() {
+const char* QueueCopyFile::GetExternalOriginParent() const {
 	char* basepath = SU::strdup(m_externalFile);
 	char * lastSlash=strrchr(basepath, '/');
 	lastSlash[0] = '\0';
@@ -387,7 +387,7 @@ const char* QueueCopyFile::GetExternalOriginParent() {
 		return basepath;
 }
 
-const char* QueueCopyFile::GetExternalNewParent() {
+const char* QueueCopyFile::GetExternalNewParent() const {
 	char* basepath = SU::strdup(m_target);
 	char* lastSlash = strrchr(basepath, '/');
 	lastSlash[0] = '\0';

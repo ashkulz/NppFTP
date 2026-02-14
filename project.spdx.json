@@ -31,10 +31,10 @@
     {
       "SPDXID": "SPDXRef-Package-openssl",
       "name": "openssl",
-      "versionInfo": "3.5.5",
-      "packageVersion": "3.5.5",
+      "versionInfo": "3.5.4",
+      "packageVersion": "3.5.4",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.5.5/openssl-3.5.5.tar.gz",
+      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz",
       "filesAnalyzed": false,
       "packageFileName": "./libs/openssl",
       "homepage": "https://openssl-library.org/",

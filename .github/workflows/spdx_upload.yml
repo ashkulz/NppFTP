@@ -26,6 +26,6 @@ jobs:
         name: sbom
         path: ./project.spdx.json
     - name: SBOM upload 
-      uses: advanced-security/spdx-dependency-submission-action@v0.1.2
+      uses: advanced-security/spdx-dependency-submission-action@v0.2.0
       with:
         filePath: "./"

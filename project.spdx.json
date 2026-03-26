@@ -31,10 +31,10 @@
     {
       "SPDXID": "SPDXRef-Package-openssl",
       "name": "openssl",
-      "versionInfo": "3.6.2",
-      "packageVersion": "3.6.2",
+      "versionInfo": "4.0.0",
+      "packageVersion": "4.0.0",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-3.6.2/openssl-3.6.2.tar.gz",
+      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-4.0.0/openssl-4.0.0.tar.gz",
       "filesAnalyzed": false,
       "packageFileName": "./libs/openssl",
       "homepage": "https://openssl-library.org/",

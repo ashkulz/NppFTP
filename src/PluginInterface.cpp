@@ -26,7 +26,7 @@
 
 typedef void* BufferID;
 
-const int	nrFuncItem = 3;
+const int	nrFuncItem = 4;
 FuncItem	funcItems[nrFuncItem];
 NppData		nppData;
 NppFTP		nppFTP;
@@ -38,6 +38,7 @@ bool		isStarted = false;
 
 void __cdecl ShowFTPWindow();
 void __cdecl FocusFTPWindow();
+void __cdecl UploadCurrentFile();
 void __cdecl ShowAboutDialog();
 void __cdecl FakeItem();
 
@@ -90,6 +91,11 @@ FuncItem * getFuncsArray(int * arraysize) {
 	funcItems[2]._init2Check = false;
 	funcItems[2]._pShKey = NULL;
 	lstrcpyn(funcItems[2]._itemName, TEXT("About NppFTP"), menuItemSize);
+
+	funcItems[3]._pFunc = &UploadCurrentFile;
+	funcItems[3]._init2Check = false;
+	funcItems[3]._pShKey = NULL;
+	lstrcpyn(funcItems[3]._itemName, TEXT("Upload Current File"), menuItemSize);
 
 	return &funcItems[0];
 }
@@ -167,6 +173,11 @@ void __cdecl FocusFTPWindow() {
 void __cdecl ShowAboutDialog() {
 	if (isStarted)
 		nppFTP.ShowAboutDialog();
+}
+
+void __cdecl UploadCurrentFile() {
+	if (isStarted)
+		nppFTP.UploadCurrentFile();
 }
 
 void __cdecl FakeItem() {

@@ -158,6 +158,13 @@ int NppFTP::ShowAboutDialog() const {
 	return 0;
 }
 
+int NppFTP::UploadCurrentFile() {
+	if (!m_ftpWindow) {
+		return -1;
+	}
+	return m_ftpWindow->UploadCurrentFile();
+}
+
 int NppFTP::OnSave(const TCHAR* path) {
 	if (!path || !m_ftpSession)
 		return -1;

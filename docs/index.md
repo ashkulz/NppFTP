@@ -76,6 +76,8 @@ The toolbar provides the following buttons:
 * _Settings_: Access settings dialogs.
 * _Show Message Window_: Hide or Show the messages window.
 
+The same current-file upload action is also available from the Notepad++ **Plugins > NppFTP > Upload Current File** menu item. Assign a shortcut to that command with Notepad++'s Shortcut Mapper if you want to upload the active local file without clicking the NppFTP toolbar.
+
 ## Treeview
 If an FTP session is active, the treeview will show the files on the server. Some actions of the toolbar depend on the selected object in the treeview (see toolbar). Double-clicking on a directory will show its contents. Double-clicking on a file will download it to the cache and open it.
 

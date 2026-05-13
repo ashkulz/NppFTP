@@ -286,7 +286,7 @@ int FTPWindow::UploadCurrentFile(bool promptForFile) {
 		if (res == 0) {
 			doUpload = TRUE;
 		}
-	} else if (m_localFileExists) {
+	} else {
 		doUpload = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
 	}
 

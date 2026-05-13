@@ -272,6 +272,37 @@ int FTPWindow::OnActivateLocalFile(const TCHAR* filename) {
 	return 0;
 }
 
+int FTPWindow::UploadCurrentFile(bool promptForFile) {
+	if (!m_ftpSession || !m_currentSelection) {
+		return -1;
+	}
+
+	TCHAR source[MAX_PATH]{};
+	BOOL doUpload = FALSE;
+
+	if (promptForFile) {
+		source[0] = 0;
+		int res = PU::GetOpenFilename(source, MAX_PATH, m_hParent);
+		if (res == 0) {
+			doUpload = TRUE;
+		}
+	} else {
+		doUpload = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
+	}
+
+	if (doUpload != TRUE) {
+		return -1;
+	}
+
+	if (m_currentSelection->isDir()) {
+		m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
+	} else {
+		m_ftpSession->UploadFile(source, m_currentSelection->GetParent()->GetPath(), true);
+	}
+
+	return 0;
+}
+
 int FTPWindow::RegisterClass() {
 	WNDCLASSEX FTPWindowClass{};
 	FTPWindowClass.cbSize = sizeof(WNDCLASSEX);
@@ -469,26 +500,8 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					break; }
 				case IDM_POPUP_UPLOADFILE:
 				case IDB_BUTTON_TOOLBAR_UPLOAD: {
-					//upload(TRUE, TRUE);		//upload to cached folder is present, else upload to last selected folder
-					//m_ftpSession->UploadFile();
-					TCHAR source[MAX_PATH]{};
-					BOOL doUpload = FALSE;
 					SHORT state = GetKeyState(VK_CONTROL);
-					if ((state & 0x8000) && LOWORD(wParam) == IDB_BUTTON_TOOLBAR_UPLOAD) {
-						source[0] = 0;
-						int res = PU::GetOpenFilename(source, MAX_PATH, m_hParent);
-						if (res == 0)
-							doUpload = TRUE;
-					} else {
-						doUpload = ::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)source);
-					}
-					if (doUpload == TRUE) {
-						if (m_currentSelection->isDir()) {
-							m_ftpSession->UploadFile(source, m_currentSelection->GetPath(), true);
-						} else {
-							m_ftpSession->UploadFile(source, m_currentSelection->GetParent()->GetPath(), true);
-						}
-					}
+					UploadCurrentFile((state & 0x8000) && LOWORD(wParam) == IDB_BUTTON_TOOLBAR_UPLOAD);
 					result = TRUE;
 					break;}
 				case IDM_POPUP_UPLOADOTHERFILE: {

@@ -57,6 +57,7 @@ public:
 	virtual int				OnSize(int newWidth, int newHeight);
 	virtual int				OnProfileChange();
 	virtual int				OnActivateLocalFile(const TCHAR* filename);
+	virtual int				UploadCurrentFile(bool promptForFile = false);
 
 	static int				RegisterClass();
 
@@ -104,7 +105,6 @@ protected:
 	virtual int				Copy(FileObject* fo, FileObject* _newParent);
 	virtual int				VScrollTreeView(LONG pos);
 
-	//virtual int				UploadCurrentFile(FileObject * parent);
 	//virtual int				UploadOtherFile(FileObject * parent);
 
 	Toolbar					m_toolbar;

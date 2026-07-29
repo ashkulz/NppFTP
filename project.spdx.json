@@ -47,10 +47,10 @@
     {
       "SPDXID": "SPDXRef-Package-libssh",
       "name": "libssh",
-      "versionInfo": "0.12.0",
-      "packageVersion": "0.12.0",
+      "versionInfo": "0.12.2",
+      "packageVersion": "0.12.2",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://www.libssh.org/files/0.12/libssh-0.12.0.tar.xz'",
+      "downloadLocation": "https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz'",
       "filesAnalyzed": false,
       "packageFileName": "./libs/libssh",
       "homepage": "https://www.libssh.org/",

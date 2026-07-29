@@ -88,8 +88,8 @@ DEPENDENT_LIBS = {
     'libssh': {
         'order' : 3,
         'shadow': True,
-        'url'   : 'https://www.libssh.org/files/0.12/libssh-0.12.0.tar.xz',
-        'sha256'  : '1a6af424d8327e5eedef4e5fe7f5b924226dd617ac9f3de80f217d82a36a7121',
+        'url'   : 'https://www.libssh.org/files/0.12/libssh-0.12.1.tar.xz',
+        'sha256'  : 'd3941af0a2d78d5d82ed7a36988e9133994312f035b9659a6e43f8db3968784c',
         'target': {
             'mingw-w64': {
                 'result':   ['include/libssh/libssh.h', 'lib/libssh.a'],

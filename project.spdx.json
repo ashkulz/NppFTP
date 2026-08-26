@@ -31,16 +31,16 @@
     {
       "SPDXID": "SPDXRef-Package-openssl",
       "name": "openssl",
-      "versionInfo": "4.0.1",
-      "packageVersion": "4.0.1",
+      "versionInfo": "4.0.2",
+      "packageVersion": "4.0.2",
       "primaryPackagePurpose": "LIBRARY",
-      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-4.0.1/openssl-4.0.1.tar.gz",
+      "downloadLocation": "https://github.com/openssl/openssl/releases/download/openssl-4.0.2/openssl-4.0.2.tar.gz",
       "filesAnalyzed": false,
       "packageFileName": "./libs/openssl",
       "homepage": "https://openssl-library.org/",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "Apache-2.0",
-      "copyrightText": "copyright 1998-2025 The OpenSSL Project Authors. All Rights Reserved.",
+      "copyrightText": "Copyright (c) 1998-2026 The OpenSSL Project Authors. Copyright (c) 1995-1998 Eric A. Young, Tim J. Hudson. All Rights Reserved.",
       "description": "OpenSSL is a robust, commercial-grade, full-featured Open Source Toolkit for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol. The protocol implementation is based on a full-strength general purpose cryptographic library, which can also be used stand-alone.",
       "supplier" : "Organization: OpenSSL Software Foundation (foundation@openssl.org)"
     },
@@ -72,7 +72,7 @@
       "homepage": "https://zlib.net/",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
-      "copyrightText": "zlib software copyright © 1995-2025 Jean-loup Gailly and Mark Adler.",
+      "copyrightText": "zlib software copyright © 1995-2026 Jean-loup Gailly and Mark Adler.",
       "description": "A massively spiffy yet delicately unobtrusive compression library.",
       "supplier" : "Person: Mark Adler"
     }

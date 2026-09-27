@@ -5,8 +5,8 @@
 DEPENDENT_LIBS = {
     'openssl': {
         'order' : 1,
-        'url'   : 'https://github.com/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz',
-        'sha256'  : '325b5c806167c13b40b1ffeadfe0248197c00eccc4cf123ec1e28d2d2fd216d9',
+        'url'   : 'https://github.com/openssl/openssl/releases/download/openssl-4.1.0/openssl-4.1.0.tar.gz',
+        'sha256'  : '50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd',
         'target': {
             'mingw-w64': {
                 'result':   ['include/openssl/ssl.h', 'lib/libssl.a', 'lib/libcrypto.a'],
@@ -43,7 +43,7 @@ DEPENDENT_LIBS = {
 
     'zlib': {
         'order' : 2,
-        'url'   : 'https://zlib.net/fossils/zlib-1.3.2.tar.gz',
+        'url'   : 'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz',
         'sha256'  : 'bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16',
         'target': {
             'mingw-w64': {

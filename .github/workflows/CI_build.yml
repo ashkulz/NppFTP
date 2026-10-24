@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build_windows:
 
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -21,7 +21,7 @@ jobs:
            Remove-Item -Recurse -Force 'C:\Program Files\OpenSSL'
            mkdir _build
            cd _build
-           cmake -G "Visual Studio 17 2022" -A ${{ matrix.build_platform }} -T "v143" ..
+           cmake -G "Visual Studio 18 2026" -A ${{ matrix.build_platform }} -T "v145" ..
 
     - name: build cmake
       run: |

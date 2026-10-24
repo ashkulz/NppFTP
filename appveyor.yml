@@ -1,10 +1,10 @@
 version: 0.30.23.{build}
-image: Visual Studio 2022
+image: Visual Studio 2026
 
 
 environment:
   matrix:
-    - PlatformToolset: v143
+    - PlatformToolset: v145
 
 platform:
     - x64
@@ -25,9 +25,12 @@ install:
     - if "%platform%"=="arm64" set archi=amd64_arm64
     - if "%platform%"=="arm64" set platform_input=ARM64
 
-    - if "%PlatformToolset%"=="v142"    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v143"    call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
+    - if "%PlatformToolset%"=="v145"    call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
+    # update cmake to 4.2 or newer to have support for VS2026
+    - choco upgrade cmake
+    - set PATH=C:\Program Files\CMake\bin;%PATH%
     #avoid issues with preinstalled openssl versions
     - ps: Remove-Item -Recurse -Force C:\OpenSSL*
     #use strawberry perl instead of the git one to avoid missing module issue for openssl build on vs2019 image
@@ -40,6 +43,7 @@ before_build:
     Write-Output "Platform: $env:PLATFORM_INPUT"
     $generator = switch ($env:PLATFORMTOOLSET)
     {
+        "v145"    {"Visual Studio 18 2026"}
         "v143"    {"Visual Studio 17 2022"}
         "v142"    {"Visual Studio 16 2019"}
         "v141"    {"Visual Studio 15 2017"}
@@ -51,7 +55,7 @@ before_build:
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     # Python 3 needed for python build_3rdparty.py
-    - set PATH=C:\Python313-x64;C:\Python313-x64\Scripts;%PATH%
+    - set PATH=C:\Python314-x64;C:\Python314-x64\Scripts;%PATH%
     - mkdir _build
     - cd _build
 

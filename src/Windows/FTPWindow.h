@@ -123,6 +123,7 @@ protected:
 
 	FileObject*				m_currentSelection;
 	bool					m_localFileExists;
+	bool					m_tailEnabled;
 
 	HMENU					m_popupProfile;
 	HMENU					m_popupSettings;

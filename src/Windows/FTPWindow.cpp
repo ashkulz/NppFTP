@@ -41,6 +41,7 @@ FTPWindow::FTPWindow() :
 	m_outputShown(false),
 	m_currentSelection(NULL),
 	m_localFileExists(false),
+	m_tailEnabled(false),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
 	m_ftpSettings(NULL),
@@ -528,6 +529,12 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					break; }
 				case IDB_BUTTON_TOOLBAR_SETTINGS: {
 					//Should be handled by dropdown
+					result = TRUE;
+					break; }
+				case IDB_BUTTON_TOOLBAR_TAIL: {
+					//BTNS_CHECK: the toolbar has already toggled the button state
+					m_tailEnabled = m_toolbar.GetChecked(IDB_BUTTON_TOOLBAR_TAIL);
+					OutMsg("[FTPWindow] Tail %s", m_tailEnabled ? "enabled" : "disabled");
 					result = TRUE;
 					break; }
 				case IDB_BUTTON_TOOLBAR_MESSAGES: {
@@ -1245,11 +1252,13 @@ int FTPWindow::SetToolbarState() {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, false);
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, false);
 	} else {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_DOWNLOAD, !m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, m_localFileExists);	//m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, true);
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, !m_currentSelection->isDir());
 	}
 
 	return 0;
@@ -1568,6 +1577,9 @@ int FTPWindow::OnDisconnect(int /*code*/) {
 	}
 
 	SetInfo(TEXT("Disconnected"));
+
+	m_tailEnabled = false;
+	m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, FALSE);
 
 	InitProfilesTree();
 	SetToolbarState();

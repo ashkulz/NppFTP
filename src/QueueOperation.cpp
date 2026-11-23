@@ -268,6 +268,113 @@ const char* QueueDownload::GetExternalPath() {
 
 //////////////////////////////////////
 
+QueueTail::QueueTail(HWND hNotify, const char * externalFile, const TCHAR * localFile, long offset, int notifyCode, void * notifyData) :
+	QueueOperation(QueueTypeTail, hNotify, notifyCode, notifyData),
+	m_offset(offset),
+	m_newOffset(offset),
+	m_received(0),
+	m_restarted(false)
+{
+	m_localFile = SU::DupString(localFile);
+	m_externalFile = SU::strdup(externalFile);
+}
+
+QueueTail::~QueueTail() {
+	SU::FreeTChar(m_localFile);
+	SU::free(m_externalFile);
+}
+
+int QueueTail::Perform() {
+	if (m_doConnect && !m_client->IsConnected()) {
+		m_result = m_client->Connect();
+		if (m_result == -1)
+			return m_result;
+		m_result = -1;
+	}
+
+	//Binary mode: ASCII conversion would make local and remote offsets differ
+	if (m_client->GetType() == Client_SSL) {
+		((FTPClientWrapperSSL*)m_client)->SetTransferMode(Mode_Binary);
+	}
+
+	long remoteSize = 0;
+	if (m_client->GetRemoteSize(m_externalFile, &remoteSize) == -1) {
+		m_result = -1;
+		return m_result;
+	}
+
+	bool initial = (m_offset < 0);
+	if (!initial && remoteSize == m_offset) {
+		//nothing new
+		m_newOffset = m_offset;
+		m_result = 0;
+		return m_result;
+	}
+
+	m_restarted = initial || (remoteSize < m_offset);
+	long from = m_restarted ? 0 : m_offset;
+
+	if (m_restarted && PU::CreateLocalDirFile(m_localFile) == -1) {
+		m_result = -1;
+		return m_result;
+	}
+
+	HANDLE hFile = ::CreateFile(m_localFile, GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+	                            m_restarted ? CREATE_ALWAYS : OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		OutErr("[Tail] Unable to open local file %T", m_localFile);
+		m_result = -1;
+		return m_result;
+	}
+
+	DWORD sizeBefore = ::GetFileSize(hFile, NULL);
+	::SetFilePointer(hFile, 0, NULL, FILE_END);
+
+	m_result = m_client->ReceiveFileFrom(hFile, m_externalFile, from);
+
+	DWORD sizeAfter = ::GetFileSize(hFile, NULL);
+	::CloseHandle(hFile);
+
+	if (sizeBefore != INVALID_FILE_SIZE && sizeAfter != INVALID_FILE_SIZE && sizeAfter >= sizeBefore)
+		m_received = (long)(sizeAfter - sizeBefore);
+
+	//Even on failure keep the offset consistent with what was written locally
+	m_newOffset = from + m_received;
+
+	return m_result;
+}
+
+bool QueueTail::Equals(const QueueOperation & other) {
+	if (!QueueOperation::Equals(other))
+		return false;
+	const QueueTail & otherTail = (QueueTail&) other;
+
+	return (m_notifyCode == otherTail.m_notifyCode && !lstrcmp(otherTail.m_localFile, m_localFile) &&
+	        !strcmp(otherTail.m_externalFile, m_externalFile) && !m_running && !otherTail.m_running);
+}
+
+const TCHAR* QueueTail::GetLocalPath() {
+	return m_localFile;
+}
+
+const char* QueueTail::GetExternalPath() {
+	return m_externalFile;
+}
+
+long QueueTail::GetNewOffset() const {
+	return m_newOffset;
+}
+
+long QueueTail::GetReceived() const {
+	return m_received;
+}
+
+bool QueueTail::GetRestarted() const {
+	return m_restarted;
+}
+
+//////////////////////////////////////
+
 QueueDownloadHandle::QueueDownloadHandle(HWND hNotify, const char * externalFile, HANDLE hFile, Transfer_Mode tMode, int notifyCode, void * notifyData) :
 	QueueOperation(QueueTypeDownloadHandle, hNotify, notifyCode, notifyData),
 	m_hFile(hFile),

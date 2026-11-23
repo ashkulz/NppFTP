@@ -58,6 +58,7 @@ public:
 	virtual int				OnProfileChange();
 	virtual int				OnActivateLocalFile(const TCHAR* filename);
 	virtual int				UploadCurrentFile(bool promptForFile = false);
+	virtual bool			IsTailFile(const TCHAR* localFile) const;	//true if localFile is the cache file being followed
 
 	static int				RegisterClass();
 
@@ -92,6 +93,13 @@ protected:
 	virtual int				OnConnect(int code);
 	virtual int				OnDisconnect(int code);
 
+	//Tail (follow remote file)
+	virtual int				StartTail();
+	virtual int				StopTail();
+	virtual int				PollTail();
+	virtual int				OnTailEvent(QueueTail * tailop, int code);
+	virtual int				ScrollToEnd(const TCHAR * localFile);
+
 	virtual int				CreateDirectory(FileObject * parent);
 	virtual int				DeleteDirectory(FileObject * dir);
 
@@ -124,6 +132,11 @@ protected:
 	FileObject*				m_currentSelection;
 	bool					m_localFileExists;
 	bool					m_tailEnabled;
+	bool					m_tailPending;		//a tail operation is queued or running
+	int						m_tailGeneration;	//identifies the current tail session, stale results are ignored
+	long					m_tailOffset;		//bytes of the remote file already fetched, -1 before first sync
+	char*					m_tailPath;			//remote file being followed
+	TCHAR					m_tailLocalPath[MAX_PATH];	//its cache file
 
 	HMENU					m_popupProfile;
 	HMENU					m_popupSettings;

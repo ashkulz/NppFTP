@@ -350,6 +350,28 @@ int FTPClientWrapperSSL::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
 }
 
+int FTPClientWrapperSSL::GetRemoteSize(const char * ftpfile, long * size) {
+	if (!size)
+		return -1;
+
+	int retcode = m_client.GetSize(ftpfile, size);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
+int FTPClientWrapperSSL::ReceiveFileFrom(HANDLE hFile, const char * ftpfile, long offset) {
+	if (hFile == INVALID_HANDLE_VALUE || offset < 0)
+		return -1;
+
+	m_client.SetCurrentTotal(-1);
+
+	//ResumeReceiveFile sends REST <size of data source>, then RETR
+	AppendHandleDataSource ads(hFile, offset);
+	int retcode = m_client.ResumeReceiveFile(ads, ftpfile);
+
+	return OnReturn((retcode == UTE_SUCCESS)?0:-1);
+}
+
 int	 FTPClientWrapperSSL::DeleteFile(const char * path) {
 	int retcode = m_client.DeleteFile(path);
 
@@ -841,5 +863,59 @@ int HandleDataSource::Write(LPCSTR buffer, size_t count) {
 
 // Move a current pointer to the specified location.
 long HandleDataSource::Seek(long /*offset*/, int /*origin*/) {
+	return -1;
+}
+
+//////////////////////////
+
+AppendHandleDataSource::AppendHandleDataSource(HANDLE handle, long offset) :
+	m_handle(handle),
+	m_offset(offset)
+{
+}
+
+AppendHandleDataSource::~AppendHandleDataSource() {
+}
+
+CUT_DataSource * AppendHandleDataSource::clone() {
+	return new AppendHandleDataSource(m_handle, m_offset);
+}
+
+int AppendHandleDataSource::Open(OpenMsgType /*type*/) {
+	//Reading is only used to query the size (Seek), writing/appending to store the data
+	return UTE_SUCCESS;
+}
+
+int AppendHandleDataSource::Close() {
+	//The handle is owned by the caller
+	return UTE_SUCCESS;
+}
+
+int AppendHandleDataSource::ReadLine(LPSTR /*buffer*/, size_t /*maxsize*/) {
+	return UTE_ERROR;
+}
+
+int AppendHandleDataSource::WriteLine(LPCSTR /*buffer*/) {
+	return UTE_ERROR;
+}
+
+int AppendHandleDataSource::Read(LPSTR /*buffer*/, size_t /*count*/) {
+	return UTE_ERROR;
+}
+
+int AppendHandleDataSource::Write(LPCSTR buffer, size_t count) {
+	DWORD len = 0;
+	BOOL res = WriteFile(m_handle, buffer, static_cast<DWORD>(count), &len, NULL);
+	if (res == FALSE)
+		return -1;
+
+	return len;
+}
+
+long AppendHandleDataSource::Seek(long offset, int origin) {
+	//Only used by ResumeReceiveFile to determine the REST offset
+	if (origin == SEEK_END && offset == 0)
+		return m_offset;
+
 	return -1;
 }

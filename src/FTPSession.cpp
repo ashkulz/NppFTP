@@ -376,6 +376,25 @@ int FTPSession::DownloadFileHandle(const char * sourcefile, HANDLE target) {
 	return 0;
 }
 
+int FTPSession::TailFile(const char * sourcefile, long offset, int code) {
+	if (!m_running)
+		return -1;
+
+	if (sourcefile == NULL)
+		return -1;
+
+	TCHAR target[MAX_PATH]{};
+
+	int res = m_currentProfile->GetCacheLocal(sourcefile, target, MAX_PATH);
+	if (res != 0)
+		return res;
+
+	QueueTail * tailop = new QueueTail(m_hNotify, sourcefile, target, offset, code);
+	m_transferQueue->AddQueueOp(tailop);
+
+	return 0;
+}
+
 int FTPSession::UploadFileCache(const TCHAR * sourcefile) {
 	if (!m_running) {
 		OutErr("[UploadFileCache] fail. m_running is not set");

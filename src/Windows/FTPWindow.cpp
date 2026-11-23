@@ -24,11 +24,18 @@
 #include "InputDialog.h"
 #include "MessageDialog.h"
 #include "Npp/Notepad_plus_msgs.h"
+#include "Npp/PluginInterface.h"
 
 #include "Commands.h"
 #include <commctrl.h>
 #include <windowsx.h>
 #include <typeinfo>
+
+extern NppData nppData;
+
+//Tail: timer used to poll the followed remote file
+static const UINT_PTR	TailTimerID = 0x5441;
+static const UINT		TailInterval = 2000;	//milliseconds
 
 const TCHAR * FTPWindow::FTPWINDOWCLASS = TEXT("NPPFTPMAIN");
 
@@ -42,6 +49,11 @@ FTPWindow::FTPWindow() :
 	m_currentSelection(NULL),
 	m_localFileExists(false),
 	m_tailEnabled(false),
+	m_tailPending(false),
+	m_tailGeneration(0),
+	m_tailOffset(-1),
+	m_tailPath(NULL),
+	m_tailLocalPath(),
 	m_ftpSession(NULL),
 	m_vProfiles(NULL),
 	m_ftpSettings(NULL),
@@ -137,6 +149,8 @@ int FTPWindow::Create(HWND hParent, HWND hNpp, int MenuID, int MenuCommand) {
 }
 
 int FTPWindow::Destroy() {
+	StopTail();
+
 	m_treeview.Destroy();
 	m_toolbar.Destroy();
 	m_rebar.Destroy();
@@ -356,6 +370,14 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_CAPTURECHANGED: {
 			m_splitter.OnCaptureChanged((HWND)lParam);
 			break; }
+		case WM_TIMER: {
+			if (wParam == TailTimerID) {
+				PollTail();
+				result = 0;
+			} else {
+				doDefaultProc = true;
+			}
+			break; }
 		case WM_LBUTTONDOWN: {
 			m_splitter.OnButtonDown();
 			break; }
@@ -533,8 +555,12 @@ LRESULT FTPWindow::MessageProc(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					break; }
 				case IDB_BUTTON_TOOLBAR_TAIL: {
 					//BTNS_CHECK: the toolbar has already toggled the button state
-					m_tailEnabled = m_toolbar.GetChecked(IDB_BUTTON_TOOLBAR_TAIL);
-					OutMsg("[FTPWindow] Tail %s", m_tailEnabled ? "enabled" : "disabled");
+					if (m_toolbar.GetChecked(IDB_BUTTON_TOOLBAR_TAIL)) {
+						StartTail();
+					} else {
+						StopTail();
+					}
+					SetToolbarState();
 					result = TRUE;
 					break; }
 				case IDB_BUTTON_TOOLBAR_MESSAGES: {
@@ -1252,13 +1278,13 @@ int FTPWindow::SetToolbarState() {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, false);
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, false);
-		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, false);
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, m_tailEnabled);
 	} else {
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_DOWNLOAD, !m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_UPLOAD, m_localFileExists);	//m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_REFRESH, m_currentSelection->isDir());
 		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_OPENDIR, true);
-		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, !m_currentSelection->isDir());
+		m_toolbar.Enable(IDB_BUTTON_TOOLBAR_TAIL, m_tailEnabled || !m_currentSelection->isDir());	//always allow stopping
 	}
 
 	return 0;
@@ -1377,6 +1403,11 @@ int FTPWindow::OnEvent(QueueOperation * queueOp, int code, void * data, bool isS
 			} else {
 				OutMsg("[FTPWindow] Download of %T succeeded.", SU::Utf8ToTChar(opdld->GetExternalPath()));
 			}
+			break; }
+		case QueueOperation::QueueTypeTail: {
+			if (isStart)
+				break;
+			OnTailEvent((QueueTail*)queueOp, code);
 			break; }
 		case QueueOperation::QueueTypeUpload: {
 			QueueUpload * opuld = (QueueUpload*)queueOp;
@@ -1529,6 +1560,159 @@ int FTPWindow::OnItemActivation() {
 	return 0;
 }
 
+int FTPWindow::StartTail() {
+	StopTail();
+
+	if (!m_currentSelection || m_currentSelection->isDir() || !m_ftpSession->IsConnected()) {
+		m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, FALSE);
+		return -1;
+	}
+
+	if (m_ftpSession->GetCurrentProfile()->GetCacheLocal(m_currentSelection->GetPath(), m_tailLocalPath, MAX_PATH) != 0) {
+		TCHAR * path = SU::Utf8ToTChar(m_currentSelection->GetPath());
+		OutErr("[FTPWindow] Unable to follow %T: no cache location matches this file", path);
+		SU::FreeTChar(path);
+		m_tailLocalPath[0] = 0;
+		m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, FALSE);
+		return -1;
+	}
+
+	m_tailPath = SU::strdup(m_currentSelection->GetPath());
+	m_tailOffset = -1;
+	m_tailPending = false;
+	m_tailGeneration++;
+	m_tailEnabled = true;
+	m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, TRUE);
+
+	if (::SetTimer(m_hwnd, TailTimerID, TailInterval, NULL) == 0) {
+		OutErr("[FTPWindow] Unable to start tail timer");
+		StopTail();
+		return -1;
+	}
+
+	TCHAR * path = SU::Utf8ToTChar(m_tailPath);
+	OutMsg("[FTPWindow] Following %T", path);
+	SU::FreeTChar(path);
+
+	return PollTail();
+}
+
+int FTPWindow::StopTail() {
+	if (m_hwnd)
+		::KillTimer(m_hwnd, TailTimerID);
+
+	if (m_tailEnabled && m_tailPath) {
+		TCHAR * path = SU::Utf8ToTChar(m_tailPath);
+		OutMsg("[FTPWindow] Stopped following %T", path);
+		SU::FreeTChar(path);
+	}
+
+	m_tailEnabled = false;
+	m_tailPending = false;
+	m_tailOffset = -1;
+	if (m_tailPath) {
+		SU::free(m_tailPath);
+		m_tailPath = NULL;
+	}
+	m_tailLocalPath[0] = 0;
+
+	m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, FALSE);
+
+	return 0;
+}
+
+bool FTPWindow::IsTailFile(const TCHAR* localFile) const {
+	if (!m_tailEnabled || !localFile || m_tailLocalPath[0] == 0)
+		return false;
+
+	return lstrcmpi(localFile, m_tailLocalPath) == 0;
+}
+
+int FTPWindow::PollTail() {
+	if (!m_tailEnabled || !m_tailPath || m_tailPending)
+		return 0;
+
+	if (!m_ftpSession->IsConnected()) {
+		StopTail();
+		SetToolbarState();
+		return -1;
+	}
+
+	int res = m_ftpSession->TailFile(m_tailPath, m_tailOffset, m_tailGeneration);
+	if (res != 0) {
+		TCHAR * path = SU::Utf8ToTChar(m_tailPath);
+		if (res == 1)
+			OutErr("[FTPWindow] Unable to follow %T: no cache location matches this file", path);
+		else
+			OutErr("[FTPWindow] Unable to follow %T", path);
+		SU::FreeTChar(path);
+
+		StopTail();
+		SetToolbarState();
+		return -1;
+	}
+
+	m_tailPending = true;
+	return 0;
+}
+
+int FTPWindow::OnTailEvent(QueueTail * tailop, int code) {
+	if (!m_tailEnabled || code != m_tailGeneration)
+		return 0;	//result of a tail session that was stopped in the meantime
+
+	m_tailPending = false;
+
+	if (tailop->GetResult() == -1) {
+		TCHAR * path = SU::Utf8ToTChar(tailop->GetExternalPath());
+		OutErr("[FTPWindow] Unable to read new data from %T, stopped following it", path);
+		SU::FreeTChar(path);
+
+		StopTail();
+		SetToolbarState();
+		return -1;
+	}
+
+	bool initial = (m_tailOffset < 0);
+	m_tailOffset = tailop->GetNewOffset();
+
+	const TCHAR * localFile = tailop->GetLocalPath();
+	if (initial) {
+		//Open (or switch to) the file, then reload in case an older version was already open
+		::SendMessage(m_hNpp, NPPM_DOOPEN, (WPARAM)0, (LPARAM)localFile);
+		::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)FALSE, (LPARAM)localFile);
+	} else if (tailop->GetRestarted()) {
+		TCHAR * path = SU::Utf8ToTChar(tailop->GetExternalPath());
+		OutMsg("[FTPWindow] %T became smaller (truncated or rotated), reloaded from the start", path);
+		SU::FreeTChar(path);
+		::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)FALSE, (LPARAM)localFile);
+	} else if (tailop->GetReceived() > 0) {
+		::SendMessage(m_hNpp, NPPM_RELOADFILE, (WPARAM)FALSE, (LPARAM)localFile);
+	} else {
+		return 0;	//nothing changed
+	}
+
+	ScrollToEnd(localFile);
+
+	return 0;
+}
+
+int FTPWindow::ScrollToEnd(const TCHAR * localFile) {
+	//Only scroll when the followed file is the active document
+	TCHAR current[MAX_PATH]{};
+	if (!::SendMessage(m_hNpp, NPPM_GETFULLCURRENTPATH, (WPARAM)MAX_PATH, (LPARAM)current))
+		return -1;
+	if (lstrcmpi(current, localFile) != 0)
+		return 0;
+
+	int view = 0;
+	::SendMessage(m_hNpp, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&view);
+	HWND hScintilla = (view == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+	if (hScintilla)
+		::SendMessage(hScintilla, SCI_DOCUMENTEND, 0, 0);
+
+	return 0;
+}
+
 int FTPWindow::OnConnect(int code) {
 	m_currentSelection = NULL;
 	m_currentDragObject = NULL;
@@ -1578,8 +1762,7 @@ int FTPWindow::OnDisconnect(int /*code*/) {
 
 	SetInfo(TEXT("Disconnected"));
 
-	m_tailEnabled = false;
-	m_toolbar.SetChecked(IDB_BUTTON_TOOLBAR_TAIL, FALSE);
+	StopTail();
 
 	InitProfilesTree();
 	SetToolbarState();

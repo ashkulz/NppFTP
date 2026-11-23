@@ -118,6 +118,13 @@ public:
 	virtual int				ReceiveFile(HANDLE hFile, const char * ftpfile) = 0;
 	virtual int				DeleteFile(const char * path) = 0;
 
+	//Tail support
+	//GetRemoteSize: size in bytes of the remote file. Returns 0 on success, -1 on error
+	virtual int				GetRemoteSize(const char * ftpfile, long * size) = 0;
+	//ReceiveFileFrom: download ftpfile starting at byte offset and write it to hFile at its current position.
+	//hFile is not closed. Returns 0 on success, -1 on error
+	virtual int				ReceiveFileFrom(HANDLE hFile, const char * ftpfile, long offset) = 0;
+
 	virtual DWORD			LastAction() = 0;
 
 	virtual bool			IsConnected();
@@ -180,6 +187,9 @@ public:
 	virtual DWORD			LastAction();
 
 	virtual bool			IsConnected();
+
+	virtual int				GetRemoteSize(const char * ftpfile, long * size);
+	virtual int				ReceiveFileFrom(HANDLE hFile, const char * ftpfile, long offset);
 
 	//Class specific operations
 	virtual int				SetKeyFile(const TCHAR * keyFile);
@@ -251,6 +261,9 @@ public:
 	virtual bool			IsConnected();
 	virtual int				Abort();
 	virtual int				OnReturn(int ret);
+
+	virtual int				GetRemoteSize(const char * ftpfile, long * size);
+	virtual int				ReceiveFileFrom(HANDLE hFile, const char * ftpfile, long offset);
 
 	//Class specific operations
 	virtual int				SetMode(CUT_FTPClient::FTPSMode mode);
@@ -341,6 +354,26 @@ public:
 	virtual int				Write(LPCSTR buffer, size_t count);
 
 	// Move a current pointer to the specified location.
+	virtual long			Seek(long offset, int origin);
+};
+
+//Data source for resumed downloads (REST): reports 'offset' as its current size so the
+//transfer starts there, and appends the received data to an open handle without closing it
+class AppendHandleDataSource : public CUT_DataSource {
+protected:
+	HANDLE					m_handle;
+	long					m_offset;
+public:
+							AppendHandleDataSource(HANDLE handle, long offset);
+	virtual					~AppendHandleDataSource();
+
+	virtual CUT_DataSource *	clone();
+	virtual int				Open(OpenMsgType type);
+	virtual int				Close();
+	virtual int				ReadLine(LPSTR buffer, size_t maxsize);
+	virtual int				WriteLine(LPCSTR buffer);
+	virtual int				Read(LPSTR buffer, size_t count);
+	virtual int				Write(LPCSTR buffer, size_t count);
 	virtual long			Seek(long offset, int origin);
 };
 

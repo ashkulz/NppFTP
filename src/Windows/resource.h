@@ -35,6 +35,7 @@
 #define IDB_BITMAP_PAYPAL				115
 #define IDI_ICON_MAINFOLDERS			116
 #define IDB_BITMAP_OPENDIR				117
+#define IDB_BITMAP_TAIL					118
 
 #define IDC_STATIC						(-1)
 

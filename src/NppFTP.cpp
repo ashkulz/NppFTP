@@ -184,6 +184,12 @@ int NppFTP::OnSave(const TCHAR* path) {
 		AttemptToAutoConnect(username, hostname);	// we'll try to connect to a matching profile
 	}
 
+	//Never upload the file being followed: it would overwrite data added on the server since the last poll
+	if (m_ftpWindow && m_ftpWindow->IsTailFile(path)) {
+		OutMsg("[NppFTP] %T is being followed (tail), it was saved locally but not uploaded", path);
+		return 0;
+	}
+
 	if (m_ftpSession->IsConnected()) {
 		m_ftpSession->UploadFileCache(path);
 	}

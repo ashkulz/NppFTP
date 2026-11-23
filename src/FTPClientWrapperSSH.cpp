@@ -323,6 +323,67 @@ int FTPClientWrapperSSH::ReceiveFile(HANDLE hFile, const char * ftpfile) {
 	return OnReturn((res == FALSE || retcode < 0 || m_aborting)?-1:0);
 }
 
+int FTPClientWrapperSSH::GetRemoteSize(const char * ftpfile, long * size) {
+	if (!size)
+		return -1;
+
+	sftp_attributes fattr = sftp_stat(m_sftpsession, ftpfile);
+	if (fattr == NULL) {
+		OutErr("[SFTP] Unable to get size of %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
+		return OnReturn(-1);
+	}
+
+	*size = (long)fattr->size;
+	sftp_attributes_free(fattr);
+
+	return OnReturn(0);
+}
+
+int FTPClientWrapperSSH::ReceiveFileFrom(HANDLE hFile, const char * ftpfile, long offset) {
+	ssize_t retcode = 0;
+	int res = TRUE;
+	sftp_file sfile = NULL;
+	const int bufsize = 128 * 1024;
+	std::vector<char> _buf(bufsize);
+	char * buf = &_buf[0];
+	DWORD len = 0;
+	long totalReceived = 0;
+
+	if (hFile == INVALID_HANDLE_VALUE || offset < 0)
+		return -1;
+
+	sfile = sftp_open(m_sftpsession, ftpfile, (O_RDONLY), 0);
+	if (sfile == NULL) {
+		OutErr("[SFTP] File not opened %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
+		return OnReturn(-1);
+	}
+
+	if (sftp_seek64(sfile, (uint64_t)offset) < 0) {
+		OutErr("[SFTP] Unable to seek in %s (%s)\n", ftpfile, ssh_get_error(m_sshsession));
+		sftp_close(sfile);
+		return OnReturn(-1);
+	}
+
+	retcode = sftp_read(sfile, buf, bufsize);
+	while(retcode > 0 && !m_aborting) {
+		res = WriteFile(hFile, buf, static_cast<DWORD>(retcode), &len, NULL);
+		if (res == FALSE)
+			break;
+
+		totalReceived += len;
+
+		if (m_progmon)
+			m_progmon->OnDataReceived(totalReceived, -1);
+
+		retcode = sftp_read(sfile, buf, bufsize);
+	}
+
+	sftp_close(sfile);
+	//hFile is owned by the caller
+
+	return OnReturn((res == FALSE || retcode < 0 || m_aborting)?-1:0);
+}
+
 int FTPClientWrapperSSH::SendFile(HANDLE hFile, const char * ftpfile) {
 	ssize_t retcode = 0;
 	int res = TRUE;

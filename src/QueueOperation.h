@@ -46,7 +46,8 @@ public:
 	enum QueueType { QueueTypeConnect, QueueTypeDisconnect, QueueTypeDownload, QueueTypeUpload,
 	                 QueueTypeDirectoryGet, QueueTypeDirectoryCreate, QueueTypeDirectoryRemove,
 	                 QueueTypeFileCreate, QueueTypeFileDelete, QueueTypeFileRename, QueueTypeQuote,
-	                 QueueTypeDownloadHandle, QueueTypeCopyFile, QueueTypeFileChmod, QueueTypeNoOp
+	                 QueueTypeDownloadHandle, QueueTypeCopyFile, QueueTypeFileChmod, QueueTypeNoOp,
+	                 QueueTypeTail
 	               };
 
 	enum QueueEvent { QueueEventStart=0x01, QueueEventEnd=0x02, QueueEventAdd=0x04, QueueEventRemove=0x08, QueueEventProgress=0x10 };
@@ -148,6 +149,36 @@ protected:
 	char*					m_externalFile;
 	TCHAR*					m_localFile;
 	Transfer_Mode			m_tMode;
+};
+
+/*
+Follow (tail) a remote file: append the bytes added to externalFile since 'offset' to localFile.
+offset < 0: initial synchronisation, the whole file is downloaded and localFile is overwritten.
+If the remote file became smaller than offset (truncated/rotated), it is downloaded again from the start.
+Transfers are always binary, so offsets match the remote file.
+*/
+class QueueTail : public QueueOperation {
+public:
+							QueueTail(HWND hNotify, const char * externalFile, const TCHAR * localFile, long offset, int notifyCode = 0, void * notifyData = NULL);
+	virtual					~QueueTail();
+
+	virtual int				Perform();
+
+	virtual bool			Equals(const QueueOperation & other);
+
+	virtual const TCHAR*	GetLocalPath();
+	virtual const char*		GetExternalPath();
+
+	long					GetNewOffset() const;	//offset to use for the next poll
+	long					GetReceived() const;	//bytes written to localFile
+	bool					GetRestarted() const;	//localFile was rewritten from the start
+protected:
+	char*					m_externalFile;
+	TCHAR*					m_localFile;
+	long					m_offset;
+	long					m_newOffset;
+	long					m_received;
+	bool					m_restarted;
 };
 
 class QueueDownloadHandle : public QueueOperation {

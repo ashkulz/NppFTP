@@ -53,6 +53,7 @@ public:
 	int						DownloadFileCache(const char * sourcefile);	//return 0 on download, -1 on error, 1 when no cache match was found
 	int						DownloadFile(const char * sourcefile, const TCHAR * target, bool targetIsDir, int code = 1);
 	int						DownloadFileHandle(const char * sourcefile, HANDLE target);
+	int						TailFile(const char * sourcefile, long offset, int code);	//return 0 when queued, -1 on error, 1 when no cache match was found
 
 	int						UploadFileCache(const TCHAR * sourcefile);	//return 0 on upload, -1 on error, 1 when no cache match was found
 	int						UploadFile(const TCHAR * sourcefile, const char * target, bool targetIsDir, int code = 1);
